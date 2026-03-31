@@ -1,184 +1,249 @@
-.counter {
-  font-size: 16px;
-  padding: 5px 10px;
-  border-radius: 5px;
-  color: var(--accent);
-  background: var(--accent-bg);
-  border: 2px solid transparent;
-  transition: border-color 0.3s;
-  margin-bottom: 24px;
+@import "tailwindcss";
 
-  &:hover {
-    border-color: var(--accent-border);
+@theme {
+  /* ============================================================
+     COLOR TOKENS
+     Source: Figma file 4rJmEFUU2HMWVy3qUcYZRs
+     Figma Variables: .color 클래스 기준
+     ============================================================ */
+
+  /* --- Brand Primary (Main) — Figma .color 기준 --- */
+  --color-primary-50: #f2effd;
+  /* main_1 */
+  --color-primary-100: #ede6ff;
+  /* main_2 */
+  --color-primary-200: #d7cbf7;
+  /* main_3 */
+  --color-primary-300: #b69cf1;
+  /* main_4 */
+  --color-primary-400: #986be9;
+  /* main_5 */
+  --color-primary-500: #7c35d9;
+  /* main_6 */
+  --color-primary-600: #6201e0;
+  /* Primary-Default (Figma 페이지에서 사용) */
+  --color-primary-700: #5601c9;
+  --color-primary-800: #4e01b3;
+  --color-primary-900: #522193;
+  /* main_7 */
+  --color-primary: #6201e0;
+
+  /* --- Brand Accent --- */
+  --color-accent: #aa3bff;
+  --color-accent-dark: #c084fc;
+
+  /* --- Neutral / Gray — Figma .color grey 기준 --- */
+  --color-gray-50: #ffffff;
+  /* grey_1 */
+  --color-gray-100: #f5f5f5;
+  /* grey_2 */
+  --color-gray-200: #dddddd;
+  /* grey_3 */
+  --color-gray-300: #cecece;
+  /* Gray-250 (Figma) */
+  --color-gray-400: #a6a6a6;
+  /* grey_4 */
+  --color-gray-500: #666666;
+  /* grey_5 */
+  --color-gray-600: #4d4d4d;
+  /* Gray-600 (Figma) */
+  --color-gray-700: #303030;
+  /* Gray-700 (Figma) */
+  --color-gray-800: #222222;
+  /* grey_6 */
+  --color-gray-900: #121212;
+  /* Gray-Primary (Figma) */
+
+  /* --- Semantic: Background --- */
+  --color-bg-base: #ffffff;
+  --color-bg-subtle: #fafafb;
+  /* quiz_textbox (Figma) */
+  --color-bg-muted: #f5f5f5;
+  --color-bg-code: #f4f3ec;
+  --color-bg-accent: rgba(170, 59, 255, 0.1);
+  --color-bg-dark-base: #16171d;
+  --color-bg-dark-subtle: #1f2028;
+
+  /* --- Semantic: Text --- */
+  --color-text-body: #666666;
+  /* grey_5 */
+  --color-text-heading: #121212;
+  /* Gray-Primary */
+  --color-text-muted: #a6a6a6;
+  /* grey_4 */
+  --color-text-inverse: #ffffff;
+
+  /* --- Semantic: Border --- */
+  --color-border-base: #dddddd;
+  /* grey_3 */
+  --color-border-dark: #2e303a;
+  --color-border-accent: rgba(170, 59, 255, 0.5);
+
+  /* --- Semantic: Status — Figma .color other 기준 --- */
+  --color-success: #5eb669;
+  /* green */
+  --color-success-bg: #e7f4e9;
+  /* lightgreen */
+  --color-success-dark: #14C786;
+  --color-warning: #f6a818;
+  /* yellow */
+  --color-warning-bg: #fdeece;
+  /* paleyellow */
+  --color-error: #cc0a0a;
+  /* red */
+  --color-error-bg: #f9e2e2;
+  /* palepink */
+  --color-error-dark: #cc0a0a;
+  --color-info: #3b82f6;
+  --color-info-bg: #eff6ff;
+
+  /* --- Social Brand Colors --- */
+  --color-kakao: #ffe812;
+  --color-kakao-text: #392020;
+  --color-naver: #00c73c;
+  --color-naver-text: #ffffff;
+
+  /* ============================================================
+     SPACING TOKENS — Figma .gap / .padding 기준
+     ============================================================ */
+
+  --spacing-0: 0px;
+  --spacing-px: 1px;
+  --spacing-0\.5: 2px;
+  /* gap1, padding1 */
+  --spacing-1: 4px;
+  /* gap2, padding2 */
+  --spacing-2: 8px;
+  /* gap3, padding3 */
+  --spacing-2\.5: 10px;
+  /* padding4 */
+  --spacing-3: 12px;
+  /* gap4, padding5 */
+  --spacing-4: 16px;
+  /* gap5, padding6 */
+  --spacing-5: 20px;
+  /* gap6, padding7 */
+  --spacing-6: 24px;
+  /* gap7, padding8 */
+  --spacing-8: 32px;
+  /* gap8, padding9 */
+  --spacing-10: 40px;
+  /* gap9, padding10 */
+  --spacing-12: 48px;
+  /* gap10 */
+  --spacing-16: 64px;
+  /* gap11 */
+  --spacing-20: 80px;
+  /* gap12 */
+
+  /* Semantic spacing aliases (s- prefix to avoid Tailwind built-in collision) */
+  --spacing-s-xs: 4px;
+  --spacing-s-sm: 8px;
+  --spacing-s-md: 16px;
+  --spacing-s-lg: 24px;
+  --spacing-s-xl: 32px;
+  --spacing-s-2xl: 48px;
+  --spacing-s-3xl: 64px;
+
+  /* ============================================================
+     TYPOGRAPHY TOKENS
+     ============================================================ */
+
+  --font-sans: 'Pretendard', system-ui, sans-serif;
+  --font-heading: 'Pretendard', system-ui, sans-serif;
+  --font-mono: ui-monospace, Consolas, monospace;
+
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-base: 16px;
+  --font-size-lg: 18px;
+  --font-size-xl: 20px;
+  --font-size-2xl: 24px;
+  --font-size-3xl: 30px;
+  --font-size-4xl: 36px;
+  --font-size-5xl: 48px;
+  --font-size-6xl: 56px;
+
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  --line-height-tight: 118%;
+  --line-height-snug: 130%;
+  --line-height-normal: 140%;
+  /* Figma 1.4 */
+  --line-height-relaxed: 150%;
+  /* Figma 1.5 */
+
+  --letter-spacing-tight: -1.68px;
+  --letter-spacing-snug: -0.24px;
+  --letter-spacing-normal: 0.18px;
+
+  /* ============================================================
+     BORDER RADIUS TOKENS — Figma .Radius 기준
+     ============================================================ */
+
+  --radius-none: 0px;
+  --radius-sm: 4px;
+  /* radius1 */
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  /* radius2 */
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-full: 9999px;
+
+  /* ============================================================
+     SHADOW TOKENS
+     ============================================================ */
+
+  --shadow-sm:
+    rgba(0, 0, 0, 0.05) 0 1px 2px 0;
+  --shadow-md:
+    rgba(0, 0, 0, 0.1) 0 4px 6px -1px,
+    rgba(0, 0, 0, 0.06) 0 2px 4px -1px;
+  --shadow-lg:
+    rgba(0, 0, 0, 0.1) 0 10px 15px -3px,
+    rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  --shadow-xl:
+    rgba(0, 0, 0, 0.2) 0 20px 25px -5px,
+    rgba(0, 0, 0, 0.08) 0 10px 10px -5px;
+  --shadow-dark-lg:
+    rgba(0, 0, 0, 0.4) 0 10px 15px -3px,
+    rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+
+  /* ============================================================
+     LAYOUT TOKENS
+     ============================================================ */
+
+  --width-container: 1200px;
+  --width-sidebar: 240px;
+}
+
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
   }
-  &:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
+  to {
+    opacity: 1;
+    transform: translateX(0);
   }
 }
 
-.hero {
-  position: relative;
-
-  .base,
-  .framework,
-  .vite {
-    inset-inline: 0;
-    margin: 0 auto;
+@keyframes toast-out {
+  from {
+    opacity: 1;
+    transform: translateX(0);
   }
-
-  .base {
-    width: 170px;
-    position: relative;
-    z-index: 0;
-  }
-
-  .framework,
-  .vite {
-    position: absolute;
-  }
-
-  .framework {
-    z-index: 1;
-    top: 34px;
-    height: 28px;
-    transform: perspective(2000px) rotateZ(300deg) rotateX(44deg) rotateY(39deg)
-      scale(1.4);
-  }
-
-  .vite {
-    z-index: 0;
-    top: 107px;
-    height: 26px;
-    width: auto;
-    transform: perspective(2000px) rotateZ(300deg) rotateX(40deg) rotateY(39deg)
-      scale(0.8);
+  to {
+    opacity: 0;
+    transform: translateX(100%);
   }
 }
 
-#center {
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-  place-content: center;
-  place-items: center;
-  flex-grow: 1;
-
-  @media (max-width: 1024px) {
-    padding: 32px 20px 24px;
-    gap: 18px;
-  }
-}
-
-#next-steps {
-  display: flex;
-  border-top: 1px solid var(--border);
-  text-align: left;
-
-  & > div {
-    flex: 1 1 0;
-    padding: 32px;
-    @media (max-width: 1024px) {
-      padding: 24px 20px;
-    }
-  }
-
-  .icon {
-    margin-bottom: 16px;
-    width: 22px;
-    height: 22px;
-  }
-
-  @media (max-width: 1024px) {
-    flex-direction: column;
-    text-align: center;
-  }
-}
-
-#docs {
-  border-right: 1px solid var(--border);
-
-  @media (max-width: 1024px) {
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-  }
-}
-
-#next-steps ul {
-  list-style: none;
-  padding: 0;
-  display: flex;
-  gap: 8px;
-  margin: 32px 0 0;
-
-  .logo {
-    height: 18px;
-  }
-
-  a {
-    color: var(--text-h);
-    font-size: 16px;
-    border-radius: 6px;
-    background: var(--social-bg);
-    display: flex;
-    padding: 6px 12px;
-    align-items: center;
-    gap: 8px;
-    text-decoration: none;
-    transition: box-shadow 0.3s;
-
-    &:hover {
-      box-shadow: var(--shadow);
-    }
-    .button-icon {
-      height: 18px;
-      width: 18px;
-    }
-  }
-
-  @media (max-width: 1024px) {
-    margin-top: 20px;
-    flex-wrap: wrap;
-    justify-content: center;
-
-    li {
-      flex: 1 1 calc(50% - 8px);
-    }
-
-    a {
-      width: 100%;
-      justify-content: center;
-      box-sizing: border-box;
-    }
-  }
-}
-
-#spacer {
-  height: 88px;
-  border-top: 1px solid var(--border);
-  @media (max-width: 1024px) {
-    height: 48px;
-  }
-}
-
-.ticks {
-  position: relative;
-  width: 100%;
-
-  &::before,
-  &::after {
-    content: '';
-    position: absolute;
-    top: -4.5px;
-    border: 5px solid transparent;
-  }
-
-  &::before {
-    left: 0;
-    border-left-color: var(--border);
-  }
-  &::after {
-    right: 0;
-    border-right-color: var(--border);
-  }
+button {
+  cursor: pointer;
 }
