@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { QueryProvider } from './providers/QueryProvider'
+import './App.css'
 import App from './App.tsx'
 
 async function enableMocking() {
