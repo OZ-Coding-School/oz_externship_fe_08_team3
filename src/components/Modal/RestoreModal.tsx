@@ -26,17 +26,17 @@ export function RestoreModal({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <div className="flex flex-col gap-10 items-center">
+      <div className="flex flex-col items-center gap-10">
         {/* Icon */}
         <div className="flex flex-col items-center gap-4">
-          <div className="w-7 h-7 rounded-full bg-primary-300 flex items-center justify-center">
+          <div className="bg-primary-300 flex h-7 w-7 items-center justify-center rounded-full">
             <MehFaceIcon />
           </div>
           <div className="flex flex-col items-center gap-4 text-center">
-            <h2 className="text-xl font-bold text-gray-900 tracking-tight">
+            <h2 className="text-xl font-bold tracking-tight text-gray-900">
               {title}
             </h2>
-            <p className="text-sm text-gray-600 tracking-tight leading-relaxed whitespace-pre-line">
+            <p className="text-sm leading-relaxed tracking-tight whitespace-pre-line text-gray-600">
               {description}
             </p>
           </div>
@@ -45,7 +45,7 @@ export function RestoreModal({
         {/* CTA */}
         <button
           onClick={handleRestore}
-          className="w-full h-[52px] bg-primary text-primary-100 text-base font-normal mb-4 rounded-sm tracking-tight hover:bg-primary-700 transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-none"
+          className="bg-primary text-primary-100 hover:bg-primary-700 focus-visible:ring-primary mb-4 h-[52px] w-full rounded-sm text-base font-normal tracking-tight transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
         >
           {buttonLabel}
         </button>
@@ -53,5 +53,3 @@ export function RestoreModal({
     </Modal>
   )
 }
-
-export default RestoreModal

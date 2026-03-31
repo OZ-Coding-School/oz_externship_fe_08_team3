@@ -21,6 +21,7 @@ export function ConfirmModal({
   confirmLabel = '삭제',
   onCancel,
   onConfirm,
+  danger = false,
 }: ConfirmModalProps) {
   const handleCancel = () => {
     onCancel?.()
@@ -36,20 +37,20 @@ export function ConfirmModal({
     <Modal isOpen={isOpen} onClose={onClose} hideCloseButton>
       <div className="flex flex-col gap-10">
         <div className="py-3">
-          <p className="text-base text-gray-700 tracking-tight leading-relaxed whitespace-pre-line">
+          <p className="text-base leading-relaxed tracking-tight whitespace-pre-line text-gray-700">
             {message}
           </p>
         </div>
         <div className="flex items-center justify-end gap-3">
           <button
             onClick={handleCancel}
-            className="h-[42px] px-6 bg-primary-100 text-primary-800 text-base font-semibold rounded-full tracking-tight hover:bg-primary-200 transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-none"
+            className="bg-primary-100 text-primary-800 hover:bg-primary-200 focus-visible:ring-primary h-[42px] rounded-full px-6 text-base font-semibold tracking-tight transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
           >
             {cancelLabel}
           </button>
           <button
             onClick={handleConfirm}
-            className="h-[42px] px-6 bg-primary text-white text-base font-semibold rounded-full tracking-tight hover:bg-primary-700 transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-none"
+            className={`h-[42px] rounded-full px-6 text-base font-semibold tracking-tight text-white transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${danger ? 'bg-error hover:bg-error-dark focus-visible:ring-error' : 'bg-primary hover:bg-primary-700 focus-visible:ring-primary'}`}
           >
             {confirmLabel}
           </button>
@@ -58,5 +59,3 @@ export function ConfirmModal({
     </Modal>
   )
 }
-
-export default ConfirmModal

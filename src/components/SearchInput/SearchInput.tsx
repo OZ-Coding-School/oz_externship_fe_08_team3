@@ -1,8 +1,10 @@
 import { forwardRef, useState } from 'react'
 import { SearchIcon, ClearIcon } from './icons'
 
-export interface SearchInputProps
-  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type'> {
+export interface SearchInputProps extends Omit<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  'type'
+> {
   value?: string
   onValueChange?: (value: string) => void
   onClear?: () => void
@@ -18,7 +20,7 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
       className = '',
       ...props
     },
-    ref,
+    ref
   ) {
     const [focused, setFocused] = useState(false)
     const hasValue = Boolean(value)
@@ -31,14 +33,14 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
     return (
       <div
         className={[
-          'flex items-center gap-2 px-3 py-2.5 rounded-full border bg-gray-50 transition-colors duration-150',
-          focused
-            ? 'border-primary'
-            : 'border-gray-400',
+          'flex items-center gap-2 rounded-full border bg-gray-50 px-3 py-2.5 transition-colors duration-150',
+          focused ? 'border-primary' : 'border-gray-400',
           className,
-        ].filter(Boolean).join(' ')}
+        ]
+          .filter(Boolean)
+          .join(' ')}
       >
-        <span className="shrink-0 flex items-center">
+        <span className="flex shrink-0 items-center">
           <SearchIcon />
         </span>
 
@@ -50,7 +52,7 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           placeholder={placeholder}
-          className="flex-1 bg-transparent text-sm text-gray-900 placeholder:text-gray-400 outline-none tracking-tight min-w-0"
+          className="min-w-0 flex-1 bg-transparent text-sm tracking-tight text-gray-900 outline-none placeholder:text-gray-400"
           {...props}
         />
 
@@ -60,14 +62,12 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
             tabIndex={-1}
             onClick={handleClear}
             aria-label="검색어 지우기"
-            className="shrink-0 text-gray-400 hover:text-gray-600 transition-colors duration-150 cursor-pointer"
+            className="shrink-0 cursor-pointer text-gray-400 transition-colors duration-150 hover:text-gray-600"
           >
             <ClearIcon />
           </button>
         )}
       </div>
     )
-  },
+  }
 )
-
-export default SearchInput

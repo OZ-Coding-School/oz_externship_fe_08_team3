@@ -1,2 +1,2 @@
-export { PasswordInput, default } from './PasswordInput'
+export { PasswordInput } from './PasswordInput'
 export type { PasswordInputProps } from './PasswordInput'
