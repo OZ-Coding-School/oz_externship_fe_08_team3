@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Star, Zap, Shield, Search } from 'lucide-react'
+import { Search } from 'lucide-react'
 import {
   Avatar,
   Badge,
@@ -32,8 +32,8 @@ function Section({
   children: React.ReactNode
 }) {
   return (
-    <section className="border-b border-border-base pb-10">
-      <h2 className="mb-6 text-2xl font-semibold text-text-heading">{title}</h2>
+    <section className="border-border-base border-b pb-10">
+      <h2 className="text-text-heading mb-6 text-2xl font-semibold">{title}</h2>
       {children}
     </section>
   )
@@ -48,7 +48,9 @@ export function ComponentShowcase() {
   const [activeTab, setActiveTab] = useState('tab1')
   const [modalOpen, setModalOpen] = useState(false)
   const [toastVisible, setToastVisible] = useState(false)
-  const [toastVariant, setToastVariant] = useState<'success' | 'info' | 'warning' | 'error'>('success')
+  const [toastVariant, setToastVariant] = useState<
+    'success' | 'info' | 'warning' | 'error'
+  >('success')
 
   const dropdownOptions = [
     { value: 'react', label: 'React' },
@@ -65,10 +67,10 @@ export function ComponentShowcase() {
   return (
     <div className="mx-auto max-w-[1200px] px-6 py-10">
       <header className="mb-12">
-        <h1 className="mb-2 text-4xl font-bold tracking-tight text-text-heading">
+        <h1 className="text-text-heading mb-2 text-4xl font-bold tracking-tight">
           Component Showcase
         </h1>
-        <p className="text-lg text-text-body">
+        <p className="text-text-body text-lg">
           공통 컴포넌트 목록 및 사용 예시
         </p>
       </header>
@@ -77,7 +79,7 @@ export function ComponentShowcase() {
         {/* Button */}
         <Section title="Button">
           <div className="flex flex-col gap-4">
-            <p className="text-sm text-text-muted">Variants</p>
+            <p className="text-text-muted text-sm">Variants</p>
             <div className="flex flex-wrap items-center gap-3">
               <Button variant="primary">Primary</Button>
               <Button variant="secondary">Secondary</Button>
@@ -85,13 +87,13 @@ export function ComponentShowcase() {
               <Button variant="ghost">Ghost</Button>
               <Button variant="danger">Danger</Button>
             </div>
-            <p className="text-sm text-text-muted">Sizes</p>
+            <p className="text-text-muted text-sm">Sizes</p>
             <div className="flex flex-wrap items-center gap-3">
               <Button size="sm">Small</Button>
               <Button size="md">Medium</Button>
               <Button size="lg">Large</Button>
             </div>
-            <p className="text-sm text-text-muted">States</p>
+            <p className="text-text-muted text-sm">States</p>
             <div className="flex flex-wrap items-center gap-3">
               <Button loading>Loading</Button>
               <Button disabled>Disabled</Button>
@@ -103,7 +105,7 @@ export function ComponentShowcase() {
         {/* Badge */}
         <Section title="Badge">
           <div className="flex flex-col gap-4">
-            <p className="text-sm text-text-muted">Variants</p>
+            <p className="text-text-muted text-sm">Variants</p>
             <div className="flex flex-wrap items-center gap-3">
               <Badge variant="default">Default</Badge>
               <Badge variant="primary">Primary</Badge>
@@ -112,7 +114,7 @@ export function ComponentShowcase() {
               <Badge variant="error">Error</Badge>
               <Badge variant="info">Info</Badge>
             </div>
-            <p className="text-sm text-text-muted">Sizes</p>
+            <p className="text-text-muted text-sm">Sizes</p>
             <div className="flex flex-wrap items-center gap-3">
               <Badge size="sm">Small</Badge>
               <Badge size="md">Medium</Badge>
@@ -129,7 +131,7 @@ export function ComponentShowcase() {
                 alt="User"
                 size="sm"
               />
-              <span className="text-xs text-text-muted">sm</span>
+              <span className="text-text-muted text-xs">sm</span>
             </div>
             <div className="flex flex-col items-center gap-1">
               <Avatar
@@ -137,7 +139,7 @@ export function ComponentShowcase() {
                 alt="User"
                 size="md"
               />
-              <span className="text-xs text-text-muted">md</span>
+              <span className="text-text-muted text-xs">md</span>
             </div>
             <div className="flex flex-col items-center gap-1">
               <Avatar
@@ -145,7 +147,7 @@ export function ComponentShowcase() {
                 alt="User"
                 size="lg"
               />
-              <span className="text-xs text-text-muted">lg</span>
+              <span className="text-text-muted text-xs">lg</span>
             </div>
             <div className="flex flex-col items-center gap-1">
               <Avatar
@@ -153,11 +155,11 @@ export function ComponentShowcase() {
                 alt="User"
                 size="xl"
               />
-              <span className="text-xs text-text-muted">xl</span>
+              <span className="text-text-muted text-xs">xl</span>
             </div>
             <div className="flex flex-col items-center gap-1">
               <Avatar src={null} alt="Kim Hyeon" size="lg" />
-              <span className="text-xs text-text-muted">initials</span>
+              <span className="text-text-muted text-xs">initials</span>
             </div>
           </div>
         </Section>
@@ -251,17 +253,17 @@ export function ComponentShowcase() {
               </Tab>
             </TabList>
             <TabPanel value="tab1">
-              <div className="rounded-lg bg-bg-muted p-4">
+              <div className="bg-bg-muted rounded-lg p-4">
                 <p className="text-text-body">개요 탭의 콘텐츠입니다.</p>
               </div>
             </TabPanel>
             <TabPanel value="tab2">
-              <div className="rounded-lg bg-bg-muted p-4">
+              <div className="bg-bg-muted rounded-lg p-4">
                 <p className="text-text-body">상세 정보 탭의 콘텐츠입니다.</p>
               </div>
             </TabPanel>
             <TabPanel value="tab3">
-              <div className="rounded-lg bg-bg-muted p-4">
+              <div className="bg-bg-muted rounded-lg p-4">
                 <p className="text-text-body">비활성화된 탭입니다.</p>
               </div>
             </TabPanel>
@@ -273,10 +275,10 @@ export function ComponentShowcase() {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <Card elevation="flat" padding="md">
               <CardHeader>
-                <h3 className="font-semibold text-text-heading">Flat</h3>
+                <h3 className="text-text-heading font-semibold">Flat</h3>
               </CardHeader>
               <CardBody>
-                <p className="text-sm text-text-body">
+                <p className="text-text-body text-sm">
                   elevation flat 카드입니다.
                 </p>
               </CardBody>
@@ -288,10 +290,10 @@ export function ComponentShowcase() {
             </Card>
             <Card elevation="sm" padding="md">
               <CardHeader>
-                <h3 className="font-semibold text-text-heading">Small</h3>
+                <h3 className="text-text-heading font-semibold">Small</h3>
               </CardHeader>
               <CardBody>
-                <p className="text-sm text-text-body">
+                <p className="text-text-body text-sm">
                   elevation sm 카드입니다.
                 </p>
               </CardBody>
@@ -303,10 +305,10 @@ export function ComponentShowcase() {
             </Card>
             <Card elevation="md" padding="md">
               <CardHeader>
-                <h3 className="font-semibold text-text-heading">Medium</h3>
+                <h3 className="text-text-heading font-semibold">Medium</h3>
               </CardHeader>
               <CardBody>
-                <p className="text-sm text-text-body">
+                <p className="text-text-body text-sm">
                   elevation md 카드입니다.
                 </p>
               </CardBody>
@@ -318,7 +320,6 @@ export function ComponentShowcase() {
             </Card>
           </div>
         </Section>
-
 
         {/* SuccessCard */}
         <Section title="SuccessCard">
@@ -393,15 +394,15 @@ export function ComponentShowcase() {
           <div className="flex items-end gap-6">
             <div className="flex flex-col items-center gap-1">
               <Spinner size="sm" />
-              <span className="text-xs text-text-muted">sm</span>
+              <span className="text-text-muted text-xs">sm</span>
             </div>
             <div className="flex flex-col items-center gap-1">
               <Spinner size="md" />
-              <span className="text-xs text-text-muted">md</span>
+              <span className="text-text-muted text-xs">md</span>
             </div>
             <div className="flex flex-col items-center gap-1">
               <Spinner size="lg" />
-              <span className="text-xs text-text-muted">lg</span>
+              <span className="text-text-muted text-xs">lg</span>
             </div>
           </div>
         </Section>
