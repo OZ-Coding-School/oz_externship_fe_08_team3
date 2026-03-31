@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { CheckCircleSmallIcon, InfoIcon, WarningIcon, ErrorIcon } from './icons'
 
 export type ToastVariant = 'success' | 'info' | 'warning' | 'error'
@@ -30,67 +30,56 @@ export function Toast({
   onClose,
   className = '',
 }: ToastProps) {
-  const [mounted, setMounted] = useState(visible)
-  const [animating, setAnimating] = useState<'in' | 'out' | null>(visible ? 'in' : null)
+  const containerRef = useRef<HTMLDivElement>(null)
   const timerRef = useRef<ReturnType<typeof setTimeout>>(null)
 
-  useEffect(() => {
-    if (visible) {
-      setMounted(true)
-      setAnimating('in')
-    } else if (mounted) {
-      setAnimating('out')
-      timerRef.current = setTimeout(() => {
-        setMounted(false)
-        setAnimating(null)
-        onClose?.()
-      }, ANIMATION_DURATION)
+  const handleAnimationEnd = useCallback(() => {
+    const el = containerRef.current
+    if (!el) return
+    const style = el.style.animation
+    if (style.includes('toast-out')) {
+      onClose?.()
     }
+  }, [onClose])
+
+  // 자동 닫힘 타이머: visible일 때 duration 후 exit 애니메이션 시작
+  useEffect(() => {
+    if (!visible || duration === 0) return
+    timerRef.current = setTimeout(() => {
+      const el = containerRef.current
+      if (el) {
+        el.style.animation = `toast-out ${ANIMATION_DURATION}ms ease-in forwards`
+      }
+    }, duration)
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current)
     }
-  }, [visible])
+  }, [visible, duration])
 
-  useEffect(() => {
-    if (!mounted || duration === 0) return
-    const autoClose = setTimeout(() => {
-      setAnimating('out')
-      timerRef.current = setTimeout(() => {
-        setMounted(false)
-        setAnimating(null)
-        onClose?.()
-      }, ANIMATION_DURATION)
-    }, duration)
-    return () => clearTimeout(autoClose)
-  }, [mounted, duration, onClose])
-
-  if (!mounted) return null
+  if (!visible) return null
 
   return (
     <div
+      ref={containerRef}
       role="alert"
       aria-live="polite"
+      onAnimationEnd={handleAnimationEnd}
       style={{
-        animation:
-          animating === 'in'
-            ? `toast-in ${ANIMATION_DURATION}ms ease-out forwards`
-            : animating === 'out'
-              ? `toast-out ${ANIMATION_DURATION}ms ease-in forwards`
-              : undefined,
+        animation: `toast-in ${ANIMATION_DURATION}ms ease-out forwards`,
       }}
       className={[
-        'fixed top-6 right-6 px-4 py-3 rounded-sm border border-gray-200 bg-gray-50 shadow-[4px_4px_4px_0px_rgba(131,131,131,0.25)]',
+        'fixed top-6 right-6 rounded-sm border border-gray-200 bg-gray-50 px-4 py-3 shadow-[4px_4px_4px_0px_rgba(131,131,131,0.25)]',
         className,
       ]
         .filter(Boolean)
         .join(' ')}
     >
-      {iconMap[variant]}
-      <p className="text-sm text-gray-600 tracking-tight whitespace-nowrap">
-        {message}
-      </p>
+      <div className="flex items-center gap-2">
+        {iconMap[variant]}
+        <p className="text-sm tracking-tight whitespace-nowrap text-gray-600">
+          {message}
+        </p>
+      </div>
     </div>
   )
 }
-
-export default Toast

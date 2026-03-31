@@ -59,7 +59,10 @@ export function Dropdown({
   useEffect(() => {
     if (!isOpen) return
     const handleClick = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
         setIsOpen(false)
       }
     }
@@ -69,7 +72,9 @@ export function Dropdown({
 
   useEffect(() => {
     if (!isOpen || highlightIndex < 0) return
-    const item = listboxRef.current?.children[highlightIndex] as HTMLElement | undefined
+    const item = listboxRef.current?.children[highlightIndex] as
+      | HTMLElement
+      | undefined
     item?.scrollIntoView({ block: 'nearest' })
   }, [isOpen, highlightIndex])
 
@@ -116,7 +121,10 @@ export function Dropdown({
   }
 
   return (
-    <div ref={containerRef} className={['relative w-full', className].filter(Boolean).join(' ')}>
+    <div
+      ref={containerRef}
+      className={['relative w-full', className].filter(Boolean).join(' ')}
+    >
       {/* Trigger */}
       <button
         type="button"
@@ -129,18 +137,28 @@ export function Dropdown({
         onClick={toggle}
         onKeyDown={handleKeyDown}
         className={[
-          'w-full h-12 flex items-center justify-between px-4 py-2.5 rounded-sm border text-sm transition-colors duration-150 outline-none',
+          'flex h-12 w-full items-center justify-between rounded-sm border px-4 py-2.5 text-sm transition-colors duration-150 outline-none',
           disabled
-            ? 'bg-gray-200 border-gray-400 text-gray-400 cursor-not-allowed'
+            ? 'cursor-not-allowed border-gray-400 bg-gray-200 text-gray-400'
             : isOpen
-              ? 'bg-white border-gray-500 text-gray-900'
+              ? 'border-gray-500 bg-white text-gray-900'
               : value
-                ? 'bg-white border-gray-400 text-gray-900'
-                : 'bg-white border-gray-400 text-gray-400',
-          !disabled && 'hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1',
-        ].filter(Boolean).join(' ')}
+                ? 'border-gray-400 bg-white text-gray-900'
+                : 'border-gray-400 bg-white text-gray-400',
+          !disabled &&
+            'focus-visible:ring-primary hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-offset-1',
+        ]
+          .filter(Boolean)
+          .join(' ')}
       >
-        <span className={['truncate tracking-tight', showFreeInput ? 'text-ellipsis overflow-hidden max-w-[80%]' : ''].filter(Boolean).join(' ')}>
+        <span
+          className={[
+            'truncate tracking-tight',
+            showFreeInput ? 'max-w-[80%] overflow-hidden text-ellipsis' : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+        >
           {selectedOption?.label ?? placeholder}
         </span>
         <ChevronIcon open={isOpen} />
@@ -153,7 +171,7 @@ export function Dropdown({
           id={`${baseId}-listbox`}
           role="listbox"
           aria-label={placeholder}
-          className="absolute z-40 left-0 right-0 mt-2 bg-white border border-gray-500 rounded-sm py-1 max-h-60 overflow-y-auto shadow-lg"
+          className="absolute right-0 left-0 z-40 mt-2 max-h-60 overflow-y-auto rounded-sm border border-gray-500 bg-white py-1 shadow-lg"
         >
           {options.map((opt, i) => {
             const isSelected = opt.value === value
@@ -167,14 +185,14 @@ export function Dropdown({
                 onClick={() => select(opt)}
                 onMouseEnter={() => setHighlightIndex(i)}
                 className={[
-                  'flex items-center justify-between h-12 px-3 py-2.5 mx-1 rounded-sm cursor-pointer text-sm tracking-tight transition-colors duration-100',
+                  'mx-1 flex h-12 cursor-pointer items-center justify-between rounded-sm px-3 py-2.5 text-sm tracking-tight transition-colors duration-100',
                   isSelected
                     ? 'text-primary font-semibold'
-                    : 'text-gray-900 font-normal',
-                  isHighlighted && !isSelected
-                    ? 'bg-primary-100'
-                    : '',
-                ].filter(Boolean).join(' ')}
+                    : 'font-normal text-gray-900',
+                  isHighlighted && !isSelected ? 'bg-primary-100' : '',
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
               >
                 <span className="truncate">{opt.label}</span>
                 {isSelected && <CheckIcon />}
@@ -189,7 +207,7 @@ export function Dropdown({
         <div className="mt-2 flex flex-col gap-1.5">
           <div
             className={[
-              'border rounded-sm transition-colors duration-150',
+              'rounded-sm border transition-colors duration-150',
               textareaFocused ? 'border-gray-500' : 'border-gray-400',
             ].join(' ')}
           >
@@ -205,13 +223,15 @@ export function Dropdown({
               placeholder={freeInputPlaceholder}
               maxLength={freeInputMaxLength}
               rows={4}
-              className="w-full px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 bg-transparent resize-none outline-none tracking-tight leading-relaxed"
+              className="w-full resize-none bg-transparent px-4 py-3 text-sm leading-relaxed tracking-tight text-gray-900 outline-none placeholder:text-gray-400"
             />
           </div>
-          <p className={[
-            'text-xs text-right tracking-tight',
-            freeInputText.length > 0 ? 'text-gray-500' : 'text-gray-400',
-          ].join(' ')}>
+          <p
+            className={[
+              'text-right text-xs tracking-tight',
+              freeInputText.length > 0 ? 'text-gray-500' : 'text-gray-400',
+            ].join(' ')}
+          >
             {freeInputText.length}/{freeInputMaxLength}
           </p>
         </div>
@@ -219,5 +239,3 @@ export function Dropdown({
     </div>
   )
 }
-
-export default Dropdown

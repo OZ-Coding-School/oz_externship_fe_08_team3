@@ -4,7 +4,7 @@ import { devtools } from 'zustand/middleware'
 interface User {
   nickname: string
   email: string
-  profile_image?: string | null
+  profileImage?: string | null
 }
 
 interface AuthState {
@@ -24,6 +24,6 @@ export const useAuthStore = create<AuthState>()(
       logout: () =>
         set({ isAuthenticated: false, user: null }, undefined, 'auth/logout'),
     }),
-    { name: 'AuthStore' },
-  ),
+    { name: 'AuthStore' }
+  )
 )

@@ -23,15 +23,15 @@ export function AlertModal({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} hideCloseButton>
-      <div className="flex flex-col gap-10 items-end">
+      <div className="flex flex-col items-end gap-10">
         <div className="w-full py-3">
-          <p className="text-base text-gray-900 tracking-tight leading-relaxed">
+          <p className="text-base leading-relaxed tracking-tight text-gray-900">
             {message}
           </p>
         </div>
         <button
           onClick={handleConfirm}
-          className="h-[42px] px-6 bg-primary text-white text-base font-semibold rounded-full tracking-tight hover:bg-primary-700 transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-none"
+          className="bg-primary hover:bg-primary-700 focus-visible:ring-primary h-[42px] rounded-full px-6 text-base font-semibold tracking-tight text-white transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
         >
           {confirmLabel}
         </button>
@@ -39,5 +39,3 @@ export function AlertModal({
     </Modal>
   )
 }
-
-export default AlertModal

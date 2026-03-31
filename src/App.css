@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @theme {
   /* ============================================================
@@ -84,7 +84,7 @@
   /* green */
   --color-success-bg: #e7f4e9;
   /* lightgreen */
-  --color-success-dark: #14C786;
+  --color-success-dark: #14c786;
   --color-warning: #f6a818;
   /* yellow */
   --color-warning-bg: #fdeece;
@@ -93,7 +93,7 @@
   /* red */
   --color-error-bg: #f9e2e2;
   /* palepink */
-  --color-error-dark: #cc0a0a;
+  --color-error-dark: #a50808;
   --color-info: #3b82f6;
   --color-info-bg: #eff6ff;
 
@@ -135,15 +135,6 @@
   /* gap11 */
   --spacing-20: 80px;
   /* gap12 */
-
-  /* Semantic spacing aliases (s- prefix to avoid Tailwind built-in collision) */
-  --spacing-s-xs: 4px;
-  --spacing-s-sm: 8px;
-  --spacing-s-md: 16px;
-  --spacing-s-lg: 24px;
-  --spacing-s-xl: 32px;
-  --spacing-s-2xl: 48px;
-  --spacing-s-3xl: 64px;
 
   /* ============================================================
      TYPOGRAPHY TOKENS
@@ -198,20 +189,15 @@
      SHADOW TOKENS
      ============================================================ */
 
-  --shadow-sm:
-    rgba(0, 0, 0, 0.05) 0 1px 2px 0;
+  --shadow-sm: rgba(0, 0, 0, 0.05) 0 1px 2px 0;
   --shadow-md:
-    rgba(0, 0, 0, 0.1) 0 4px 6px -1px,
-    rgba(0, 0, 0, 0.06) 0 2px 4px -1px;
+    rgba(0, 0, 0, 0.1) 0 4px 6px -1px, rgba(0, 0, 0, 0.06) 0 2px 4px -1px;
   --shadow-lg:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px,
-    rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
   --shadow-xl:
-    rgba(0, 0, 0, 0.2) 0 20px 25px -5px,
-    rgba(0, 0, 0, 0.08) 0 10px 10px -5px;
+    rgba(0, 0, 0, 0.2) 0 20px 25px -5px, rgba(0, 0, 0, 0.08) 0 10px 10px -5px;
   --shadow-dark-lg:
-    rgba(0, 0, 0, 0.4) 0 10px 15px -3px,
-    rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+    rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
 
   /* ============================================================
      LAYOUT TOKENS
@@ -220,7 +206,6 @@
   --width-container: 1200px;
   --width-sidebar: 240px;
 }
-
 
 @keyframes toast-in {
   from {

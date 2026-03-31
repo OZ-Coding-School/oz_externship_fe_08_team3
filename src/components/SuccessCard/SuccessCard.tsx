@@ -6,26 +6,28 @@ export interface SuccessCardProps {
   className?: string
 }
 
-export function SuccessCard({ title, description, className = '' }: SuccessCardProps) {
+export function SuccessCard({
+  title,
+  description,
+  className = '',
+}: SuccessCardProps) {
   return (
     <div
       role="status"
       className={[
-        'bg-white rounded-xl p-6 flex flex-col items-center gap-4',
+        'flex flex-col items-center gap-4 rounded-xl bg-white p-6',
         className,
-      ].filter(Boolean).join(' ')}
+      ]
+        .filter(Boolean)
+        .join(' ')}
     >
       <CheckCircleIcon />
-      <h2 className="text-xl font-bold text-gray-900 tracking-tight">
+      <h2 className="text-xl font-bold tracking-tight text-gray-900">
         {title}
       </h2>
       {description && (
-        <p className="text-sm text-gray-600 tracking-tight">
-          {description}
-        </p>
+        <p className="text-sm tracking-tight text-gray-600">{description}</p>
       )}
     </div>
   )
 }
-
-export default SuccessCard
