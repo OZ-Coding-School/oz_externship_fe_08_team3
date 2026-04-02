@@ -1,7 +1,7 @@
-import { ComponentShowcase } from './pages/ComponentShowcase'
+import { RouterProvider } from '@/providers/RouterProvider'
 
 function App() {
-  return <ComponentShowcase />
+  return <RouterProvider />
 }
 
 export default App
