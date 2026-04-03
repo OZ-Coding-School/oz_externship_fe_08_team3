@@ -204,6 +204,7 @@
      ============================================================ */
 
   --width-container: 1200px;
+  --max-width-container: 1200px;
   --width-sidebar: 240px;
 }
 
@@ -212,6 +213,7 @@
     opacity: 0;
     transform: translateX(100%);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -223,6 +225,7 @@
     opacity: 1;
     transform: translateX(0);
   }
+
   to {
     opacity: 0;
     transform: translateX(100%);
