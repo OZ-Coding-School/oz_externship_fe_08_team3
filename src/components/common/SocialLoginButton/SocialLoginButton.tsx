@@ -15,13 +15,13 @@ const providerConfig: Record<
   { label: string; icon: React.ReactNode; classes: string }
 > = {
   kakao: {
-    label: '카카오로 계속하기',
+    label: '카카오 간편 로그인/가입',
     icon: <KakaoIcon />,
     classes:
-      'bg-kakao text-kakao-text hover:brightness-95 active:brightness-90',
+      'bg-kakao text-kakao-text font-light hover:brightness-95 active:brightness-90',
   },
   naver: {
-    label: '네이버로 계속하기',
+    label: '네이버 간편 로그인/가입 ',
     icon: <NaverIcon />,
     classes:
       'bg-naver text-naver-text hover:brightness-95 active:brightness-90',
@@ -47,7 +47,7 @@ export function SocialLoginButton({
       aria-busy={loading}
       aria-label={label}
       className={[
-        'relative flex h-12 w-full items-center justify-center gap-2.5 rounded-xl text-sm font-medium transition-all duration-150 outline-none',
+        'relative flex h-12 w-full items-center justify-center gap-2.5 rounded-sm text-sm font-medium transition-all duration-150 outline-none',
         'focus-visible:ring-primary focus-visible:ring-2 focus-visible:ring-offset-2',
         classes,
         isDisabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer',

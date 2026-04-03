@@ -1,4 +1,5 @@
-import { Routes, Route, Outlet } from 'react-router'
+import { Routes, Route } from 'react-router'
+import { DefaultLayout, AuthLayout } from '@/components'
 import { HomePage } from '@/pages/home'
 import { LoginPage } from '@/pages/auth'
 import { SignupSelectPage, SignupPage } from '@/pages/signup'
@@ -21,15 +22,18 @@ import { ComponentShowcase } from '@/pages/ComponentShowcase'
 export function RouterProvider() {
   return (
     <Routes>
-      <Route element={<Outlet />}>
-        <Route index element={<HomePage />} />
-
+      {/* Header only (no Footer) */}
+      <Route element={<AuthLayout />}>
         <Route path="login" element={<LoginPage />} />
-
         <Route path="signup">
           <Route index element={<SignupSelectPage />} />
           <Route path="form" element={<SignupPage />} />
         </Route>
+      </Route>
+
+      {/* Header + Footer */}
+      <Route element={<DefaultLayout />}>
+        <Route index element={<HomePage />} />
 
         <Route path="mypage">
           <Route index element={<MypagePage />} />

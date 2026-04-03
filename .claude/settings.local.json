@@ -17,7 +17,12 @@
       "Bash(bash .husky/commit-msg /dev/stdin)",
       "Bash(echo \"Exit code: $?\")",
       "Bash(bash .husky/commit-msg /tmp/test-msg2)",
-      "Bash(bash .husky/commit-msg /tmp/test-msg3)"
+      "Bash(bash .husky/commit-msg /tmp/test-msg3)",
+      "mcp__figma__get_screenshot",
+      "Bash(node:*)",
+      "Bash(FIGMA_TOKEN=figd_FjdpIRYQj1vCtC3-81KZ2kZczK9eAjgNA03mq0W2 node:*)",
+      "Bash(grep -n \"max-w-container\\\\|w-container\" /Users/hyeonchaeeun/Desktop/externship-ai-workflow/src/**/*.tsx /Users/hyeonchaeeun/Desktop/externship-ai-workflow/src/**/**/*.tsx)",
+      "Bash(wc:*)"
     ]
   },
   "enabledMcpjsonServers": [
