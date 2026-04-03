@@ -5,6 +5,7 @@ interface User {
   nickname: string
   email: string
   profileImage?: string | null
+  role?: 'user' | 'student' | 'admin'
 }
 
 interface AuthState {
