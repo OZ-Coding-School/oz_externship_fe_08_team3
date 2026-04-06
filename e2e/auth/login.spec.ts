@@ -34,18 +34,15 @@ test.describe('로그인 페이지 렌더링', () => {
   })
 
   test('오즈코딩스쿨 로고가 표시된다', async ({ page }) => {
-    test.skip()
     const logo = page.getByRole('img', { name: 'OzCodingSchool' })
     await expect(logo).toBeVisible()
   })
 
   test('"아직 회원이 아니신가요?" 텍스트가 표시된다', async ({ page }) => {
-    test.skip()
     await expect(page.getByText('아직 회원이 아니신가요?')).toBeVisible()
   })
 
   test('"회원가입 하기" 링크가 표시된다', async ({ page }) => {
-    test.skip()
     await expect(
       page.getByRole('link', { name: '회원가입 하기' })
     ).toBeVisible()
@@ -54,33 +51,30 @@ test.describe('로그인 페이지 렌더링', () => {
   test('"회원가입 하기" 링크 클릭 시 /signup으로 이동한다', async ({
     page,
   }) => {
-    test.skip()
     await page.getByRole('link', { name: '회원가입 하기' }).click()
     await expect(page).toHaveURL('/signup')
   })
 
   test('"카카오 간편 로그인 / 가입" 버튼이 표시된다', async ({ page }) => {
-    test.skip()
-    // SocialLoginButton의 aria-label 기준: "카카오로 계속하기"
-    const kakaoButton = page.getByRole('button', { name: '카카오로 계속하기' })
+    const kakaoButton = page.getByRole('button', {
+      name: '카카오 간편 로그인/가입',
+    })
     await expect(kakaoButton).toBeVisible()
   })
 
   test('"네이버 간편 로그인 / 가입" 버튼이 표시된다', async ({ page }) => {
-    test.skip()
-    // SocialLoginButton의 aria-label 기준: "네이버로 계속하기"
-    const naverButton = page.getByRole('button', { name: '네이버로 계속하기' })
+    const naverButton = page.getByRole('button', {
+      name: '네이버 간편 로그인/가입',
+    })
     await expect(naverButton).toBeVisible()
   })
 
   test('이메일 입력 필드가 표시된다', async ({ page }) => {
-    test.skip()
     const emailInput = page.getByPlaceholder('아이디 (example@gmail.com)')
     await expect(emailInput).toBeVisible()
   })
 
   test('비밀번호 입력 필드가 표시된다', async ({ page }) => {
-    test.skip()
     const passwordInput = page.getByPlaceholder(
       '비밀번호 (6~15자의 영문 대소문자, 숫자, 특수문자 포함)'
     )
@@ -88,19 +82,16 @@ test.describe('로그인 페이지 렌더링', () => {
   })
 
   test('"아이디 찾기" 링크가 표시된다', async ({ page }) => {
-    test.skip()
     await expect(page.getByRole('link', { name: '아이디 찾기' })).toBeVisible()
   })
 
   test('"비밀번호 찾기" 링크가 표시된다', async ({ page }) => {
-    test.skip()
     await expect(
       page.getByRole('link', { name: '비밀번호 찾기' })
     ).toBeVisible()
   })
 
   test('"일반회원 로그인" 버튼이 표시된다', async ({ page }) => {
-    test.skip()
     const loginButton = page.getByRole('button', { name: '일반회원 로그인' })
     await expect(loginButton).toBeVisible()
   })
@@ -114,8 +105,6 @@ test.describe('로그인 페이지 - 버튼 비활성/활성 상태', () => {
   test('이메일과 비밀번호가 모두 비어있을 때 "일반회원 로그인" 버튼이 비활성 상태이다', async ({
     page,
   }) => {
-    test.skip()
-    // Button 컴포넌트: disabled 속성 + aria-disabled 모두 설정
     const loginButton = page.getByRole('button', { name: '일반회원 로그인' })
     await expect(loginButton).toBeDisabled()
   })
@@ -123,7 +112,6 @@ test.describe('로그인 페이지 - 버튼 비활성/활성 상태', () => {
   test('이메일만 입력된 경우 "일반회원 로그인" 버튼이 비활성 상태이다', async ({
     page,
   }) => {
-    test.skip()
     await page
       .getByPlaceholder('아이디 (example@gmail.com)')
       .fill('test@example.com')
@@ -134,7 +122,6 @@ test.describe('로그인 페이지 - 버튼 비활성/활성 상태', () => {
   test('비밀번호만 입력된 경우 "일반회원 로그인" 버튼이 비활성 상태이다', async ({
     page,
   }) => {
-    test.skip()
     await page
       .getByPlaceholder(
         '비밀번호 (6~15자의 영문 대소문자, 숫자, 특수문자 포함)'
@@ -147,7 +134,6 @@ test.describe('로그인 페이지 - 버튼 비활성/활성 상태', () => {
   test('이메일과 비밀번호를 모두 입력하면 "일반회원 로그인" 버튼이 활성화된다', async ({
     page,
   }) => {
-    test.skip()
     await page
       .getByPlaceholder('아이디 (example@gmail.com)')
       .fill('test@example.com')
