@@ -23,3 +23,8 @@ dist-ssr
 *.sln
 *.sw?
 settings.local.json
+
+# Playwright
+playwright-report/
+test-results/
+superpowers/
