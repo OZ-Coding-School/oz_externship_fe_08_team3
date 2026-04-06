@@ -10,12 +10,12 @@
  * - 이메일 입력 필드: placeholder "아이디 (example@gmail.com)"
  * - 비밀번호 입력 필드: placeholder "비밀번호 (6~15자의 영문 대소문자, 숫자, 특수문자 포함)"
  * - "아이디 찾기 | 비밀번호 찾기" 링크
- * - "일반회원 로그인" 버튼 (비활성: #ECECEC 배경/#BDBDBD 텍스트, 활성: 활성화 스타일)
+ * - "일반회원 로그인" 버튼 (비활성: #ECECEC 배경: #BDBDBD 텍스트, 활성: 활성화 스타일)
  *
  * API:
  * - POST /accounts/login → 이메일/비밀번호 로그인, JWT 발급, / 리다이렉트
- * - GET  /oauth/kakao    → 카카오 OAuth2 인증 흐름 시작
- * - GET  /oauth/naver    → 네이버 OAuth2 인증 흐름 시작
+ * - GET  /accounts/social-login/kakao    → 카카오 OAuth2 인증 흐름 시작
+ * - GET  /accounts/social-login/naver    → 네이버 OAuth2 인증 흐름 시작
  *
  * REQ-USER-006: 이메일 로그인
  * REQ-USER-007: 소셜 로그인 (카카오)
@@ -203,163 +203,96 @@ test.describe('이메일 로그인 (REQ-USER-006)', () => {
     await page.getByRole('button', { name: '일반회원 로그인' }).click()
     await expect(page.getByRole('alert')).toBeVisible()
   })
-
-  test('이메일 입력 필드에 올바르지 않은 이메일 형식 입력 시 유효성 오류 메시지가 표시된다', async ({
-    page,
-  }) => {
-    test.skip()
-    // 클라이언트 사이드 유효성 검사 — blur 또는 submit 시 트리거
-    await page
-      .getByPlaceholder('아이디 (example@gmail.com)')
-      .fill('invalid-email')
-    await page.getByPlaceholder('아이디 (example@gmail.com)').blur()
-    // Input 컴포넌트: aria-invalid="true" + <p role="alert"> 에러 메시지
-    const emailInput = page.getByPlaceholder('아이디 (example@gmail.com)')
-    await expect(emailInput).toHaveAttribute('aria-invalid', 'true')
-    await expect(page.getByRole('alert')).toBeVisible()
-  })
-
-  test('비밀번호 입력 필드에 조건(6~15자, 영문 대소문자·숫자·특수문자 포함)을 충족하지 않는 값 입력 시 유효성 오류 메시지가 표시된다', async ({
-    page,
-  }) => {
-    test.skip()
-    await page
-      .getByPlaceholder(
-        '비밀번호 (6~15자의 영문 대소문자, 숫자, 특수문자 포함)'
-      )
-      .fill('short')
-    await page
-      .getByPlaceholder(
-        '비밀번호 (6~15자의 영문 대소문자, 숫자, 특수문자 포함)'
-      )
-      .blur()
-    const passwordInput = page.getByPlaceholder(
-      '비밀번호 (6~15자의 영문 대소문자, 숫자, 특수문자 포함)'
-    )
-    await expect(passwordInput).toHaveAttribute('aria-invalid', 'true')
-    await expect(page.getByRole('alert')).toBeVisible()
-  })
-
-  test('이메일 미입력 상태에서 "일반회원 로그인" 클릭 시 이메일 필드에 입력 요청 메시지가 표시된다', async ({
-    page,
-  }) => {
-    test.skip()
-    // 버튼이 비활성화된 경우에도 submit 이벤트를 통해 검증이 트리거될 수 있음
-    await page
-      .getByPlaceholder(
-        '비밀번호 (6~15자의 영문 대소문자, 숫자, 특수문자 포함)'
-      )
-      .fill('Test123!')
-    await page.getByRole('button', { name: '일반회원 로그인' }).click()
-    const emailInput = page.getByPlaceholder('아이디 (example@gmail.com)')
-    await expect(emailInput).toHaveAttribute('aria-invalid', 'true')
-    await expect(page.getByRole('alert')).toBeVisible()
-  })
-
-  test('비밀번호 미입력 상태에서 "일반회원 로그인" 클릭 시 비밀번호 필드에 입력 요청 메시지가 표시된다', async ({
-    page,
-  }) => {
-    test.skip()
-    await page
-      .getByPlaceholder('아이디 (example@gmail.com)')
-      .fill('test@example.com')
-    await page.getByRole('button', { name: '일반회원 로그인' }).click()
-    const passwordInput = page.getByPlaceholder(
-      '비밀번호 (6~15자의 영문 대소문자, 숫자, 특수문자 포함)'
-    )
-    await expect(passwordInput).toHaveAttribute('aria-invalid', 'true')
-    await expect(page.getByRole('alert')).toBeVisible()
-  })
 })
+// 소셜 로그인 기능 개발 후 주석 해제
+// test.describe('카카오 소셜 로그인 (REQ-USER-007)', () => {
+//   test.beforeEach(async ({ page }) => {
+//     await page.goto('/login')
+//   })
 
-test.describe('카카오 소셜 로그인 (REQ-USER-007)', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/login')
-  })
+//   test('"카카오 간편 로그인 / 가입" 버튼 클릭 시 카카오 OAuth 인증 흐름이 시작된다', async ({
+//     page,
+//   }) => {
+//     test.skip()
+//     // GET /oauth/kakao 요청 또는 카카오 도메인으로의 네비게이션을 확인
+//     const [request] = await Promise.all([
+//       page.waitForRequest((req) => req.url().includes('/oauth/kakao')),
+//       page.getByRole('button', { name: '카카오로 계속하기' }).click(),
+//     ])
+//     expect(request).toBeTruthy()
+//   })
 
-  test('"카카오 간편 로그인 / 가입" 버튼 클릭 시 카카오 OAuth 인증 흐름이 시작된다', async ({
-    page,
-  }) => {
-    test.skip()
-    // GET /oauth/kakao 요청 또는 카카오 도메인으로의 네비게이션을 확인
-    const [request] = await Promise.all([
-      page.waitForRequest((req) => req.url().includes('/oauth/kakao')),
-      page.getByRole('button', { name: '카카오로 계속하기' }).click(),
-    ])
-    expect(request).toBeTruthy()
-  })
+//   test('카카오 인증 완료 후 서버에 등록된 계정이면 홈(/)으로 이동한다', async ({
+//     page,
+//   }) => {
+//     test.skip()
+//     // OAuth 콜백 처리 후 리다이렉트 확인 — 실제 OAuth 흐름은 E2E에서 MSW로 모킹
+//     await page.goto('/oauth/kakao/callback?code=mock_code')
+//     await expect(page).toHaveURL('/')
+//   })
 
-  test('카카오 인증 완료 후 서버에 등록된 계정이면 홈(/)으로 이동한다', async ({
-    page,
-  }) => {
-    test.skip()
-    // OAuth 콜백 처리 후 리다이렉트 확인 — 실제 OAuth 흐름은 E2E에서 MSW로 모킹
-    await page.goto('/oauth/kakao/callback?code=mock_code')
-    await expect(page).toHaveURL('/')
-  })
+//   test('카카오 인증 완료 후 서버에 미등록 계정이면 회원가입 흐름으로 이동한다', async ({
+//     page,
+//   }) => {
+//     test.skip()
+//     // MSW에서 신규 유저 응답 오버라이드 필요
+//     await page.goto('/oauth/kakao/callback?code=mock_new_user_code')
+//     await expect(page).toHaveURL('/signup')
+//   })
 
-  test('카카오 인증 완료 후 서버에 미등록 계정이면 회원가입 흐름으로 이동한다', async ({
-    page,
-  }) => {
-    test.skip()
-    // MSW에서 신규 유저 응답 오버라이드 필요
-    await page.goto('/oauth/kakao/callback?code=mock_new_user_code')
-    await expect(page).toHaveURL('/signup')
-  })
+//   test('카카오 인증 실패 또는 취소 시 로그인 페이지에 오류 메시지가 표시된다', async ({
+//     page,
+//   }) => {
+//     test.skip()
+//     // MSW에서 에러 응답 오버라이드 필요
+//     await page.goto('/oauth/kakao/callback?error=access_denied')
+//     await expect(page).toHaveURL('/login')
+//     await expect(page.getByRole('alert')).toBeVisible()
+//   })
+// })
 
-  test('카카오 인증 실패 또는 취소 시 로그인 페이지에 오류 메시지가 표시된다', async ({
-    page,
-  }) => {
-    test.skip()
-    // MSW에서 에러 응답 오버라이드 필요
-    await page.goto('/oauth/kakao/callback?error=access_denied')
-    await expect(page).toHaveURL('/login')
-    await expect(page.getByRole('alert')).toBeVisible()
-  })
-})
+// test.describe('네이버 소셜 로그인 (REQ-USER-008)', () => {
+//   test.beforeEach(async ({ page }) => {
+//     await page.goto('/login')
+//   })
 
-test.describe('네이버 소셜 로그인 (REQ-USER-008)', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/login')
-  })
+//   test('"네이버 간편 로그인 / 가입" 버튼 클릭 시 네이버 OAuth 인증 흐름이 시작된다', async ({
+//     page,
+//   }) => {
+//     test.skip()
+//     // GET /oauth/naver 요청 또는 네이버 도메인으로의 네비게이션을 확인
+//     const [request] = await Promise.all([
+//       page.waitForRequest((req) => req.url().includes('/oauth/naver')),
+//       page.getByRole('button', { name: '네이버로 계속하기' }).click(),
+//     ])
+//     expect(request).toBeTruthy()
+//   })
 
-  test('"네이버 간편 로그인 / 가입" 버튼 클릭 시 네이버 OAuth 인증 흐름이 시작된다', async ({
-    page,
-  }) => {
-    test.skip()
-    // GET /oauth/naver 요청 또는 네이버 도메인으로의 네비게이션을 확인
-    const [request] = await Promise.all([
-      page.waitForRequest((req) => req.url().includes('/oauth/naver')),
-      page.getByRole('button', { name: '네이버로 계속하기' }).click(),
-    ])
-    expect(request).toBeTruthy()
-  })
+//   test('네이버 인증 완료 후 서버에 등록된 계정이면 홈(/)으로 이동한다', async ({
+//     page,
+//   }) => {
+//     test.skip()
+//     await page.goto('/oauth/naver/callback?code=mock_code')
+//     await expect(page).toHaveURL('/')
+//   })
 
-  test('네이버 인증 완료 후 서버에 등록된 계정이면 홈(/)으로 이동한다', async ({
-    page,
-  }) => {
-    test.skip()
-    await page.goto('/oauth/naver/callback?code=mock_code')
-    await expect(page).toHaveURL('/')
-  })
+//   test('네이버 인증 완료 후 서버에 미등록 계정이면 회원가입 흐름으로 이동한다', async ({
+//     page,
+//   }) => {
+//     test.skip()
+//     await page.goto('/oauth/naver/callback?code=mock_new_user_code')
+//     await expect(page).toHaveURL('/signup')
+//   })
 
-  test('네이버 인증 완료 후 서버에 미등록 계정이면 회원가입 흐름으로 이동한다', async ({
-    page,
-  }) => {
-    test.skip()
-    await page.goto('/oauth/naver/callback?code=mock_new_user_code')
-    await expect(page).toHaveURL('/signup')
-  })
-
-  test('네이버 인증 실패 또는 취소 시 로그인 페이지에 오류 메시지가 표시된다', async ({
-    page,
-  }) => {
-    test.skip()
-    await page.goto('/oauth/naver/callback?error=access_denied')
-    await expect(page).toHaveURL('/login')
-    await expect(page.getByRole('alert')).toBeVisible()
-  })
-})
+//   test('네이버 인증 실패 또는 취소 시 로그인 페이지에 오류 메시지가 표시된다', async ({
+//     page,
+//   }) => {
+//     test.skip()
+//     await page.goto('/oauth/naver/callback?error=access_denied')
+//     await expect(page).toHaveURL('/login')
+//     await expect(page.getByRole('alert')).toBeVisible()
+//   })
+// })
 
 test.describe('로그인 성공 플로우', () => {
   test.beforeEach(async ({ page }) => {
@@ -386,24 +319,6 @@ test.describe('로그인 성공 플로우', () => {
     // authStore: isAuthenticated=true → 프로필 영역 렌더링
     // 프로필 이미지 또는 아이콘이 표시되는지 확인 (구현 후 정확한 셀렉터 보완)
     await expect(page.getByLabel('홈으로 이동')).toBeVisible()
-  })
-
-  test('로그인 성공 후 이전 페이지로 리다이렉트된다 (returnUrl이 있는 경우)', async ({
-    page,
-  }) => {
-    test.skip()
-    // returnUrl 쿼리 파라미터를 통해 이전 페이지 복원
-    await page.goto('/login?returnUrl=%2Fcommunity')
-    await page
-      .getByPlaceholder('아이디 (example@gmail.com)')
-      .fill('test@example.com')
-    await page
-      .getByPlaceholder(
-        '비밀번호 (6~15자의 영문 대소문자, 숫자, 특수문자 포함)'
-      )
-      .fill('Test123!')
-    await page.getByRole('button', { name: '일반회원 로그인' }).click()
-    await expect(page).toHaveURL('/community')
   })
 
   test('이미 로그인된 상태에서 /login 접근 시 홈(/)으로 리다이렉트된다', async ({
