@@ -65,7 +65,7 @@ export function ComponentShowcase() {
   }
 
   return (
-    <div className="mx-auto max-w-[1200px] px-6 py-10">
+    <div className="max-w-container mx-auto px-6 py-10">
       <header className="mb-12">
         <h1 className="text-text-heading mb-2 text-4xl font-bold tracking-tight">
           Component Showcase

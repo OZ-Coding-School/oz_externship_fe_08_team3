@@ -1,0 +1,90 @@
+name: Discord Notification
+
+on:
+  push:
+    branches: [dev, main, 'feature/**']
+  pull_request:
+    types: [opened, closed, reopened]
+  issues:
+    types: [opened, closed, reopened]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set event info
+        id: event
+        run: |
+          ACTOR="${{ github.actor }}"
+          REPO="${{ github.repository }}"
+          BRANCH="${{ github.ref_name }}"
+
+          case "${{ github.event_name }}" in
+            push)
+              TITLE="🔨 Push by \`${ACTOR}\`"
+              COMMIT_MSG="${{ github.event.head_commit.message }}"
+              DESC="**Branch:** \`${BRANCH}\`\n**Commit:** ${COMMIT_MSG}"
+              URL="${{ github.event.compare }}"
+              COLOR="3447003"
+              ;;
+            pull_request)
+              ACTION="${{ github.event.action }}"
+              PR_TITLE="${{ github.event.pull_request.title }}"
+              PR_NUM="${{ github.event.pull_request.number }}"
+              if [ "$ACTION" = "closed" ] && [ "${{ github.event.pull_request.merged }}" = "true" ]; then
+                ACTION="merged"
+                COLOR="2067276"
+              elif [ "$ACTION" = "opened" ]; then
+                COLOR="15105570"
+              elif [ "$ACTION" = "closed" ]; then
+                COLOR="10038562"
+              else
+                COLOR="15844367"
+              fi
+              TITLE="📋 PR #${PR_NUM} ${ACTION} by \`${ACTOR}\`"
+              DESC="**${PR_TITLE}**\n**Base:** \`${{ github.event.pull_request.base.ref }}\` ← \`${{ github.event.pull_request.head.ref }}\`"
+              URL="${{ github.event.pull_request.html_url }}"
+              ;;
+            issues)
+              ACTION="${{ github.event.action }}"
+              ISSUE_TITLE="${{ github.event.issue.title }}"
+              ISSUE_NUM="${{ github.event.issue.number }}"
+              COLOR="1752220"
+              TITLE="📌 Issue #${ISSUE_NUM} ${ACTION} by \`${ACTOR}\`"
+              DESC="**${ISSUE_TITLE}**"
+              URL="${{ github.event.issue.html_url }}"
+              ;;
+          esac
+
+          echo "title=${TITLE}" >> $GITHUB_OUTPUT
+          echo "color=${COLOR}" >> $GITHUB_OUTPUT
+          echo "url=${URL}" >> $GITHUB_OUTPUT
+
+          # DESC는 멀티라인이므로 EOF 구분자 사용
+          echo "desc<<DESCEOF" >> $GITHUB_OUTPUT
+          echo -e "${DESC}" >> $GITHUB_OUTPUT
+          echo "DESCEOF" >> $GITHUB_OUTPUT
+
+      - name: Send Discord notification
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          curl -s -H "Content-Type: application/json" \
+            -d "{
+              \"embeds\": [{
+                \"title\": \"${{ steps.event.outputs.title }}\",
+                \"description\": $(echo '${{ steps.event.outputs.desc }}' | jq -Rs .),
+                \"url\": \"${{ steps.event.outputs.url }}\",
+                \"color\": ${{ steps.event.outputs.color }},
+                \"footer\": {
+                  \"text\": \"${{ github.repository }} • ${{ github.event_name }}\"
+                },
+                \"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",
+                \"author\": {
+                  \"name\": \"${{ github.actor }}\",
+                  \"url\": \"https://github.com/${{ github.actor }}\",
+                  \"icon_url\": \"https://github.com/${{ github.actor }}.png\"
+                }
+              }]
+            }" \
+            "$DISCORD_WEBHOOK_URL"
