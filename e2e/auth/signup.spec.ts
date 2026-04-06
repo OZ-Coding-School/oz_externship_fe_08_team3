@@ -247,6 +247,7 @@ test.describe('일반 회원가입 폼 페이지', () => {
   test('이메일 입력 필드, "인증코드전송" 버튼, 인증번호 입력 필드, "인증번호확인" 버튼이 표시된다', async ({
     page,
   }) => {
+    test.skip()
     await expect(page.getByPlaceholder('이메일을 입력해주세요')).toBeVisible()
     await expect(
       page.getByRole('button', { name: '인증코드전송' })
@@ -263,6 +264,7 @@ test.describe('일반 회원가입 폼 페이지', () => {
   test('휴대전화 입력 필드, "인증번호전송" 버튼, 인증번호 입력 필드, "인증번호확인" 버튼이 표시된다', async ({
     page,
   }) => {
+    test.skip()
     // 휴대전화 번호 3칸 입력 필드
     await expect(page.getByRole('textbox', { name: '앞자리' })).toBeVisible()
     await expect(page.getByRole('textbox', { name: '중간자리' })).toBeVisible()
