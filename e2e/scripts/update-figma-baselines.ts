@@ -1,5 +1,25 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
+// .env 파일에서 환경변수 로드 (node 내장 모듈만 사용)
+function loadEnv() {
+  const envPath = path.resolve(import.meta.dirname, '../../.env')
+  if (fs.existsSync(envPath)) {
+    const lines = fs.readFileSync(envPath, 'utf-8').split('\n')
+    for (const line of lines) {
+      const trimmed = line.trim()
+      if (!trimmed || trimmed.startsWith('#')) continue
+      const eqIndex = trimmed.indexOf('=')
+      if (eqIndex === -1) continue
+      const key = trimmed.slice(0, eqIndex).trim()
+      const value = trimmed.slice(eqIndex + 1).trim()
+      if (!process.env[key]) {
+        process.env[key] = value
+      }
+    }
+  }
+}
+
+loadEnv()
 
 const PAGES_DIR = path.resolve(import.meta.dirname, '../../src/pages')
 const SCREENSHOTS_DIR = path.resolve(import.meta.dirname, '../__screenshots__')
@@ -179,12 +199,34 @@ async function main() {
   console.log(`\n총 ${mappings.length}개 페이지, ${missing}개 baseline 누락\n`)
 
   if (isDownloadMode) {
-    const targets = process.argv.includes('--all')
-      ? mappings
-      : mappings.filter((m) => !m.baselineExists)
+    // --pages login,signup 형태로 특정 페이지만 지정 가능
+    const pagesArgIndex = process.argv.indexOf('--pages')
+    const pageFilter =
+      pagesArgIndex !== -1 && process.argv[pagesArgIndex + 1]
+        ? process.argv[pagesArgIndex + 1].split(',').map((p) => p.trim())
+        : null
+
+    let targets: FigmaMapping[]
+    if (pageFilter) {
+      targets = mappings.filter((m) =>
+        pageFilter.some(
+          (p) =>
+            m.screenshotName.includes(p) ||
+            m.pageName.toLowerCase().includes(p.toLowerCase())
+        )
+      )
+    } else if (process.argv.includes('--all')) {
+      targets = mappings
+    } else {
+      targets = mappings.filter((m) => !m.baselineExists)
+    }
 
     if (targets.length === 0) {
-      console.log('✅ 모든 baseline이 존재합니다. 다운로드할 항목이 없습니다.')
+      console.log(
+        pageFilter
+          ? `❌ "${pageFilter.join(', ')}"에 매칭되는 페이지가 없습니다.`
+          : '✅ 모든 baseline이 존재합니다. 다운로드할 항목이 없습니다.'
+      )
       return
     }
 
@@ -206,14 +248,15 @@ async function main() {
   } else if (missing > 0) {
     console.log('💡 Baseline 다운로드 방법:')
     console.log(
-      '   FIGMA_TOKEN=<토큰> pnpm test:visual:update-baseline -- --download'
+      '   pnpm test:visual:update-baseline -- --download              (누락분만)'
     )
     console.log(
-      '   FIGMA_TOKEN=<토큰> pnpm test:visual:update-baseline -- --download --all  (전체 재다운로드)'
+      '   pnpm test:visual:update-baseline -- --download --all        (전체 재다운로드)'
     )
     console.log(
-      '\n   Figma 토큰 발급: https://www.figma.com/developers/api#access-tokens'
+      '   pnpm test:visual:update-baseline -- --download --pages login,signup  (특정 페이지만)'
     )
+    console.log('\n   FIGMA_TOKEN은 .env 파일에 설정하거나 환경변수로 전달')
   }
 }
 
