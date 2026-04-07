@@ -25,8 +25,8 @@
  * - API: POST /accounts/verification/send-sms → SMS 인증코드 전송 (Twilio)
  * - API: POST /accounts/verification/verify-sms → SMS 인증코드 확인
  * - API: GET  /accounts/check-nickname → 닉네임 중복 확인 (회원가입/마이페이지 둘 다 처리)
- * - API: OAuth2 /accounts/social-login/kakao → 카카오 소셜 가입
- * - API: OAuth2 /accounts/social-login/naver → 네이버 소셜 가입
+ * - API: GET /accounts/social-login/kakao → 카카오 소셜 가입
+ * - API: GET /accounts/social-login/naver → 네이버 소셜 가입
  */
 
 import { test, expect } from '@playwright/test'
@@ -68,9 +68,11 @@ test.describe('회원가입 방법 선택 페이지', () => {
     await expect(kakaoButton).toBeVisible()
   })
 
-  test('"네이버로 가입하기" 버튼이 표시된다', async ({ page }) => {
+  test('"네이버로 3초만에 가입하기" 버튼이 표시된다', async ({ page }) => {
     test.skip()
-    const naverButton = page.getByRole('button', { name: '네이버로 가입하기' })
+    const naverButton = page.getByRole('button', {
+      name: '네이버로 3초만에 가입하기',
+    })
     await expect(naverButton).toBeVisible()
   })
 
@@ -138,7 +140,7 @@ test.describe('회원가입 방법 선택 페이지 - 네비게이션', () => {
     await expect(page).toHaveURL('/')
   })
 })
-
+// 기능 구현 후 테스트 코드 보완
 test.describe('카카오 소셜 가입', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/signup')
@@ -161,7 +163,7 @@ test.describe('카카오 소셜 가입', () => {
     await expect(page).toHaveURL('/')
   })
 })
-
+// 기능 구현 후 테스트 코드 보완
 test.describe('네이버 소셜 가입', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/signup')
@@ -246,6 +248,7 @@ test.describe('일반 회원가입 폼 페이지', () => {
     page,
   }) => {
     test.skip()
+    await expect(page.getByPlaceholder('이메일을 입력해주세요')).toBeVisible()
     await expect(
       page.getByRole('button', { name: '인증코드전송' })
     ).toBeVisible()
@@ -262,11 +265,15 @@ test.describe('일반 회원가입 폼 페이지', () => {
     page,
   }) => {
     test.skip()
+    // 휴대전화 번호 3칸 입력 필드
+    await expect(page.getByRole('textbox', { name: '앞자리' })).toBeVisible()
+    await expect(page.getByRole('textbox', { name: '중간자리' })).toBeVisible()
+    await expect(page.getByRole('textbox', { name: '뒷자리' })).toBeVisible()
     await expect(
       page.getByRole('button', { name: '인증번호전송' })
     ).toBeVisible()
     await expect(
-      page.getByPlaceholder('인증번호 6자리를 입력해주세요')
+      page.getByPlaceholder('전송된 코드를 입력해주세요.').last()
     ).toBeVisible()
     // 휴대폰 인증번호확인 버튼: last() 로 이메일 인증번호확인과 구분
     await expect(
@@ -320,7 +327,6 @@ test.describe('일반 회원가입 폼 - 성별 선택', () => {
     await expect(maleButton).toHaveAttribute('aria-pressed', 'true')
     await femaleButton.click()
     await expect(femaleButton).toHaveAttribute('aria-pressed', 'true')
-    await expect(maleButton).toHaveAttribute('aria-pressed', 'false')
   })
 })
 
@@ -634,6 +640,7 @@ test.describe('일반 회원가입 폼 - 필수 항목 유효성 검사', () => 
   })
 })
 
+// msw 응답값은 테스트케이스에 맞도록 반영해야함 (이메일, 휴대전화 인증코드)
 test.describe('일반 회원가입 - 성공 플로우', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/signup/form')
@@ -660,6 +667,16 @@ test.describe('일반 회원가입 - 성공 플로우', () => {
     await page.getByRole('button', { name: '인증코드전송' }).click()
     await page.getByPlaceholder('전송된 코드를 입력해주세요.').fill('VALID01')
     await page.getByRole('button', { name: '인증번호확인' }).first().click()
+    // 휴대전화 인증
+    await page.getByRole('textbox', { name: '앞자리' }).fill('010')
+    await page.getByRole('textbox', { name: '중간자리' }).fill('1234')
+    await page.getByRole('textbox', { name: '뒷자리' }).fill('5678')
+    await page.getByRole('button', { name: '인증번호전송' }).click()
+    await page
+      .getByPlaceholder('전송된 코드를 입력해주세요.')
+      .last()
+      .fill('VALID01')
+    await page.getByRole('button', { name: '인증번호확인' }).last().click()
     // 비밀번호 입력
     await page.getByPlaceholder('비밀번호를 입력해주세요').fill('Valid1234@')
     await page

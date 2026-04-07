@@ -47,16 +47,6 @@ model: opus
 <div className="bg-[#6C5CE7]">
 ```
 
-## 참조 문서
-
-| 문서                                | 용도                              |
-| ----------------------------------- | --------------------------------- |
-| `docs/CONVENTION.md`                | 코딩 컨벤션 (존재 시 반드시 준수) |
-| `CLAUDE.md`                         | 토큰 규칙, 프로젝트 구조          |
-| `docs/09_페이지별_라우팅_가이드.md` | 라우트, 페이지별 API, 컴포넌트명  |
-| `src/mocks/handlers/`               | MSW 핸들러 (기본 API 응답)        |
-| `src/constants/figma.ts`            | Figma 노드 ID 매핑                |
-
 ## 작업 절차
 
 ### Step 1: 요구사항 파악
@@ -79,7 +69,7 @@ model: opus
 
 ### Step 3: 컨벤션 문서 확인
 
-`docs/CONVENTION.md`가 존재하면 읽고, 구현 시 해당 규칙을 준수한다. 존재하지 않으면 기존 코드의 패턴을 컨벤션으로 간주한다.
+`docs/convention/CONVENTION.md`가 존재하면 읽고, 구현 시 해당 규칙을 준수한다. 존재하지 않으면 기존 코드의 패턴을 컨벤션으로 간주한다.
 
 ### Step 4: Figma 디자인 확인
 
