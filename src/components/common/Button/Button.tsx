@@ -18,7 +18,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    'bg-primary text-text-inverse hover:bg-primary-700 active:bg-primary-800 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:bg-gray-300 disabled:cursor-not-allowed',
+    'bg-primary text-text-inverse hover:bg-primary-700 active:bg-primary-800 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:bg-disable disabled:cursor-not-allowed',
   secondary:
     'bg-bg-muted text-text-heading border border-border-base hover:bg-gray-200 active:bg-gray-300 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed',
   outline:

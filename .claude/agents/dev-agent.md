@@ -66,6 +66,7 @@ model: opus
 - 같은 디렉토리의 다른 컴포넌트 (패턴 파악)
 - 공통 컴포넌트 (`src/components/`)
 - 라우팅 설정 파일
+- 테스트 시나리오 (`e2e/`)
 
 ### Step 3: 컨벤션 문서 확인
 
@@ -100,12 +101,32 @@ mcp__figma__get_screenshot(fileKey, nodeId)        // 스크린샷만 필요 시
 - 레이아웃/색상/간격/문구/아이콘/폰트 크기를 디자인과 동일하게 구현한다
 - 모든 상태(기본, 호버, 에러, 로딩 등)를 빠짐없이 구현한다
 
-### Step 5: 구현
+### Step 5: Feature 모듈 구현 (API 연동이 필요한 경우)
+
+페이지에 API 호출이 필요하면 반드시 `src/features/{도메인}/{액션}/` 모듈을 함께 구현한다. 기존 feature 디렉토리 구조를 참고하여 동일한 패턴으로 작성한다.
+
+```
+src/features/{도메인}/{액션}/
+├── types.ts    — 요청/응답 타입 정의
+├── queries.ts  — TanStack Query 훅 (useQuery, useMutation)
+├── handler.ts  — MSW 핸들러 (API 모킹)
+└── index.ts    — barrel export
+```
+
+- 기존 `src/features/` 하위 모듈의 패턴을 반드시 확인하고 동일한 구조로 작성
+- MSW 핸들러를 작성하여 개발 환경에서 API 없이도 페이지가 동작하도록 한다
+- 페이지에서 직접 fetch/axios를 호출하지 않고, queries.ts의 TanStack Query 훅을 사용한다
+- 기존 feature 모듈이 이미 존재하면 새로 만들지 않고 재사용한다
+- **E2E 테스트에서 API 명세 전수 확인 필수**: `e2e/` 폴더에서 해당 페이지의 테스트 파일을 찾아 최상단 `@interface-contract` 주석의 `API:` 항목을 **전부** 확인한다. 나열된 모든 API에 대해 빠짐없이 MSW 핸들러를 구현하고 `src/mocks/handlers.ts`에 등록한다. 하나라도 누락하면 안 된다.
+- **비어있는 feature 모듈 확인**: `src/features/` 하위에 디렉토리와 파일이 존재하지만 내용이 비어있는 모듈이 있을 수 있다. 반드시 파일 내용을 확인하고, 비어있으면 구현한다.
+
+### Step 6: UI 구현
 
 - 요구사항을 충족하는 코드 작성
 - `@theme` 토큰 클래스 사용
 - 기존 코드의 패턴과 네이밍을 따른다
 - 공통 컴포넌트가 있으면 재사용한다
+- Step 5에서 만든 Query 훅을 페이지에 연동한다
 
 ### Step 6: 검증
 

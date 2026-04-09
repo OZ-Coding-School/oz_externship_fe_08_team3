@@ -31,11 +31,13 @@
   /* --- Brand Accent --- */
   --color-accent: #aa3bff;
   --color-accent-dark: #c084fc;
+  --color-accent-gradient: linear-gradient(135deg, #b883ff, #6201e0);
 
   /* --- Neutral / Gray — Figma .color grey 기준 --- */
+  --color-disable: #ececec;
   --color-gray-50: #ffffff;
   /* grey_1 */
-  --color-gray-100: #f5f5f5;
+  --color-gray-100: #fafafa;
   /* grey_2 */
   --color-gray-200: #dddddd;
   /* grey_3 */
@@ -61,6 +63,8 @@
   --color-bg-muted: #f5f5f5;
   --color-bg-code: #f4f3ec;
   --color-bg-accent: rgba(170, 59, 255, 0.1);
+  --color-bg-glass: rgba(255, 255, 255, 0.8);
+  /* Figma tooltip glass overlay #D4D4D4CC */
   --color-bg-dark-base: #16171d;
   --color-bg-dark-subtle: #1f2028;
 
@@ -208,6 +212,22 @@
   --width-sidebar: 240px;
 }
 
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.4s ease-out;
+}
+
 @keyframes toast-in {
   from {
     opacity: 0;
@@ -234,4 +254,18 @@
 
 button {
   cursor: pointer;
+}
+
+.border-accent-gradient {
+  border: 2px solid transparent;
+  background:
+    linear-gradient(white, white) padding-box,
+    var(--color-accent-gradient) border-box;
+}
+
+.border-accent-gradient-glass {
+  border: 2px solid transparent;
+  border-color: var(--color-accent);
+  background: var(--color-bg-glass) border-box;
+  backdrop-filter: blur(12px);
 }
