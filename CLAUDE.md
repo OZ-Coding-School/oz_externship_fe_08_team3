@@ -91,3 +91,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - **서버 상태:** TanStack Query (기본 staleTime: 60초, retry: 1, refetchOnWindowFocus: false)
 - **클라이언트 상태:** Zustand 스토어 + devtools 미들웨어
+
+## 스킬
+
+- `/work-log` — 작업 시작 전 계획서를 생성하고, 각 단계 완료 시 결과 파일을 기록하는 워크플로우. `docs/work-log/`에 저장됨.
+- `git commit` 실행 전 반드시 `.claude/skills/commit-frontend-check/SKILL.md` 스킬을 따른다. 스테이징된 `.ts`/`.tsx` 파일이 `.claude/docs/frontend-design-guide.checklist.md` 의 모든 항목을 통과해야 커밋 가능하다.
+
+## 커밋 규칙
+
+- 커밋 전 반드시 `.claude/skills/commit-frontend-check/SKILL.md` 스킬을 따른다.
