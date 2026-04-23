@@ -5,6 +5,7 @@ import {
   QnaWritePage,
   QnaDetailPage,
   QnaEditPage,
+  AnswerTestPage,
 } from '@/pages/qna'
 
 import { ComponentShowcase } from '@/pages/ComponentShowcase'
@@ -17,6 +18,7 @@ export function RouterProvider() {
         <Route path="qna">
           <Route index element={<QnaListPage />} />
           <Route path="write" element={<QnaWritePage />} />
+          <Route path="test" element={<AnswerTestPage />} />
           <Route path=":questionId">
             <Route index element={<QnaDetailPage />} />
             <Route path="edit" element={<QnaEditPage />} />
