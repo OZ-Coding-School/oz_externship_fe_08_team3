@@ -2,6 +2,7 @@ import { http, HttpResponse } from 'msw'
 import { answersHandlers } from '@/features/qna/answers'
 import { presignedUrlHandlers } from '@/features/qna/presigned-url'
 import { categoriesHandler } from '@/features/qna/categories'
+import { questionsHandler } from '@/features/qna/questions'
 import { questionWriteHandler } from '@/features/qna/question-write'
 
 export const handlers = [
@@ -11,5 +12,6 @@ export const handlers = [
   ...answersHandlers,
   ...presignedUrlHandlers,
   ...categoriesHandler,
+  ...questionsHandler,
   ...questionWriteHandler,
 ]
