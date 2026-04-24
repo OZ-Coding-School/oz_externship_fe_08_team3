@@ -5,9 +5,7 @@ import type { CategoriesResponse } from './types'
 const categoriesQueryOptions = queryOptions({
   queryKey: ['qna', 'categories'],
   queryFn: async () => {
-    const { data } = await api.get<CategoriesResponse>(
-      '/api/v1/qna/categories/'
-    )
+    const { data } = await api.get<CategoriesResponse>('/qna/categories/')
     return data
   },
 })

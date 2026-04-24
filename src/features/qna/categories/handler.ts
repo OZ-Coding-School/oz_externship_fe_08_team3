@@ -44,7 +44,7 @@ const mockCategories: CategoriesResponse = [
 ]
 
 export const categoriesHandler = [
-  http.get('/api/v1/qna/categories/', () => {
+  http.get(`${import.meta.env.VITE_API_BASE_URL}/qna/categories/`, () => {
     return HttpResponse.json(mockCategories)
   }),
 ]
