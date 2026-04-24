@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import api from '@/api/instance'
 import type {
   PostAnswerRequest,
@@ -7,6 +7,8 @@ import type {
 } from './types'
 
 export function usePostAnswer(questionId: number) {
+  const queryClient = useQueryClient()
+
   return useMutation({
     mutationFn: (data: PostAnswerRequest) =>
       api
@@ -15,6 +17,9 @@ export function usePostAnswer(questionId: number) {
           data
         )
         .then((res) => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['answers', questionId] })
+    },
   })
 }
 
