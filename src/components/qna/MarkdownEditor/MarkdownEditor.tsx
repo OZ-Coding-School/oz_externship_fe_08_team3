@@ -1,4 +1,10 @@
-import { useRef, useState, useCallback } from 'react'
+import {
+  useRef,
+  useState,
+  useCallback,
+  forwardRef,
+  useImperativeHandle,
+} from 'react'
 import MDEditor from '@uiw/react-md-editor'
 import { Toast } from '@/components/common/Toast'
 import { useGetPresignedUrl } from '@/features/qna/presigned-url'
@@ -14,18 +20,29 @@ export interface MarkdownEditorProps {
   height?: number
 }
 
+export interface MarkdownEditorHandle {
+  focus: () => void
+}
+
 type UploadToast =
   | { visible: false }
   | { visible: true; message: string; variant: 'info' | 'error' }
 
-export function MarkdownEditor({
-  value,
-  onChange,
-  imageUrls,
-  onImageUrlsChange,
-  error = false,
-  height = 400,
-}: MarkdownEditorProps) {
+export const MarkdownEditor = forwardRef<
+  MarkdownEditorHandle,
+  MarkdownEditorProps
+>(function MarkdownEditor(
+  {
+    value,
+    onChange,
+    imageUrls,
+    onImageUrlsChange,
+    error = false,
+    height = 400,
+  },
+  ref
+) {
+  const containerRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const valueRef = useRef(value)
   valueRef.current = value
@@ -35,6 +52,14 @@ export function MarkdownEditor({
     visible: false,
   })
   const { mutateAsync: getPresignedUrl } = useGetPresignedUrl()
+
+  useImperativeHandle(ref, () => ({
+    focus: () => {
+      const textarea =
+        containerRef.current?.querySelector<HTMLTextAreaElement>('textarea')
+      textarea?.focus()
+    },
+  }))
 
   const uploadImage = useCallback(
     async (file: File) => {
@@ -107,6 +132,7 @@ export function MarkdownEditor({
 
   return (
     <div
+      ref={containerRef}
       data-color-mode="light"
       onDrop={handleDrop}
       onDragOver={(e) => e.preventDefault()}
@@ -161,7 +187,7 @@ export function MarkdownEditor({
       )}
     </div>
   )
-}
+})
 
 function ImageIcon() {
   return (

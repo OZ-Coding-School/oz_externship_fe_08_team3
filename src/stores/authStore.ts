@@ -1,11 +1,15 @@
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
 
+// swagger RoleF6eEnum 기준
+export type UserRole = 'USER' | 'STUDENT' | 'TA' | 'OM' | 'LC' | 'ADMIN'
+
 interface User {
+  id?: number
   nickname: string
   email: string
   profileImage?: string | null
-  role?: 'user' | 'student' | 'admin'
+  role?: UserRole
 }
 
 interface AuthState {

@@ -4,6 +4,7 @@ import { presignedUrlHandlers } from '@/features/qna/presigned-url'
 import { categoriesHandler } from '@/features/qna/categories'
 import { questionsHandler } from '@/features/qna/questions'
 import { questionWriteHandler } from '@/features/qna/question-write'
+import { questionDetailHandler } from '@/features/qna/question-detail'
 
 export const handlers = [
   http.get('/api/health', () => {
@@ -14,4 +15,5 @@ export const handlers = [
   ...categoriesHandler,
   ...questionsHandler,
   ...questionWriteHandler,
+  ...questionDetailHandler,
 ]
