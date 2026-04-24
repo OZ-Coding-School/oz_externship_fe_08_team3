@@ -59,7 +59,9 @@ export const AnswerForm = forwardRef<AnswerFormHandle, AnswerFormProps>(
     const hasDraft = savedDraft != null && savedDraft !== initialContent
 
     const [showRestorePrompt, setShowRestorePrompt] = useState(hasDraft)
-    const [pendingDraft] = useState<string | null>(hasDraft ? savedDraft : null)
+    const [pendingDraft, setPendingDraft] = useState<string | null>(
+      hasDraft ? savedDraft : null
+    )
     const [content, setContent] = useState(initialContent)
     const [imageUrls, setImageUrls] = useState<string[]>(initialImgUrls)
     const [error, setError] = useState(false)
