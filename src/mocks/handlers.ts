@@ -3,6 +3,7 @@ import { answersHandlers } from '@/features/qna/answers'
 import { answerEditHandlers } from '@/features/qna/answer-edit'
 import { presignedUrlHandlers } from '@/features/qna/presigned-url'
 import { categoriesHandler } from '@/features/qna/categories'
+import { questionsHandler } from '@/features/qna/questions'
 import { questionWriteHandler } from '@/features/qna/question-write'
 import { questionDetailHandler } from '@/features/qna/question-detail'
 
@@ -14,6 +15,7 @@ export const handlers = [
   ...answerEditHandlers,
   ...presignedUrlHandlers,
   ...categoriesHandler,
+  ...questionsHandler,
   ...questionWriteHandler,
   ...questionDetailHandler,
 ]
