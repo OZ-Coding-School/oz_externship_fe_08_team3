@@ -28,6 +28,7 @@ dist-ssr
 *.sln
 *.sw?
 settings.local.json
+REQ-QNA-005 [기획 사양서] 질의응답(Q&A) 답변 등록 기능 348caf5650aa80718dbdcb9a13310e59.md
 
 # Playwright
 playwright-report/

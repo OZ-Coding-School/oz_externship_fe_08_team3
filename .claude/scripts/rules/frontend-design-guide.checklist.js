@@ -45,7 +45,7 @@ const checklist = [
     category: "Readability",
     name: "조건부 렌더링 분리",
     description: "역할/상태에 따라 크게 다른 UI/로직이 별도 컴포넌트로 분리되어 있는가?",
-    status: "N/A",
+    status: "O",
     violations: [],
   },
   {
@@ -54,7 +54,6 @@ const checklist = [
     name: "복잡한 삼항 연산자 단순화",
     description: "중첩 삼항 연산자가 if/else 또는 IIFE로 대체되어 있는가?",
     status: "O",
-    violations: [],
     violations: [],
   },
   {
@@ -72,7 +71,6 @@ const checklist = [
     description: "2개 이상 조합된 boolean 표현식이 의미 있는 변수명으로 추출되어 있는가?",
     status: "O",
     violations: [],
-    violations: [],
   },
 
   // ─── 2. Predictability (예측 가능성) ──────────────────────
@@ -81,7 +79,7 @@ const checklist = [
     category: "Predictability",
     name: "API 훅 반환 타입 표준화",
     description: "유사한 API 훅들이 일관된 반환 타입(UseQueryResult 등)을 사용하는가?",
-    status: "N/A",
+    status: "O",
     violations: [],
   },
   {
@@ -115,7 +113,7 @@ const checklist = [
     category: "Cohesion",
     name: "폼 응집도 선택",
     description: "폼 검증이 용도에 맞게 필드 단위 또는 폼 단위로 일관되게 선택되어 있는가?",
-    status: "N/A",
+    status: "O",
     violations: [],
   },
   {
@@ -123,7 +121,7 @@ const checklist = [
     category: "Cohesion",
     name: "도메인별 디렉토리 구조",
     description: "기능/도메인 관련 코드가 도메인 폴더에 묶여 있는가?",
-    status: "N/A",
+    status: "O",
     violations: [],
   },
   {
@@ -157,7 +155,7 @@ const checklist = [
     category: "Coupling",
     name: "Props Drilling 제거",
     description: "3단계 이상 props 전달이 컴포지션(children)으로 대체되어 있는가?",
-    status: "N/A",
+    status: "O",
     violations: [],
   },
 ];
