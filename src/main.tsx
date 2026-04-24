@@ -4,12 +4,6 @@ import { BrowserRouter } from 'react-router'
 import { QueryProvider } from './providers/QueryProvider'
 import './App.css'
 import App from './App'
-import { useAuthStore } from './stores/authStore'
-
-// Playwright E2E 테스트용 전역 노출 (DEV 전용)
-if (import.meta.env.DEV) {
-  Object.assign(window, { __authStore: useAuthStore })
-}
 
 async function enableMocking() {
   if (import.meta.env.DEV) {
