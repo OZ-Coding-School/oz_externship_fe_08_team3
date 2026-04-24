@@ -1,9 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import type { AxiosError } from 'axios'
 import api from '@/api/instance'
 import type {
   PostAnswerRequest,
   PostAnswerResponse,
   GetAnswersResponse,
+  PutAnswerRequest,
+  PutAnswerResponse,
 } from './types'
 
 export function usePostAnswer(questionId: number) {
@@ -33,5 +36,23 @@ export function useGetAnswers(questionId: number) {
     staleTime: 60_000,
     retry: 1,
     enabled: questionId > 0,
+  })
+}
+
+export function usePutAnswer(answerId: number | undefined, questionId: number) {
+  const queryClient = useQueryClient()
+
+  return useMutation<PutAnswerResponse, AxiosError, PutAnswerRequest>({
+    mutationFn: async (data: PutAnswerRequest) => {
+      if (answerId === undefined) throw new Error('answerId is required')
+      const res = await api.put<PutAnswerResponse>(
+        `/api/v1/qna/answers/${answerId}`,
+        data
+      )
+      return res.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['answers', questionId] })
+    },
   })
 }

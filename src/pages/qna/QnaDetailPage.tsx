@@ -2,7 +2,7 @@
  * @figma 질의응답 상세 페이지 - @https://www.figma.com/design/4rJmEFUU2HMWVy3qUcYZRs/%EC%A0%9C%EB%AA%A9-%EC%97%86%EC%9D%8C?node-id=1-7744&m=dev
  */
 
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { useParams, useNavigate, Navigate } from 'react-router'
 import axios from 'axios'
 import rehypeSanitize from 'rehype-sanitize'
@@ -11,14 +11,17 @@ import { Button } from '@/components/common/Button'
 import { Toast } from '@/components/common/Toast'
 import { AnswerForm } from '@/components/qna/AnswerForm'
 import type { AnswerFormHandle } from '@/components/qna/AnswerForm'
-import { useAuthStore, ANSWER_ALLOWED_ROLES } from '@/stores/authStore'
-import { usePostAnswer, useGetAnswers } from '@/features/qna/answers'
-import { usePutAnswer } from '@/features/qna/answer-edit'
+import { useAuthStore } from '@/stores/authStore'
+import { ANSWER_ALLOWED_ROLES } from '@/constants/roles'
+import {
+  usePostAnswer,
+  useGetAnswers,
+  usePutAnswer,
+} from '@/features/qna/answers'
 import { useGetQuestionDetail } from '@/features/qna/question-detail'
 import { useToast } from '@/hooks/useToast'
 import { formatDate } from '@/utils/formatDate'
 import { ROUTES } from '@/constants/routes'
-import { useState } from 'react'
 
 function handleApiError(
   error: unknown,
@@ -75,7 +78,7 @@ export function QnaDetailPage() {
   const isEdit = !!myAnswer
 
   const { mutate: putAnswer, isPending: isPutPending } = usePutAnswer(
-    myAnswer?.id ?? 0,
+    myAnswer?.id,
     numericQuestionId
   )
 
@@ -123,7 +126,7 @@ export function QnaDetailPage() {
           showToast('모든 변경 사항이 저장되었습니다.', 'success')
           setShowForm(false)
         },
-        onError: (error) => {
+        onError: (error: unknown) => {
           const message = handleApiError(
             error,
             {
@@ -227,7 +230,7 @@ export function QnaDetailPage() {
       </section>
 
       {/* 답변 섹션 */}
-      {canAnswer && (
+      {canAnswer && !isAnswersLoading && (
         <div className="mt-6">
           {!showForm ? (
             <Button onClick={() => setShowForm(true)}>

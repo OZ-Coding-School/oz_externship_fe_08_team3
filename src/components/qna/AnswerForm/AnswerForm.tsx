@@ -53,15 +53,16 @@ export const AnswerForm = forwardRef<AnswerFormHandle, AnswerFormProps>(
       },
     }))
 
-    // 수정 모드 진입 시 localStorage 임시 저장 감지 — useState initializer로 처리
-    const savedDraft =
-      isEdit && draftKey ? localStorage.getItem(draftKey) : null
-    const hasDraft = savedDraft != null && savedDraft !== initialContent
-
-    const [showRestorePrompt, setShowRestorePrompt] = useState(hasDraft)
-    const [pendingDraft, setPendingDraft] = useState<string | null>(
-      hasDraft ? savedDraft : null
-    )
+    const [showRestorePrompt, setShowRestorePrompt] = useState(() => {
+      if (!isEdit || !draftKey) return false
+      const saved = localStorage.getItem(draftKey)
+      return saved != null && saved !== initialContent
+    })
+    const [pendingDraft, setPendingDraft] = useState<string | null>(() => {
+      if (!isEdit || !draftKey) return null
+      const saved = localStorage.getItem(draftKey)
+      return saved != null && saved !== initialContent ? saved : null
+    })
     const [content, setContent] = useState(initialContent)
     const [imageUrls, setImageUrls] = useState<string[]>(initialImgUrls)
     const [error, setError] = useState(false)

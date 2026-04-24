@@ -4,15 +4,6 @@ import { devtools } from 'zustand/middleware'
 // swagger RoleF6eEnum 기준
 export type UserRole = 'USER' | 'STUDENT' | 'TA' | 'OM' | 'LC' | 'ADMIN'
 
-// 답변 작성/수정 허용 role (USER 제외)
-export const ANSWER_ALLOWED_ROLES: UserRole[] = [
-  'STUDENT',
-  'TA',
-  'OM',
-  'LC',
-  'ADMIN',
-]
-
 interface User {
   id?: number
   nickname: string

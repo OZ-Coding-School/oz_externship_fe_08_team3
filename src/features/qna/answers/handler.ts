@@ -1,5 +1,9 @@
 import { http, HttpResponse } from 'msw'
-import type { PostAnswerResponse, GetAnswersResponse } from './types'
+import type {
+  PostAnswerResponse,
+  GetAnswersResponse,
+  PutAnswerResponse,
+} from './types'
 
 export const answersHandlers = [
   http.get('/api/v1/qna/questions/:question_id/answers', () => {
@@ -32,5 +36,13 @@ export const answersHandlers = [
       created_at: new Date().toISOString(),
     }
     return HttpResponse.json(response, { status: 201 })
+  }),
+
+  http.put('/api/v1/qna/answers/:id', ({ params }) => {
+    const response: PutAnswerResponse = {
+      answer_id: Number(params.id),
+      updated_at: new Date().toISOString(),
+    }
+    return HttpResponse.json(response, { status: 200 })
   }),
 ]
