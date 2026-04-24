@@ -2,7 +2,7 @@
  * @figma 질의응답 - 질문 목록페이지 https://www.figma.com/design/4rJmEFUU2HMWVy3qUcYZRs/%EC%A0%9C%EB%AA%A9-%EC%97%86%EC%9D%8C?node-id=1-5893&m=dev
  */
 
-import { Suspense, useState, useEffect, useCallback, useRef } from 'react'
+import { Suspense, useState, useEffect, useCallback } from 'react'
 import { useSearchParams, useNavigate, Link } from 'react-router'
 import {
   Tabs,
@@ -22,6 +22,9 @@ import { ROUTES } from '@/constants/routes'
 
 type AnswerStatus = 'all' | 'answered' | 'unanswered'
 type SortOption = 'latest' | 'views'
+
+const ANSWER_STATUSES = ['all', 'answered', 'unanswered'] as const
+const SORT_OPTIONS = ['latest', 'views'] as const
 
 const PAGE_SIZE = 10
 
@@ -194,27 +197,43 @@ export function QnaListPage() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
 
-  const answerStatus = (searchParams.get('answer_status') ??
-    'all') as AnswerStatus
+  const rawAnswerStatus = searchParams.get('answer_status') ?? 'all'
+  const answerStatus: AnswerStatus = (
+    ANSWER_STATUSES as readonly string[]
+  ).includes(rawAnswerStatus)
+    ? (rawAnswerStatus as AnswerStatus)
+    : 'all'
+
   const searchKeyword = searchParams.get('search_keyword') ?? ''
-  const categoryId = searchParams.get('category_id')
-    ? Number(searchParams.get('category_id'))
-    : undefined
-  const sort = (searchParams.get('sort') ?? 'latest') as SortOption
-  const page = Number(searchParams.get('page') ?? 1)
+
+  const rawCategoryId = Number(searchParams.get('category_id'))
+  const categoryId =
+    searchParams.get('category_id') != null &&
+    Number.isFinite(rawCategoryId) &&
+    rawCategoryId > 0
+      ? rawCategoryId
+      : undefined
+
+  const rawSort = searchParams.get('sort') ?? 'latest'
+  const sort: SortOption = (SORT_OPTIONS as readonly string[]).includes(rawSort)
+    ? (rawSort as SortOption)
+    : 'latest'
+
+  const rawPage = Number(searchParams.get('page') ?? 1)
+  const page = Number.isFinite(rawPage) && rawPage > 0 ? Math.floor(rawPage) : 1
 
   const [inputValue, setInputValue] = useState(searchKeyword)
   const [showCategoryModal, setShowCategoryModal] = useState(false)
   const [showSortModal, setShowSortModal] = useState(false)
 
-  const isFirstRender = useRef(true)
-
-  // Debounce search input → URL update (skip initial mount to avoid spurious navigation)
+  // URL → inputValue 동기화 (뒤로가기 대응)
   useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false
-      return
-    }
+    setInputValue(searchKeyword)
+  }, [searchKeyword])
+
+  // Debounce search input → URL update (inputValue가 searchKeyword와 다를 때만 동작)
+  useEffect(() => {
+    if (inputValue === searchKeyword) return
     const timer = setTimeout(() => {
       setSearchParams(
         (prev) => {
@@ -231,7 +250,7 @@ export function QnaListPage() {
       )
     }, 300)
     return () => clearTimeout(timer)
-  }, [inputValue, setSearchParams])
+  }, [inputValue, searchKeyword, setSearchParams])
 
   const { data, isLoading, isError } = useQnaQuestions({
     page,
