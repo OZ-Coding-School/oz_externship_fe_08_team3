@@ -8,8 +8,6 @@ const TOAST_ERROR_DURATION_MS = 3000
 export interface MarkdownEditorProps {
   value: string
   onChange: (value: string) => void
-  imageUrls: string[]
-  onImageUrlsChange: (urls: string[]) => void
   error?: boolean
   height?: number
 }
@@ -21,12 +19,12 @@ type UploadToast =
 export function MarkdownEditor({
   value,
   onChange,
-  imageUrls,
-  onImageUrlsChange,
   error = false,
   height = 400,
 }: MarkdownEditorProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const valueRef = useRef(value)
+  valueRef.current = value
   const [uploadToast, setUploadToast] = useState<UploadToast>({
     visible: false,
   })
@@ -54,20 +52,22 @@ export function MarkdownEditor({
           file_name: file.name,
         })
 
-        // S3 직접 업로드 (MSW 환경에서는 실패해도 img_url 사용)
         try {
           await fetch(presigned_url, {
             method: 'PUT',
             body: file,
             headers: { 'Content-Type': file.type },
           })
-        } catch {
-          // MSW/개발 환경에서 실제 S3 업로드 불가 — 무시하고 img_url 사용
+        } catch (err) {
+          if (!import.meta.env.DEV) throw err
+          // 개발 환경(MSW)에서만 S3 업로드 실패 무시
         }
 
         const imageMarkdown = `![image](${img_url})`
-        onChange(value ? `${value}\n${imageMarkdown}` : imageMarkdown)
-        onImageUrlsChange([...imageUrls, img_url])
+        const currentValue = valueRef.current
+        onChange(
+          currentValue ? `${currentValue}\n${imageMarkdown}` : imageMarkdown
+        )
         setUploadToast({ visible: false })
       } catch {
         setUploadToast({
@@ -77,7 +77,7 @@ export function MarkdownEditor({
         })
       }
     },
-    [getPresignedUrl, value, onChange, imageUrls, onImageUrlsChange]
+    [getPresignedUrl, onChange]
   )
 
   const handleFileChange = useCallback(

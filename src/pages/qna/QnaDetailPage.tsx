@@ -3,8 +3,8 @@
  */
 
 import { useState } from 'react'
-import { useParams, useNavigate } from 'react-router'
-import type { AxiosError } from 'axios'
+import { useParams, useNavigate, Navigate } from 'react-router'
+import axios from 'axios'
 import { Button } from '@/components/common/Button'
 import { Toast } from '@/components/common/Toast'
 import { AnswerForm } from '@/components/qna/AnswerForm'
@@ -27,7 +27,12 @@ export function QnaDetailPage() {
   const [showForm, setShowForm] = useState(false)
   const [toast, setToast] = useState<ToastState>({ visible: false })
 
-  const { mutate: postAnswer, isPending } = usePostAnswer(Number(questionId))
+  // hooks는 조건부 호출 불가 — questionId 없을 때 0으로 fallback 후 early return
+  const { mutate: postAnswer, isPending } = usePostAnswer(
+    questionId ? Number(questionId) : 0
+  )
+
+  if (!questionId) return <Navigate to={ROUTES.QNA.LIST} />
 
   const showToast = (
     message: string,
@@ -45,17 +50,24 @@ export function QnaDetailPage() {
           setShowForm(false)
         },
         onError: (error) => {
-          const status = (error as AxiosError)?.response?.status
-          if (status === 400) {
-            showToast('유효하지 않은 답변 등록 요청입니다.', 'error')
-          } else if (status === 401) {
-            showToast('로그인한 사용자만 답변을 작성할 수 있습니다.', 'error')
-            navigate(ROUTES.AUTH.LOGIN || '/')
-          } else if (status === 403) {
-            showToast('답변 작성 권한이 없습니다.', 'error')
-          } else if (status === 404) {
-            showToast('해당 질문을 찾을 수 없습니다.', 'error')
-            navigate(ROUTES.QNA.LIST)
+          if (axios.isAxiosError(error)) {
+            const status = error.response?.status
+            if (status === 400) {
+              showToast('유효하지 않은 답변 등록 요청입니다.', 'error')
+            } else if (status === 401) {
+              showToast('로그인한 사용자만 답변을 작성할 수 있습니다.', 'error')
+              navigate(ROUTES.AUTH.LOGIN ?? '/')
+            } else if (status === 403) {
+              showToast('답변 작성 권한이 없습니다.', 'error')
+            } else if (status === 404) {
+              showToast('해당 질문을 찾을 수 없습니다.', 'error')
+              navigate(ROUTES.QNA.LIST)
+            } else {
+              showToast(
+                '일시적인 오류가 발생했습니다. 다시 시도해 주세요.',
+                'error'
+              )
+            }
           } else {
             showToast(
               '일시적인 오류가 발생했습니다. 다시 시도해 주세요.',
@@ -81,6 +93,7 @@ export function QnaDetailPage() {
             <Button onClick={() => setShowForm(true)}>답변하기</Button>
           ) : (
             <AnswerForm
+              // TODO: question-detail 구현 후 실제 질문 제목으로 교체
               questionTitle="질문 내용을 불러오는 중..."
               onSubmit={handleSubmit}
               onCancel={() => setShowForm(false)}
