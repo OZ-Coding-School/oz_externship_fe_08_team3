@@ -19,7 +19,6 @@ export function AnswerForm({
   const [imageUrls, setImageUrls] = useState<string[]>([])
   const [error, setError] = useState(false)
 
-  // 작성 중 이탈 방지
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (content.trim()) {

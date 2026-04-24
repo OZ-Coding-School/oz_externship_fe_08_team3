@@ -8,6 +8,8 @@ const TOAST_ERROR_DURATION_MS = 3000
 export interface MarkdownEditorProps {
   value: string
   onChange: (value: string) => void
+  imageUrls: string[]
+  onImageUrlsChange: (urls: string[]) => void
   error?: boolean
   height?: number
 }
@@ -19,12 +21,16 @@ type UploadToast =
 export function MarkdownEditor({
   value,
   onChange,
+  imageUrls,
+  onImageUrlsChange,
   error = false,
   height = 400,
 }: MarkdownEditorProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const valueRef = useRef(value)
   valueRef.current = value
+  const imageUrlsRef = useRef(imageUrls)
+  imageUrlsRef.current = imageUrls
   const [uploadToast, setUploadToast] = useState<UploadToast>({
     visible: false,
   })
@@ -68,6 +74,7 @@ export function MarkdownEditor({
         onChange(
           currentValue ? `${currentValue}\n${imageMarkdown}` : imageMarkdown
         )
+        onImageUrlsChange([...imageUrlsRef.current, img_url])
         setUploadToast({ visible: false })
       } catch {
         setUploadToast({
@@ -77,7 +84,7 @@ export function MarkdownEditor({
         })
       }
     },
-    [getPresignedUrl, onChange]
+    [getPresignedUrl, onChange, onImageUrlsChange]
   )
 
   const handleFileChange = useCallback(
