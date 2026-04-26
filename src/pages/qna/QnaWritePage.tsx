@@ -5,7 +5,8 @@
 import { Suspense, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import MDEditor from '@uiw/react-md-editor'
-import { Button, Dropdown, Input, AlertModal } from '@/components'
+import rehypeSanitize from 'rehype-sanitize'
+import { Button, Dropdown, AlertModal } from '@/components'
 import { useQnaCategories } from '@/features/qna/categories'
 import { useCreateQuestion } from '@/features/qna/question-write'
 import { ROUTES } from '@/constants/routes'
@@ -21,6 +22,7 @@ function QnaWriteForm() {
 
   const [largeCategoryId, setLargeCategoryId] = useState<string>('')
   const [mediumCategoryId, setMediumCategoryId] = useState<string>('')
+  const [smallCategoryId, setSmallCategoryId] = useState<string>('')
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [alertMessage, setAlertMessage] = useState('')
@@ -41,14 +43,37 @@ function QnaWriteForm() {
       label: child.name,
     })) ?? []
 
-  const hasChildren = mediumOptions.length > 0
-  // 대분류 변경/카테고리 refetch 시 mediumCategoryId가 orphan이 되는 경우를 렌더 타임에 파생
+  const hasMedium = mediumOptions.length > 0
   const isMediumValid = mediumOptions.some((o) => o.value === mediumCategoryId)
   const validMediumCategoryId = isMediumValid ? mediumCategoryId : ''
+
+  const selectedMedium = selectedLarge?.children.find(
+    (c) => String(c.id) === validMediumCategoryId
+  )
+
+  const smallOptions =
+    selectedMedium?.children.map((child) => ({
+      value: String(child.id),
+      label: child.name,
+    })) ?? []
+
+  const hasSmall = smallOptions.length > 0
+  const isSmallValid = smallOptions.some((o) => o.value === smallCategoryId)
+  const validSmallCategoryId = isSmallValid ? smallCategoryId : ''
 
   const handleLargeChange = (value: string) => {
     setLargeCategoryId(value)
     setMediumCategoryId('')
+    setSmallCategoryId('')
+  }
+
+  const handleMediumChange = (value: string) => {
+    setMediumCategoryId(value)
+    setSmallCategoryId('')
+  }
+
+  const handleSmallChange = (value: string) => {
+    setSmallCategoryId(value)
   }
 
   const isDirty = title.trim().length > 0 || content.length > 0
@@ -57,6 +82,7 @@ function QnaWriteForm() {
     if (!isDirty) return
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       e.preventDefault()
+      e.returnValue = ''
     }
     window.addEventListener('beforeunload', handleBeforeUnload)
     return () => window.removeEventListener('beforeunload', handleBeforeUnload)
@@ -66,7 +92,9 @@ function QnaWriteForm() {
     e.preventDefault()
 
     const isCategoryMissing =
-      !largeCategoryId || (hasChildren && !validMediumCategoryId)
+      !largeCategoryId ||
+      (hasMedium && !validMediumCategoryId) ||
+      (hasSmall && !validSmallCategoryId)
     const isTitleInvalid = title.trim().length < MIN_TITLE_LENGTH
     const isContentInvalid = content.trim().length < MIN_CONTENT_LENGTH
 
@@ -91,9 +119,11 @@ function QnaWriteForm() {
       return
     }
 
-    const categoryId = hasChildren
-      ? Number(validMediumCategoryId)
-      : Number(largeCategoryId)
+    const categoryId = hasSmall
+      ? Number(validSmallCategoryId)
+      : hasMedium
+        ? Number(validMediumCategoryId)
+        : Number(largeCategoryId)
 
     createQuestion(
       {
@@ -117,14 +147,11 @@ function QnaWriteForm() {
 
   return (
     <>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-        {/* 카테고리 선택 */}
-        <div className="flex flex-col gap-3">
-          <label className="text-text-heading text-sm font-medium">
-            카테고리
-            <span className="text-error ml-1">*</span>
-          </label>
-          <div className="flex gap-3">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        {/* 카테고리 + 제목 박스 */}
+        <div className="border-border-base rounded-xl border">
+          {/* 카테고리 드롭다운 3개 */}
+          <div className="flex gap-3 p-4">
             <Dropdown
               options={largeOptions}
               value={largeCategoryId}
@@ -132,34 +159,42 @@ function QnaWriteForm() {
               placeholder="대분류 선택"
               className="flex-1"
             />
-            {hasChildren && (
-              <Dropdown
-                options={mediumOptions}
-                value={validMediumCategoryId}
-                onChange={setMediumCategoryId}
-                placeholder="중분류 선택"
-                disabled={!largeCategoryId}
-                className="flex-1"
-              />
-            )}
+            <Dropdown
+              options={mediumOptions}
+              value={validMediumCategoryId}
+              onChange={handleMediumChange}
+              placeholder="중분류 선택"
+              disabled={!largeCategoryId || !hasMedium}
+              className="flex-1"
+            />
+            <Dropdown
+              options={smallOptions}
+              value={validSmallCategoryId}
+              onChange={handleSmallChange}
+              placeholder="소분류 선택"
+              disabled={!validMediumCategoryId || !hasSmall}
+              className="flex-1"
+            />
+          </div>
+
+          {/* 구분선 */}
+          <div className="border-border-base border-t" />
+
+          {/* 제목 입력 (연한 보라색 배경) */}
+          <div className="p-4">
+            <input
+              type="text"
+              placeholder={`제목을 입력해 주세요. (${MIN_TITLE_LENGTH}~${MAX_TITLE_LENGTH}자)`}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              maxLength={MAX_TITLE_LENGTH}
+              className="placeholder:text-text-muted text-text-heading border-border-base bg-primary-50 focus:border-primary h-12 w-full rounded-sm border px-4 text-base transition-colors duration-150 outline-none"
+            />
           </div>
         </div>
 
-        {/* 제목 */}
-        <Input
-          label="제목"
-          placeholder={`제목을 입력해 주세요. (${MIN_TITLE_LENGTH}~${MAX_TITLE_LENGTH}자)`}
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          maxLength={MAX_TITLE_LENGTH}
-        />
-
-        {/* 내용 */}
-        <div className="flex flex-col gap-3">
-          <label className="text-text-heading text-sm font-medium">
-            내용
-            <span className="text-error ml-1">*</span>
-          </label>
+        {/* 마크다운 에디터 박스 */}
+        <div className="border-border-base overflow-hidden rounded-xl border">
           <div data-color-mode="light">
             <MDEditor
               value={content}
@@ -167,6 +202,7 @@ function QnaWriteForm() {
               height={400}
               preview="live"
               visibleDragbar={false}
+              previewOptions={{ rehypePlugins: [[rehypeSanitize]] }}
             />
           </div>
         </div>
@@ -198,7 +234,7 @@ function QnaWriteForm() {
 
 export function QnaWritePage() {
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10">
+    <div className="mx-auto max-w-3xl px-6 py-10">
       <h1 className="text-text-heading mb-8 text-2xl font-bold">질문 등록</h1>
       <Suspense
         fallback={
