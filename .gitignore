@@ -28,8 +28,6 @@ dist-ssr
 *.sln
 *.sw?
 settings.local.json
-.claude/skills/*
-.claude/docs/*
 
 # Playwright
 playwright-report/
