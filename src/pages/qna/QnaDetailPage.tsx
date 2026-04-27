@@ -184,9 +184,9 @@ export function QnaDetailPage() {
             404: () => navigate(ROUTES.QNA.LIST),
           }
         )
+        setConfirmAcceptId(null)
         showToast(message, 'error')
         action?.()
-        setConfirmAcceptId(null)
       },
     })
   }
@@ -224,10 +224,10 @@ export function QnaDetailPage() {
               id="answers-heading"
               className="text-text-heading text-base font-semibold"
             >
-              답변 {answers.length}개
+              답변 {sortedAnswers.length}개
             </h2>
 
-            {answers.length === 0 ? (
+            {sortedAnswers.length === 0 ? (
               <p className="text-text-muted mt-4 text-center text-sm">
                 아직 등록된 답변이 없습니다.
               </p>
