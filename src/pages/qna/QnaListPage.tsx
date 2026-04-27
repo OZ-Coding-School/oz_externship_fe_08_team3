@@ -3,7 +3,7 @@
  */
 
 import { Suspense, useState, useEffect, useCallback } from 'react'
-import { useSearchParams, useNavigate, Link } from 'react-router'
+import { useSearchParams, useNavigate } from 'react-router'
 import {
   Tabs,
   TabList,
@@ -12,17 +12,15 @@ import {
   Modal,
   Button,
   Spinner,
-  Dropdown,
 } from '@/components'
+import { QuestionCard } from '@/components/qna/QuestionCard'
+import { CategoryFilter } from '@/components/qna/CategoryFilter'
 import { useQnaQuestions } from '@/features/qna/questions'
-import { useQnaCategories } from '@/features/qna/categories'
-import type { UserCategory } from '@/features/qna/categories'
-import type { QuestionListItem } from '@/features/qna/questions'
-import { formatDate } from '@/utils/formatDate'
+import type { QuestionsListParams } from '@/features/qna/questions'
 import { ROUTES } from '@/constants/routes'
 
 type AnswerStatus = 'all' | 'answered' | 'unanswered'
-type SortOption = 'latest' | 'oldest'
+type SortOption = NonNullable<QuestionsListParams['sort']>
 
 const ANSWER_STATUSES = ['all', 'answered', 'unanswered'] as const
 const SORT_OPTIONS = ['latest', 'oldest'] as const
@@ -33,245 +31,6 @@ const SEARCH_DEBOUNCE_MS = 300
 const SORT_LABEL: Record<SortOption, string> = {
   latest: '최신순',
   oldest: '오래된순',
-}
-
-function findCategoryPath(
-  categories: UserCategory[],
-  targetId: number | undefined
-): { large: string; medium: string; small: string } {
-  if (!targetId) return { large: '', medium: '', small: '' }
-  for (const large of categories) {
-    if (large.id === targetId)
-      return { large: String(large.id), medium: '', small: '' }
-    for (const medium of large.children) {
-      if (medium.id === targetId)
-        return { large: String(large.id), medium: String(medium.id), small: '' }
-      for (const small of medium.children) {
-        if (small.id === targetId)
-          return {
-            large: String(large.id),
-            medium: String(medium.id),
-            small: String(small.id),
-          }
-      }
-    }
-  }
-  return { large: '', medium: '', small: '' }
-}
-
-// ── 카테고리 필터 모달 콘텐츠 ─────────────────────────────────────────
-
-function CategoryFilterModalContent({
-  initialCategoryId,
-  onApply,
-  onClose,
-}: {
-  initialCategoryId?: number
-  onApply: (id: number | undefined) => void
-  onClose: () => void
-}) {
-  const { data: categories } = useQnaCategories()
-
-  const initialPath = findCategoryPath(categories, initialCategoryId)
-  const [largeCategoryId, setLargeCategoryId] = useState(initialPath.large)
-  const [mediumCategoryId, setMediumCategoryId] = useState(initialPath.medium)
-  const [smallCategoryId, setSmallCategoryId] = useState(initialPath.small)
-
-  const largeOptions = categories.map((cat: UserCategory) => ({
-    value: String(cat.id),
-    label: cat.name,
-  }))
-
-  const selectedLarge = categories.find(
-    (cat: UserCategory) => String(cat.id) === largeCategoryId
-  )
-
-  const mediumOptions =
-    selectedLarge?.children.map((child: UserCategory) => ({
-      value: String(child.id),
-      label: child.name,
-    })) ?? []
-
-  const hasMedium = mediumOptions.length > 0
-  const isMediumValid = mediumOptions.some((o) => o.value === mediumCategoryId)
-  const validMediumCategoryId = isMediumValid ? mediumCategoryId : ''
-
-  const selectedMedium = selectedLarge?.children.find(
-    (c: UserCategory) => String(c.id) === validMediumCategoryId
-  )
-
-  const smallOptions =
-    selectedMedium?.children.map((child: UserCategory) => ({
-      value: String(child.id),
-      label: child.name,
-    })) ?? []
-
-  const hasSmall = smallOptions.length > 0
-  const isSmallValid = smallOptions.some((o) => o.value === smallCategoryId)
-  const validSmallCategoryId = isSmallValid ? smallCategoryId : ''
-
-  const handleLargeChange = (value: string) => {
-    setLargeCategoryId(value)
-    setMediumCategoryId('')
-    setSmallCategoryId('')
-  }
-
-  const handleMediumChange = (value: string) => {
-    setMediumCategoryId(value)
-    setSmallCategoryId('')
-  }
-
-  const handleSmallChange = (value: string) => {
-    setSmallCategoryId(value)
-  }
-
-  const handleReset = () => {
-    setLargeCategoryId('')
-    setMediumCategoryId('')
-    setSmallCategoryId('')
-  }
-
-  const handleApply = () => {
-    const leafId =
-      validSmallCategoryId || validMediumCategoryId || largeCategoryId
-    onApply(leafId ? Number(leafId) : undefined)
-    onClose()
-  }
-
-  return (
-    <div className="flex flex-col gap-5">
-      <div className="flex flex-col gap-3">
-        <Dropdown
-          options={largeOptions}
-          value={largeCategoryId}
-          onChange={handleLargeChange}
-          placeholder="대분류 선택"
-        />
-        <Dropdown
-          options={mediumOptions}
-          value={validMediumCategoryId}
-          onChange={handleMediumChange}
-          placeholder="중분류 선택"
-          disabled={!largeCategoryId || !hasMedium}
-        />
-        <Dropdown
-          options={smallOptions}
-          value={validSmallCategoryId}
-          onChange={handleSmallChange}
-          placeholder="소분류 선택"
-          disabled={!validMediumCategoryId || !hasSmall}
-        />
-      </div>
-
-      <div className="flex items-center justify-between gap-3 pt-1">
-        <Button variant="ghost" size="sm" onClick={handleReset}>
-          선택 초기화
-        </Button>
-        <Button variant="primary" size="sm" onClick={handleApply}>
-          필터 적용하기
-        </Button>
-      </div>
-    </div>
-  )
-}
-
-// ── 질문 카드 ────────────────────────────────────────────────────────
-
-function QuestionCard({ question }: { question: QuestionListItem }) {
-  const detailPath = ROUTES.QNA.DETAIL.replace(
-    ':questionId',
-    String(question.id)
-  )
-  const categoryPath = question.category.names.join(' > ')
-  const isAnswered = question.answer_count > 0
-
-  return (
-    <li>
-      <Link
-        to={detailPath}
-        className="border-border-base bg-bg-base hover:border-primary block rounded-lg border p-5 transition-colors duration-150"
-      >
-        <div className="flex">
-          {/* 텍스트 영역 */}
-          <div className="min-w-0 flex-1 pr-4">
-            <div className="mb-2 flex items-center gap-2">
-              <span className="text-text-muted truncate text-xs">
-                {categoryPath}
-              </span>
-            </div>
-
-            <h2 className="text-text-heading mb-1 truncate text-base font-semibold">
-              {question.title}
-            </h2>
-
-            <p className="text-text-body mb-3 line-clamp-2 text-sm">
-              {question.content_preview}
-            </p>
-
-            {/* 하단: A 마크 + 조회수 / 작성자 + 날짜 */}
-            <div className="flex items-center justify-between text-xs">
-              <div className="flex items-center gap-3">
-                <span className="flex items-center gap-1.5">
-                  <span
-                    className={[
-                      'inline-flex h-5 w-5 items-center justify-center rounded text-[11px] font-bold',
-                      isAnswered
-                        ? 'bg-success text-white'
-                        : 'text-text-muted bg-gray-100',
-                    ].join(' ')}
-                  >
-                    A
-                  </span>
-                  <span
-                    className={
-                      isAnswered
-                        ? 'text-success font-medium'
-                        : 'text-text-muted'
-                    }
-                  >
-                    {question.answer_count}
-                  </span>
-                </span>
-                <span className="text-text-muted">
-                  조회 {question.view_count}
-                </span>
-              </div>
-              <div className="text-text-muted flex items-center gap-1.5">
-                <span>{question.author.nickname}</span>
-                {question.author.course_name && (
-                  <>
-                    <span>·</span>
-                    <span>{question.author.course_name}</span>
-                  </>
-                )}
-                <span>·</span>
-                <time dateTime={question.created_at}>
-                  {formatDate(question.created_at)}
-                </time>
-              </div>
-            </div>
-          </div>
-
-          {/* 구분선 + 썸네일 (우측) */}
-          <div className="border-border-base flex shrink-0 items-center border-l pl-4">
-            <div className="h-20 w-20">
-              {question.thumbnail_img_url && (
-                <img
-                  src={question.thumbnail_img_url}
-                  alt={`${question.title} 썸네일`}
-                  loading="lazy"
-                  decoding="async"
-                  width={80}
-                  height={80}
-                  className="h-20 w-20 rounded-md object-cover"
-                />
-              )}
-            </div>
-          </div>
-        </div>
-      </Link>
-    </li>
-  )
 }
 
 // ── 페이지네이션 ──────────────────────────────────────────────────────
@@ -637,7 +396,7 @@ export function QnaListPage() {
             </div>
           }
         >
-          <CategoryFilterModalContent
+          <CategoryFilter
             initialCategoryId={categoryId}
             onApply={(id) =>
               updateParam('category_id', id != null ? String(id) : null)
