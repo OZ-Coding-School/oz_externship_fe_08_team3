@@ -3,6 +3,8 @@
  */
 
 import { useRef, useState } from 'react'
+import { ConfirmModal } from '@/components/common/Modal'
+import { Badge } from '@/components/common/Badge'
 import { useParams, useNavigate, Navigate } from 'react-router'
 import axios from 'axios'
 import rehypeSanitize from 'rehype-sanitize'
@@ -18,6 +20,7 @@ import {
   useGetAnswers,
   usePutAnswer,
 } from '@/features/qna/answers'
+import { useAcceptAnswer } from '@/features/qna/answer-accept'
 import { useGetQuestionDetail } from '@/features/qna/question-detail'
 import { useToast } from '@/hooks/useToast'
 import { formatDate } from '@/utils/formatDate'
@@ -51,6 +54,7 @@ export function QnaDetailPage() {
     ANSWER_ALLOWED_ROLES.includes(user.role)
 
   const [showForm, setShowForm] = useState(false)
+  const [confirmAcceptId, setConfirmAcceptId] = useState<number | null>(null)
   const answerFormRef = useRef<AnswerFormHandle>(null)
 
   const numericQuestionId = questionId ? Number(questionId) : 0
@@ -71,11 +75,20 @@ export function QnaDetailPage() {
 
   const questionTitle = questionDetail?.title ?? '질문 내용을 불러오는 중...'
 
+  const anyAdopted = answers?.some((a) => a.is_adopted) ?? false
+  const isQuestionOwner =
+    user?.id != null && questionDetail?.author.id === user.id
+
   // 현재 로그인 유저가 작성한 답변 찾기
   const myAnswer = answers?.find(
     (a) => user?.id != null && a.author.id === user.id
   )
   const isEdit = !!myAnswer
+
+  const { mutate: acceptAnswer, isPending: isAcceptPending } = useAcceptAnswer(
+    confirmAcceptId ?? 0,
+    numericQuestionId
+  )
 
   const { mutate: putAnswer, isPending: isPutPending } = usePutAnswer(
     myAnswer?.id,
@@ -193,7 +206,7 @@ export function QnaDetailPage() {
                 {answers.map((answer) => (
                   <article
                     key={answer.id}
-                    className="border-border-base bg-bg-base rounded-lg border p-6"
+                    className={`bg-bg-base rounded-lg border p-6 ${answer.is_adopted ? 'border-success' : 'border-border-base'}`}
                   >
                     {/* 작성자 정보 + 수정 시각 */}
                     <div className="mb-4 flex items-center justify-between">
@@ -205,6 +218,9 @@ export function QnaDetailPage() {
                           {answer.author.course_name} ·{' '}
                           {answer.author.cohort_name}
                         </span>
+                        {answer.is_adopted && (
+                          <Badge variant="success">질문자 채택</Badge>
+                        )}
                       </div>
                       <time
                         dateTime={answer.updated_at}
@@ -221,6 +237,20 @@ export function QnaDetailPage() {
                         rehypePlugins={[rehypeSanitize]}
                       />
                     </div>
+
+                    {/* 채택하기 버튼 */}
+                    {isQuestionOwner && !anyAdopted && (
+                      <div className="mt-4">
+                        <Button
+                          onClick={() => setConfirmAcceptId(answer.id)}
+                          disabled={isAcceptPending}
+                        >
+                          {isAcceptPending && confirmAcceptId === answer.id
+                            ? '채택 중...'
+                            : '채택하기'}
+                        </Button>
+                      </div>
+                    )}
                   </article>
                 ))}
               </div>
@@ -259,6 +289,40 @@ export function QnaDetailPage() {
           )}
         </div>
       )}
+
+      {/* 채택 확인 모달 */}
+      <ConfirmModal
+        isOpen={confirmAcceptId !== null}
+        onClose={() => setConfirmAcceptId(null)}
+        message="이 답변을 채택하시겠습니까?"
+        confirmLabel="채택"
+        onConfirm={() => {
+          acceptAnswer(undefined, {
+            onSuccess: () => {
+              showToast('답변이 채택되었습니다.', 'success')
+              setConfirmAcceptId(null)
+            },
+            onError: (error) => {
+              const message = handleApiError(
+                error,
+                {
+                  400: '유효하지 않은 답변 채택 요청입니다.',
+                  401: '로그인한 사용자만 답변을 채택할 수 있습니다.',
+                  403: '본인이 작성한 질문의 답변만 채택할 수 있습니다.',
+                  404: '해당 질문 또는 답변을 찾을 수 없습니다.',
+                  409: '이미 채택된 답변이 존재합니다.',
+                },
+                {
+                  401: () => navigate(ROUTES.AUTH.LOGIN),
+                  404: () => navigate(ROUTES.QNA.LIST),
+                }
+              )
+              showToast(message, 'error')
+              setConfirmAcceptId(null)
+            },
+          })
+        }}
+      />
 
       {/* 토스트 알림 */}
       {toast.visible && (
