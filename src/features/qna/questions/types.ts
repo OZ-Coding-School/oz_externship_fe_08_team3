@@ -37,5 +37,5 @@ export interface QuestionsListParams {
   search_keyword?: string
   category_id?: number
   answer_status?: 'answered' | 'unanswered'
-  sort?: 'latest' | 'views'
+  sort?: 'latest' | 'oldest'
 }
