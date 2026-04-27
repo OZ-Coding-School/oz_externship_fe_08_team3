@@ -5,6 +5,13 @@ import type {
   PutAnswerResponse,
 } from './types'
 
+// MSW 상태 — accept POST 후 GET 응답에 반영
+const _adoptedAnswerIds = new Set<number>()
+
+export function markAnswerAdopted(answerId: number) {
+  _adoptedAnswerIds.add(answerId)
+}
+
 export const answersHandlers = [
   http.get('/api/v1/qna/questions/:question_id/answers', () => {
     const response: GetAnswersResponse = [
@@ -18,7 +25,7 @@ export const answersHandlers = [
           cohort_name: '8기',
         },
         content: '기존 답변 내용입니다.\n\n마크다운으로 작성된 답변입니다.',
-        is_adopted: false,
+        is_adopted: _adoptedAnswerIds.has(801),
         images: [],
         comments: [],
         created_at: new Date().toISOString(),

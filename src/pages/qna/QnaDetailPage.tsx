@@ -4,7 +4,6 @@
 
 import { useRef, useState } from 'react'
 import { ConfirmModal } from '@/components/common/Modal'
-import { Badge } from '@/components/common/Badge'
 import { useParams, useNavigate, Navigate } from 'react-router'
 import axios from 'axios'
 import rehypeSanitize from 'rehype-sanitize'
@@ -95,7 +94,11 @@ export function QnaDetailPage() {
     numericQuestionId
   )
 
-  if (!questionId || Number.isNaN(numericQuestionId)) {
+  if (
+    !questionId ||
+    Number.isNaN(numericQuestionId) ||
+    numericQuestionId <= 0
+  ) {
     return <Navigate to={ROUTES.QNA.LIST} />
   }
 
@@ -202,68 +205,90 @@ export function QnaDetailPage() {
                 아직 등록된 답변이 없습니다.
               </p>
             ) : (
-              <div className="mt-4 space-y-4">
-                {answers.map((answer) => (
-                  <article
-                    key={answer.id}
-                    className={`bg-bg-base rounded-lg border p-6 ${answer.is_adopted ? 'border-success' : 'border-border-base'}`}
-                  >
-                    {/* 작성자 정보 + 수정 시각 */}
-                    <div className="mb-4 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="text-text-heading text-sm font-medium">
-                          {answer.author.nickname}
-                        </span>
-                        <span className="text-text-muted text-xs">
-                          {answer.author.course_name} ·{' '}
-                          {answer.author.cohort_name}
-                        </span>
-                        {answer.is_adopted && (
-                          <Badge variant="success">질문자 채택</Badge>
-                        )}
-                      </div>
-                      <time
-                        dateTime={answer.updated_at}
-                        className="text-text-muted text-xs"
+              <div className="mt-4 space-y-6">
+                {[...answers]
+                  .sort((a, b) => Number(b.is_adopted) - Number(a.is_adopted))
+                  .map((answer) => (
+                    // 채택된 답변은 배지가 카드 위로 올라오므로 상단 여백 추가
+                    <div
+                      key={answer.id}
+                      className={
+                        answer.is_adopted ? 'relative mt-4' : 'relative'
+                      }
+                    >
+                      {/* 질문자 채택 배지 — 카드 상단 테두리에 반 걸쳐서 표시 */}
+                      {answer.is_adopted && (
+                        <div className="bg-primary absolute top-0 left-3 -translate-y-1/2 rounded-full px-3 py-1.5 text-xs font-bold text-white">
+                          질문자 채택
+                        </div>
+                      )}
+
+                      <article
+                        className={`bg-bg-base rounded-lg border p-6 ${
+                          answer.is_adopted
+                            ? 'border-primary'
+                            : 'border-border-base'
+                        }`}
                       >
-                        수정일: {formatDate(answer.updated_at)}
-                      </time>
-                    </div>
+                        {/* 작성자 정보 + 채택하기 버튼 + 수정 시각 */}
+                        <div className="mb-4 flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="text-text-heading text-sm font-medium">
+                              {answer.author.nickname}
+                            </span>
+                            <span className="text-text-muted text-xs">
+                              {answer.author.course_name} ·{' '}
+                              {answer.author.cohort_name}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <time
+                              dateTime={answer.updated_at}
+                              className="text-text-muted text-xs"
+                            >
+                              수정일: {formatDate(answer.updated_at)}
+                            </time>
+                            {/* 채택하기 버튼 — 질문 작성자 + 미채택 상태 */}
+                            {isQuestionOwner && !anyAdopted && (
+                              <Button
+                                size="sm"
+                                onClick={() => setConfirmAcceptId(answer.id)}
+                                disabled={isAcceptPending}
+                                loading={
+                                  isAcceptPending &&
+                                  confirmAcceptId === answer.id
+                                }
+                              >
+                                채택하기
+                              </Button>
+                            )}
+                          </div>
+                        </div>
 
-                    {/* 답변 내용 (마크다운 렌더링) */}
-                    <div data-color-mode="light">
-                      <MDEditor.Markdown
-                        source={answer.content}
-                        rehypePlugins={[rehypeSanitize]}
-                      />
+                        {/* 답변 내용 (마크다운 렌더링) */}
+                        <div data-color-mode="light">
+                          <MDEditor.Markdown
+                            source={answer.content}
+                            rehypePlugins={[rehypeSanitize]}
+                          />
+                        </div>
+                      </article>
                     </div>
-
-                    {/* 채택하기 버튼 */}
-                    {isQuestionOwner && !anyAdopted && (
-                      <div className="mt-4">
-                        <Button
-                          onClick={() => setConfirmAcceptId(answer.id)}
-                          disabled={isAcceptPending}
-                        >
-                          {isAcceptPending && confirmAcceptId === answer.id
-                            ? '채택 중...'
-                            : '채택하기'}
-                        </Button>
-                      </div>
-                    )}
-                  </article>
-                ))}
+                  ))}
               </div>
             )}
           </>
         )}
       </section>
 
-      {/* 답변 섹션 */}
-      {canAnswer && !isAnswersLoading && (
+      {/* 답변 섹션 — 채택된 본인 답변은 수정 버튼 비활성 */}
+      {canAnswer && !isAnswersLoading && !isAnswersError && (
         <div className="mt-6">
           {!showForm ? (
-            <Button onClick={() => setShowForm(true)}>
+            <Button
+              onClick={() => setShowForm(true)}
+              disabled={isEdit && myAnswer?.is_adopted}
+            >
               {isEdit ? '답변 수정하기' : '답변하기'}
             </Button>
           ) : isEdit ? (
