@@ -3,7 +3,7 @@
  */
 
 import { Suspense, useState, useEffect, useCallback } from 'react'
-import { useSearchParams, useNavigate, Link } from 'react-router'
+import { useSearchParams, useNavigate } from 'react-router'
 import {
   Tabs,
   TabList,
@@ -13,126 +13,65 @@ import {
   Button,
   Spinner,
 } from '@/components'
+import { QuestionCard } from '@/components/qna/QuestionCard'
+import { CategoryFilter } from '@/components/qna/CategoryFilter'
 import { useQnaQuestions } from '@/features/qna/questions'
-import { useQnaCategories } from '@/features/qna/categories'
-import type { UserCategory } from '@/features/qna/categories'
-import type { QuestionListItem } from '@/features/qna/questions'
-import { formatDate } from '@/utils/formatDate'
+import type { QuestionsListParams } from '@/features/qna/questions'
 import { ROUTES } from '@/constants/routes'
 
 type AnswerStatus = 'all' | 'answered' | 'unanswered'
-type SortOption = 'latest' | 'views'
+type SortOption = NonNullable<QuestionsListParams['sort']>
 
 const ANSWER_STATUSES = ['all', 'answered', 'unanswered'] as const
-const SORT_OPTIONS = ['latest', 'views'] as const
+const SORT_OPTIONS = ['latest', 'oldest'] as const
 
 const PAGE_SIZE = 10
+const SEARCH_DEBOUNCE_MS = 300
 
-function CategoryFilterContent({
-  selectedId,
-  onSelect,
-}: {
-  selectedId: number | undefined
-  onSelect: (id: number | undefined) => void
-}) {
-  const { data: categories } = useQnaCategories()
+const SORT_LABEL: Record<SortOption, string> = {
+  latest: '최신순',
+  oldest: '오래된순',
+}
 
+// ── 페이지네이션 ──────────────────────────────────────────────────────
+
+function ChevronLeft() {
   return (
-    <div className="space-y-3">
-      <button
-        onClick={() => onSelect(undefined)}
-        className={[
-          'w-full rounded-md px-3 py-2 text-left text-sm transition-colors',
-          selectedId == null
-            ? 'bg-primary-100 text-primary font-medium'
-            : 'text-text-body hover:bg-bg-muted',
-        ].join(' ')}
-      >
-        전체
-      </button>
-      {categories.map((cat: UserCategory) => (
-        <div key={cat.id}>
-          <p className="text-text-muted px-3 py-1 text-xs font-semibold tracking-wide">
-            {cat.name}
-          </p>
-          {cat.children.map((child: UserCategory) => (
-            <button
-              key={child.id}
-              onClick={() => onSelect(child.id)}
-              className={[
-                'w-full rounded-md px-3 py-2 text-left text-sm transition-colors',
-                selectedId === child.id
-                  ? 'bg-primary-100 text-primary font-medium'
-                  : 'text-text-body hover:bg-bg-muted',
-              ].join(' ')}
-            >
-              {child.name}
-            </button>
-          ))}
-        </div>
-      ))}
-    </div>
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M10 12L6 8L10 4"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   )
 }
 
-function QuestionCard({ question }: { question: QuestionListItem }) {
-  const detailPath = ROUTES.QNA.DETAIL.replace(
-    ':questionId',
-    String(question.id)
-  )
-  const categoryPath = question.category.names.join(' > ')
-  const isAnswered = question.answer_count > 0
-
+function ChevronRight() {
   return (
-    <li>
-      <Link
-        to={detailPath}
-        className="border-border-base bg-bg-base hover:border-primary block rounded-lg border p-5 transition-colors duration-150"
-      >
-        <div className="mb-2 flex items-center justify-between gap-2">
-          <span className="text-text-muted truncate text-xs">
-            {categoryPath}
-          </span>
-          <span
-            className={[
-              'shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium',
-              isAnswered
-                ? 'bg-success-bg text-success'
-                : 'bg-warning-bg text-warning',
-            ].join(' ')}
-          >
-            {isAnswered ? '답변완료' : '답변 대기중'}
-          </span>
-        </div>
-
-        <h2 className="text-text-heading mb-1 truncate text-base font-semibold">
-          {question.title}
-        </h2>
-
-        <p className="text-text-body mb-3 line-clamp-2 text-sm">
-          {question.content_preview}
-        </p>
-
-        <div className="text-text-muted flex items-center justify-between text-xs">
-          <div className="flex items-center gap-2">
-            <span>{question.author.nickname}</span>
-            {question.author.course_name && (
-              <>
-                <span>·</span>
-                <span>{question.author.course_name}</span>
-              </>
-            )}
-          </div>
-          <div className="flex items-center gap-3">
-            <span>답변 {question.answer_count}</span>
-            <span>조회 {question.view_count}</span>
-            <time dateTime={question.created_at}>
-              {formatDate(question.created_at)}
-            </time>
-          </div>
-        </div>
-      </Link>
-    </li>
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M6 4L10 8L6 12"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   )
 }
 
@@ -154,15 +93,15 @@ function Pagination({
   return (
     <nav
       aria-label="페이지 이동"
-      className="mt-6 flex items-center justify-center gap-1"
+      className="mt-8 flex items-center justify-center gap-1"
     >
       <button
         onClick={() => onChange(current - 1)}
         disabled={current === 1}
         aria-label="이전 페이지"
-        className="text-text-muted hover:bg-bg-muted disabled:text-disable rounded-md px-3 py-2 text-sm transition-colors disabled:cursor-not-allowed"
+        className="text-text-muted hover:text-text-heading flex h-9 w-9 items-center justify-center rounded-full transition-colors disabled:cursor-not-allowed disabled:text-gray-300"
       >
-        이전
+        <ChevronLeft />
       </button>
 
       {pages.map((p) => (
@@ -171,9 +110,9 @@ function Pagination({
           onClick={() => onChange(p)}
           aria-current={p === current ? 'page' : undefined}
           className={[
-            'h-9 min-w-9 rounded-md px-3 text-sm transition-colors',
+            'h-9 w-9 rounded-full text-sm font-medium transition-colors',
             p === current
-              ? 'bg-primary text-text-inverse font-medium'
+              ? 'bg-primary text-text-inverse'
               : 'text-text-body hover:bg-bg-muted',
           ].join(' ')}
         >
@@ -185,13 +124,15 @@ function Pagination({
         onClick={() => onChange(current + 1)}
         disabled={current === total}
         aria-label="다음 페이지"
-        className="text-text-muted hover:bg-bg-muted disabled:text-disable rounded-md px-3 py-2 text-sm transition-colors disabled:cursor-not-allowed"
+        className="text-text-muted hover:text-text-heading flex h-9 w-9 items-center justify-center rounded-full transition-colors disabled:cursor-not-allowed disabled:text-gray-300"
       >
-        다음
+        <ChevronRight />
       </button>
     </nav>
   )
 }
+
+// ── QnaListPage ───────────────────────────────────────────────────
 
 export function QnaListPage() {
   const navigate = useNavigate()
@@ -248,7 +189,7 @@ export function QnaListPage() {
         },
         { replace: true }
       )
-    }, 300)
+    }, SEARCH_DEBOUNCE_MS)
     return () => clearTimeout(timer)
   }, [inputValue, searchKeyword, setSearchParams])
 
@@ -262,6 +203,19 @@ export function QnaListPage() {
   })
 
   const totalPages = data ? Math.ceil(data.count / PAGE_SIZE) : 0
+
+  useEffect(() => {
+    if (totalPages > 0 && page > totalPages) {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev)
+          next.delete('page')
+          return next
+        },
+        { replace: true }
+      )
+    }
+  }, [page, totalPages, setSearchParams])
 
   const updateParam = useCallback(
     (key: string, value: string | null) => {
@@ -311,16 +265,23 @@ export function QnaListPage() {
     [setSearchParams]
   )
 
-  const categoryName = searchParams.get('category_id')
-    ? '필터 적용됨'
-    : '카테고리'
+  const hasFilter = categoryId != null
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-text-heading text-2xl font-bold">질의응답</h1>
+      <h1 className="text-text-heading mb-6 text-2xl font-bold">질의응답</h1>
+
+      {/* 검색바 + 질문하기 버튼 — 탭 위 */}
+      <div className="mb-4 flex items-center gap-3">
+        <SearchInput
+          value={inputValue}
+          onValueChange={setInputValue}
+          placeholder="질문 검색"
+          className="flex-1"
+          aria-label="질문 검색"
+        />
         <Button size="sm" onClick={() => navigate(ROUTES.QNA.WRITE)}>
-          질문 등록
+          질문하기
         </Button>
       </div>
 
@@ -332,37 +293,47 @@ export function QnaListPage() {
         </TabList>
 
         <div className="mt-4">
-          {/* 검색 + 필터 영역 */}
-          <div className="mb-4 flex flex-wrap items-center gap-3">
-            <SearchInput
-              value={inputValue}
-              onValueChange={setInputValue}
-              placeholder="질문 검색"
-              className="flex-1"
-              aria-label="질문 검색"
-            />
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setShowCategoryModal(true)}
-            >
-              {categoryName}
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setShowSortModal(true)}
-            >
-              {sort === 'views' ? '조회수순' : '최신순'}
-            </Button>
+          {/* 총 결과수 + 정렬·카테고리 우측 배치 */}
+          <div className="mb-4 flex items-center justify-between">
+            {!isLoading && data ? (
+              <p className="text-text-muted text-sm">
+                총 {data.count.toLocaleString()}개의 질문
+              </p>
+            ) : (
+              <span />
+            )}
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowSortModal(true)}
+              >
+                {SORT_LABEL[sort]}
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 12 12"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M3 4.5L6 7.5L9 4.5"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </Button>
+              <Button
+                variant={hasFilter ? 'outline' : 'ghost'}
+                size="sm"
+                onClick={() => setShowCategoryModal(true)}
+              >
+                {hasFilter ? '필터 적용됨' : '카테고리'}
+              </Button>
+            </div>
           </div>
-
-          {/* 총 결과 수 */}
-          {!isLoading && data && (
-            <p className="text-text-muted mb-3 text-sm">
-              총 {data.count.toLocaleString()}개의 질문
-            </p>
-          )}
 
           {/* 질문 목록 */}
           {isLoading && (
@@ -425,12 +396,12 @@ export function QnaListPage() {
             </div>
           }
         >
-          <CategoryFilterContent
-            selectedId={categoryId}
-            onSelect={(id) => {
+          <CategoryFilter
+            initialCategoryId={categoryId}
+            onApply={(id) =>
               updateParam('category_id', id != null ? String(id) : null)
-              setShowCategoryModal(false)
-            }}
+            }
+            onClose={() => setShowCategoryModal(false)}
           />
         </Suspense>
       </Modal>
@@ -443,7 +414,7 @@ export function QnaListPage() {
         maxWidth="max-w-xs"
       >
         <div className="space-y-1">
-          {(['latest', 'views'] as SortOption[]).map((opt) => (
+          {SORT_OPTIONS.map((opt) => (
             <button
               key={opt}
               onClick={() => {
@@ -457,7 +428,7 @@ export function QnaListPage() {
                   : 'text-text-body hover:bg-bg-muted',
               ].join(' ')}
             >
-              {opt === 'latest' ? '최신순' : '조회수순'}
+              {SORT_LABEL[opt]}
             </button>
           ))}
         </div>

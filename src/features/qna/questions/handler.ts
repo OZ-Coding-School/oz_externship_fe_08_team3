@@ -309,8 +309,11 @@ export const questionsHandler = [
         filtered = filtered.filter((q) => q.answer_count === 0)
       }
 
-      if (sort === 'views') {
-        filtered = [...filtered].sort((a, b) => b.view_count - a.view_count)
+      if (sort === 'oldest') {
+        filtered = [...filtered].sort(
+          (a, b) =>
+            new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        )
       }
 
       const count = filtered.length
