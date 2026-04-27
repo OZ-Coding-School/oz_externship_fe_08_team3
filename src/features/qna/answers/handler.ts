@@ -24,7 +24,9 @@ export function getQuestionIdByAnswer(answerId: number): number {
 }
 
 export const answersHandlers = [
-  http.get('/api/v1/qna/questions/:question_id/answers', () => {
+  http.get('/api/v1/qna/questions/:question_id/answers', ({ params }) => {
+    // GET 시점에 매핑 초기화 — POST answer 이전 채택 시나리오도 커버
+    _answerQuestionMap.set(MOCK_ANSWER_ID, Number(params.question_id))
     const response: GetAnswersResponse = [
       {
         id: MOCK_ANSWER_ID,
