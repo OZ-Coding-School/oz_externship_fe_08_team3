@@ -1,5 +1,6 @@
 import { http, HttpResponse } from 'msw'
 import { answersHandlers } from '@/features/qna/answers'
+import { answerAcceptHandlers } from '@/features/qna/answer-accept'
 import { presignedUrlHandlers } from '@/features/qna/presigned-url'
 import { categoriesHandler } from '@/features/qna/categories'
 import { questionsHandler } from '@/features/qna/questions'
@@ -11,6 +12,7 @@ export const handlers = [
     return HttpResponse.json({ status: 'ok' })
   }),
   ...answersHandlers,
+  ...answerAcceptHandlers,
   ...presignedUrlHandlers,
   ...categoriesHandler,
   ...questionsHandler,
