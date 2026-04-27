@@ -12,6 +12,13 @@ export function markAnswerAdopted(answerId: number) {
   _adoptedAnswerIds.add(answerId)
 }
 
+// answerId → questionId 매핑 — accept handler에서 dynamic question_id 반환에 사용
+const _answerQuestionMap = new Map<number, number>()
+
+export function getQuestionIdByAnswer(answerId: number): number {
+  return _answerQuestionMap.get(answerId) ?? 0
+}
+
 export const answersHandlers = [
   http.get('/api/v1/qna/questions/:question_id/answers', () => {
     const response: GetAnswersResponse = [
@@ -36,9 +43,11 @@ export const answersHandlers = [
   }),
 
   http.post('/api/v1/qna/questions/:question_id/answers', ({ params }) => {
+    const questionId = Number(params.question_id)
+    _answerQuestionMap.set(801, questionId)
     const response: PostAnswerResponse = {
       answer_id: 801,
-      question_id: Number(params.question_id),
+      question_id: questionId,
       author_id: 211,
       created_at: new Date().toISOString(),
     }
