@@ -271,20 +271,23 @@ export function QnaDetailPage() {
                           >
                             수정일: {formatDate(answer.updated_at)}
                           </time>
-                          {/* 채택하기 버튼 — 질문 작성자 + 미채택 상태 */}
-                          {isQuestionOwner && !anyAdopted && (
-                            <Button
-                              size="sm"
-                              type="button"
-                              onClick={() => setConfirmAcceptId(answer.id)}
-                              disabled={isAcceptPending}
-                              loading={
-                                isAcceptPending && confirmAcceptId === answer.id
-                              }
-                            >
-                              채택하기
-                            </Button>
-                          )}
+                          {/* 채택하기 버튼 — 질문 작성자 + 미채택 + 본인 답변 제외 */}
+                          {isQuestionOwner &&
+                            !anyAdopted &&
+                            answer.author.id !== user?.id && (
+                              <Button
+                                size="sm"
+                                type="button"
+                                onClick={() => setConfirmAcceptId(answer.id)}
+                                disabled={isAcceptPending}
+                                loading={
+                                  isAcceptPending &&
+                                  confirmAcceptId === answer.id
+                                }
+                              >
+                                채택하기
+                              </Button>
+                            )}
                         </div>
                       </div>
 
