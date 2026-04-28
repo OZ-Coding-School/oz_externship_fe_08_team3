@@ -51,6 +51,7 @@ function CommentForm({
         value={content}
         onChange={(e) => setContent(e.target.value)}
         placeholder="댓글을 입력하세요"
+        aria-label="댓글 입력"
         rows={2}
         disabled={isPending}
         className="border-border-base focus:border-primary flex-1 resize-none rounded-md border px-3 py-2 text-sm outline-none disabled:opacity-50"
@@ -152,9 +153,14 @@ export function QnaDetailPage() {
   const sortedAnswers = useMemo(
     () =>
       answers
-        ? [...answers].sort(
-            (a, b) => Number(b.is_adopted) - Number(a.is_adopted)
-          )
+        ? [...answers].sort((a, b) => {
+            const byAdopted = Number(b.is_adopted) - Number(a.is_adopted)
+            if (byAdopted !== 0) return byAdopted
+            return (
+              new Date(a.created_at).getTime() -
+              new Date(b.created_at).getTime()
+            )
+          })
         : [],
     [answers]
   )
@@ -318,7 +324,8 @@ export function QnaDetailPage() {
                       ROUTES.QNA.EDIT.replace(
                         ':questionId',
                         String(numericQuestionId)
-                      )
+                      ),
+                      { replace: true }
                     )
                   }
                 >
@@ -340,11 +347,13 @@ export function QnaDetailPage() {
             {/* 첨부 이미지 */}
             {questionDetail.images.length > 0 && (
               <div className="mt-4 flex flex-wrap gap-2">
-                {questionDetail.images.map((img) => (
+                {questionDetail.images.map((img, idx) => (
                   <img
                     key={img.id}
                     src={img.img_url}
-                    alt="첨부 이미지"
+                    alt={`첨부 이미지 ${idx + 1}`}
+                    loading="lazy"
+                    decoding="async"
                     className="max-h-64 rounded-md object-contain"
                   />
                 ))}

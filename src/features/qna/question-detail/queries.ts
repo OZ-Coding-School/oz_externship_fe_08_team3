@@ -7,7 +7,7 @@ export function useGetQuestionDetail(questionId: number) {
     queryKey: ['question-detail', questionId],
     queryFn: () =>
       api
-        .get<GetQuestionDetailResponse>(`/api/v1/qna/questions/${questionId}/`)
+        .get<GetQuestionDetailResponse>(`/qna/questions/${questionId}/`)
         .then((res) => res.data),
     staleTime: 60_000,
     retry: 1,

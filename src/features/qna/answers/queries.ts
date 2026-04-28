@@ -15,10 +15,7 @@ export function usePostAnswer(questionId: number) {
   return useMutation({
     mutationFn: (data: PostAnswerRequest) =>
       api
-        .post<PostAnswerResponse>(
-          `/api/v1/qna/questions/${questionId}/answers`,
-          data
-        )
+        .post<PostAnswerResponse>(`/qna/questions/${questionId}/answers`, data)
         .then((res) => res.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['answers', questionId] })
@@ -31,7 +28,7 @@ export function useGetAnswers(questionId: number) {
     queryKey: ['answers', questionId],
     queryFn: () =>
       api
-        .get<GetAnswersResponse>(`/api/v1/qna/questions/${questionId}/answers`)
+        .get<GetAnswersResponse>(`/qna/questions/${questionId}/answers`)
         .then((res) => res.data),
     staleTime: 60_000,
     retry: 1,
@@ -46,7 +43,7 @@ export function usePutAnswer(answerId: number | undefined, questionId: number) {
     mutationFn: async (data: PutAnswerRequest) => {
       if (answerId === undefined) throw new Error('answerId is required')
       const res = await api.put<PutAnswerResponse>(
-        `/api/v1/qna/answers/${answerId}`,
+        `/qna/answers/${answerId}`,
         data
       )
       return res.data

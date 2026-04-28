@@ -6,14 +6,17 @@ import {
 } from '@/features/qna/answers/handler'
 
 export const answerAcceptHandlers = [
-  http.post('/api/v1/qna/answers/:id/accept', ({ params }) => {
-    const answerId = Number(params.id)
-    markAnswerAdopted(answerId)
-    const response: AcceptAnswerResponse = {
-      question_id: getQuestionIdByAnswer(answerId),
-      answer_id: answerId,
-      is_adopted: true,
+  http.post(
+    `${import.meta.env.VITE_API_BASE_URL}/qna/answers/:id/accept`,
+    ({ params }) => {
+      const answerId = Number(params.id)
+      markAnswerAdopted(answerId)
+      const response: AcceptAnswerResponse = {
+        question_id: getQuestionIdByAnswer(answerId),
+        answer_id: answerId,
+        is_adopted: true,
+      }
+      return HttpResponse.json(response, { status: 200 })
     }
-    return HttpResponse.json(response, { status: 200 })
-  }),
+  ),
 ]
