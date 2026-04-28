@@ -21,7 +21,7 @@ const checklist = [
     category: "Readability",
     name: "매직 넘버 명명",
     description: "의미 있는 숫자 리터럴이 명명된 상수로 추출되어 있는가?",
-    // MIN_CONTENT_LENGTH=5, MIN_TITLE_LENGTH=3, MAX_TITLE_LENGTH=100 모두 상수로 추출됨
+    // handler.ts: MAX_COMMENT_LENGTH=500 상수로 추출됨. queries.ts, types.ts, handlers.ts: 수치 리터럴 없음
     status: "O",
     violations: [],
   },
@@ -30,7 +30,7 @@ const checklist = [
     category: "Readability",
     name: "구현 세부사항 추상화 (인증/권한)",
     description: "인증 체크, 권한 검사 등 공통 로직이 래퍼/가드 컴포넌트로 분리되어 있는가?",
-    // 인증/권한 체크 패턴 없음
+    // 인증/권한 체크 패턴 없음 (feature 모듈 파일들)
     status: "N/A",
     violations: [],
   },
@@ -39,8 +39,8 @@ const checklist = [
     category: "Readability",
     name: "구현 세부사항 추상화 (인터랙션)",
     description: "다이얼로그/오버레이 등 복잡한 인터랙션이 전용 컴포넌트로 추출되어 있는가?",
-    // AlertModal 컴포넌트로 추출되어 있음
-    status: "O",
+    // 비UI 파일 (types, queries, handler, mocks/handlers) — 해당 패턴 없음
+    status: "N/A",
     violations: [],
   },
   {
@@ -48,7 +48,7 @@ const checklist = [
     category: "Readability",
     name: "조건부 렌더링 분리",
     description: "역할/상태에 따라 크게 다른 UI/로직이 별도 컴포넌트로 분리되어 있는가?",
-    // {hasChildren && <Dropdown />} — 단순 조건부 노출, 역할 기반 대형 분기 아님
+    // 비UI 파일 — 조건부 렌더링 없음
     status: "N/A",
     violations: [],
   },
@@ -57,8 +57,8 @@ const checklist = [
     category: "Readability",
     name: "복잡한 삼항 연산자 단순화",
     description: "중첩 삼항 연산자가 if/else 또는 IIFE로 대체되어 있는가?",
-    // categoryId = hasChildren ? ... : ... — 단순 1단계 삼항, 중첩 없음
-    status: "O",
+    // 삼항 연산자 사용 없음
+    status: "N/A",
     violations: [],
   },
   {
@@ -66,7 +66,7 @@ const checklist = [
     category: "Readability",
     name: "시선 이동 감소 (Colocation)",
     description: "단일 사용처에서만 쓰이는 단순 로직이 사용 위치 근처에 배치되어 있는가?",
-    // QnaWriteForm은 QnaWritePage와 동일 파일에 배치 (Suspense 경계 패턴)
+    // features/qna/answer-comments/ 도메인 폴더에 응집 — colocation 준수
     status: "O",
     violations: [],
   },
@@ -75,7 +75,7 @@ const checklist = [
     category: "Readability",
     name: "복잡한 조건에 이름 붙이기",
     description: "2개 이상 조합된 boolean 표현식이 의미 있는 변수명으로 추출되어 있는가?",
-    // isCategoryMissing, isTitleInvalid, isContentInvalid, isDirty 모두 명명됨
+    // handler.ts: isInvalidContent = !trimmed || trimmed.length > MAX_COMMENT_LENGTH — 명명됨
     status: "O",
     violations: [],
   },
@@ -86,7 +86,7 @@ const checklist = [
     category: "Predictability",
     name: "API 훅 반환 타입 표준화",
     description: "유사한 API 훅들이 일관된 반환 타입(UseQueryResult 등)을 사용하는가?",
-    // useQnaCategories(useSuspenseQuery), useCreateQuestion(useMutation<Response,AxiosError,Request>) 훅 결과 객체 반환
+    // usePostComment: useMutation<PostCommentResponse, AxiosError, PostCommentRequest> 표준 패턴
     status: "O",
     violations: [],
   },
@@ -104,7 +104,7 @@ const checklist = [
     category: "Predictability",
     name: "숨겨진 사이드 이펙트 제거",
     description: "함수가 이름에 드러나지 않은 사이드 이펙트(로깅, 분석 등)를 수행하지 않는가?",
-    // beforeunload useEffect는 명시적 등록/cleanup — 숨겨진 사이드 이펙트 없음
+    // onSuccess에서 queryClient.invalidateQueries — 명시적, 예측 가능한 동작
     status: "O",
     violations: [],
   },
@@ -124,8 +124,8 @@ const checklist = [
     category: "Cohesion",
     name: "폼 응집도 선택",
     description: "폼 검증이 용도에 맞게 필드 단위 또는 폼 단위로 일관되게 선택되어 있는가?",
-    // handleSubmit에서 폼 단위 검증 일관 처리
-    status: "O",
+    // 폼 없음 (feature 모듈 파일)
+    status: "N/A",
     violations: [],
   },
   {
@@ -133,7 +133,7 @@ const checklist = [
     category: "Cohesion",
     name: "도메인별 디렉토리 구조",
     description: "기능/도메인 관련 코드가 도메인 폴더에 묶여 있는가?",
-    // features/qna/categories/, features/qna/question-write/ 도메인 폴더 구조 준수
+    // features/qna/answer-comments/ — 도메인 폴더 구조 준수
     status: "O",
     violations: [],
   },
@@ -142,7 +142,7 @@ const checklist = [
     category: "Cohesion",
     name: "상수와 로직의 근접성",
     description: "상수가 사용 로직과 가까운 위치에 정의되어 있거나 이름으로 용도가 명확한가?",
-    // MIN_CONTENT_LENGTH, MIN_TITLE_LENGTH, MAX_TITLE_LENGTH 파일 상단 정의
+    // handler.ts: MAX_COMMENT_LENGTH 파일 상단 정의, 사용 로직과 근접
     status: "O",
     violations: [],
   },
@@ -153,7 +153,7 @@ const checklist = [
     category: "Coupling",
     name: "성급한 추상화 지양",
     description: "단순히 비슷하다는 이유로 섣불리 공통 훅/함수로 추출되지 않았는가?",
-    // 각 feature 모듈 독립적, 불필요한 공통화 없음
+    // answer-comments 모듈 독립적, 불필요한 공통화 없음
     status: "O",
     violations: [],
   },
@@ -162,7 +162,7 @@ const checklist = [
     category: "Coupling",
     name: "상태 관리 범위 축소",
     description: "여러 관심사가 하나의 훅/컨텍스트에 묶이지 않고 분리되어 있는가?",
-    // largeCategoryId, mediumCategoryId, title, content, alertMessage, isAlertOpen 각각 독립
+    // usePostComment: mutationFn + onSuccess만 포함, 단일 관심사
     status: "O",
     violations: [],
   },
@@ -171,7 +171,7 @@ const checklist = [
     category: "Coupling",
     name: "Props Drilling 제거",
     description: "3단계 이상 props 전달이 컴포지션(children)으로 대체되어 있는가?",
-    // 3단계 이상 props drilling 없음
+    // 비UI 파일 — props drilling 없음
     status: "N/A",
     violations: [],
   },
