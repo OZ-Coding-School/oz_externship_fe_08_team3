@@ -1,6 +1,5 @@
 import { useRef, useState, useMemo } from 'react'
 import { useNavigate } from 'react-router'
-import { useQueryClient } from '@tanstack/react-query'
 import { AlertModal } from '@/components/common/Modal'
 import { Toast } from '@/components/common/Toast'
 import { Button } from '@/components/common/Button'
@@ -18,18 +17,17 @@ type SortOrder = 'latest' | 'oldest'
 export interface AnswerCommentSectionProps {
   answerId: number
   questionId: number
-  initialComments: AnswerCommentItem[]
+  comments: AnswerCommentItem[]
   isAuthenticated: boolean
 }
 
 export function AnswerCommentSection({
   answerId,
   questionId,
-  initialComments,
+  comments,
   isAuthenticated,
 }: AnswerCommentSectionProps) {
   const navigate = useNavigate()
-  const queryClient = useQueryClient()
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const { toast, showToast, hideToast } = useToast()
 
@@ -43,13 +41,15 @@ export function AnswerCommentSection({
   )
 
   const isAtLimit = content.length >= MAX_COMMENT_LENGTH
-  const sortedComments = useMemo(() => {
-    const sorted = [...initialComments].sort(
-      (a, b) =>
-        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-    )
-    return sortOrder === 'latest' ? sorted.reverse() : sorted
-  }, [initialComments, sortOrder])
+  const sortedComments = useMemo(
+    () =>
+      [...comments].sort((a, b) => {
+        const diff =
+          new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        return sortOrder === 'latest' ? -diff : diff
+      }),
+    [comments, sortOrder]
+  )
 
   const handleTextareaClick = () => {
     if (!isAuthenticated) {
@@ -85,11 +85,6 @@ export function AnswerCommentSection({
             {
               401: () => setShowLoginModal(true),
               403: () => setShowLoginModal(true),
-              404: () => {
-                queryClient.invalidateQueries({
-                  queryKey: ['answers', questionId],
-                })
-              },
             }
           )
           showToast(message, 'error')
@@ -104,11 +99,12 @@ export function AnswerCommentSection({
       {/* 댓글 헤더: 개수 + 정렬 필터 */}
       <div className="mb-3 flex items-center justify-between">
         <span className="text-text-heading text-sm font-medium">
-          댓글 {initialComments.length}개
+          댓글 {comments.length}개
         </span>
         <div className="flex items-center gap-1 text-xs">
           <button
             type="button"
+            aria-pressed={sortOrder === 'latest'}
             onClick={() => setSortOrder('latest')}
             className={`rounded px-2 py-1 transition-colors ${
               sortOrder === 'latest'
@@ -121,6 +117,7 @@ export function AnswerCommentSection({
           <span className="text-border-base">|</span>
           <button
             type="button"
+            aria-pressed={sortOrder === 'oldest'}
             onClick={() => setSortOrder('oldest')}
             className={`rounded px-2 py-1 transition-colors ${
               sortOrder === 'oldest'
@@ -146,7 +143,11 @@ export function AnswerCommentSection({
                     className="h-7 w-7 shrink-0 rounded-full object-cover"
                   />
                 ) : (
-                  <div className="h-7 w-7 shrink-0 rounded-full bg-gray-200" />
+                  <div
+                    role="img"
+                    aria-label="기본 프로필"
+                    className="h-7 w-7 shrink-0 rounded-full bg-gray-200"
+                  />
                 )}
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
@@ -187,18 +188,21 @@ export function AnswerCommentSection({
             value={content}
             onChange={(e) => {
               const newContent = e.target.value
-              setContent(newContent)
-              if (newContent.length >= MAX_COMMENT_LENGTH) {
+              if (
+                newContent.length >= MAX_COMMENT_LENGTH &&
+                content.length < MAX_COMMENT_LENGTH
+              ) {
                 showToast(
                   `최대 ${MAX_COMMENT_LENGTH}자까지 입력 가능합니다.`,
                   'error'
                 )
               }
+              setContent(newContent)
             }}
             onClick={handleTextareaClick}
             readOnly={!isAuthenticated}
             maxLength={MAX_COMMENT_LENGTH}
-            placeholder="개인정보를 공유 및 요청하거나, 명예 회손, 무단 광고, 불법 정보 유포시 모니터링 후 삭제될 수 있습니다."
+            placeholder="개인정보를 공유 및 요청하거나, 명예 훼손, 무단 광고, 불법 정보 유포시 모니터링 후 삭제될 수 있습니다."
             rows={3}
             className={`placeholder:text-text-muted min-w-0 flex-1 resize-none bg-transparent text-sm outline-none ${
               !isAuthenticated ? 'cursor-pointer' : ''
