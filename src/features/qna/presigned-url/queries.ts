@@ -6,7 +6,7 @@ export function useGetPresignedUrl() {
   return useMutation({
     mutationFn: (data: GetPresignedUrlRequest) =>
       api
-        .put<GetPresignedUrlResponse>('/api/v1/qna/answers/presigned-url', data)
+        .put<GetPresignedUrlResponse>('/qna/answers/presigned-url', data)
         .then((res) => res.data),
   })
 }

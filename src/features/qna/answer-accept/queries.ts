@@ -9,7 +9,7 @@ export function useAcceptAnswer(questionId: number) {
   return useMutation<AcceptAnswerResponse, AxiosError, number>({
     mutationFn: (answerId: number) =>
       api
-        .post<AcceptAnswerResponse>(`/api/v1/qna/answers/${answerId}/accept`)
+        .post<AcceptAnswerResponse>(`/qna/answers/${answerId}/accept`)
         .then((res) => res.data),
     onSuccess: () => {
       // TanStack Query가 두 호출을 내부적으로 병렬 처리한다

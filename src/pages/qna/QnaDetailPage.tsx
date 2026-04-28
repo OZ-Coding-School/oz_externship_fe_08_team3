@@ -3,11 +3,11 @@
  */
 
 import { useRef, useState, useMemo } from 'react'
-import { ConfirmModal } from '@/components/common/Modal'
 import { useParams, useNavigate, Navigate } from 'react-router'
 import rehypeSanitize from 'rehype-sanitize'
 import MDEditor from '@uiw/react-md-editor'
-import { Button } from '@/components/common/Button'
+import { Button, Spinner } from '@/components'
+import { ConfirmModal } from '@/components/common/Modal'
 import { Toast } from '@/components/common/Toast'
 import { AnswerForm } from '@/components/qna/AnswerForm'
 import type { AnswerFormHandle } from '@/components/qna/AnswerForm'
@@ -20,10 +20,89 @@ import {
 } from '@/features/qna/answers'
 import { useAcceptAnswer } from '@/features/qna/answer-accept'
 import { useGetQuestionDetail } from '@/features/qna/question-detail'
+import { usePostComment } from '@/features/qna/answer-comments'
+import type { AnswerComment } from '@/features/qna/answer-comments'
 import { useToast } from '@/hooks/useToast'
 import { formatDate } from '@/utils/formatDate'
 import { handleApiError } from '@/utils/handleApiError'
 import { ROUTES } from '@/constants/routes'
+
+// ── 댓글 폼 ──────────────────────────────────────────────────────────────────
+
+function CommentForm({
+  answerId,
+  questionId,
+}: {
+  answerId: number
+  questionId: number
+}) {
+  const [content, setContent] = useState('')
+  const { mutate, isPending } = usePostComment(answerId, questionId)
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!content.trim()) return
+    mutate({ content: content.trim() }, { onSuccess: () => setContent('') })
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="mt-3 flex items-start gap-2">
+      <textarea
+        value={content}
+        onChange={(e) => setContent(e.target.value)}
+        placeholder="댓글을 입력하세요"
+        aria-label="댓글 입력"
+        rows={2}
+        disabled={isPending}
+        className="border-border-base focus:border-primary flex-1 resize-none rounded-md border px-3 py-2 text-sm outline-none disabled:opacity-50"
+      />
+      <Button
+        type="submit"
+        size="sm"
+        disabled={!content.trim() || isPending}
+        loading={isPending}
+      >
+        등록
+      </Button>
+    </form>
+  )
+}
+
+// ── 댓글 목록 ─────────────────────────────────────────────────────────────────
+
+function CommentList({ comments }: { comments: AnswerComment[] }) {
+  const sorted = useMemo(
+    () =>
+      [...comments].sort(
+        (a, b) =>
+          new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      ),
+    [comments]
+  )
+
+  if (sorted.length === 0) return null
+
+  return (
+    <ul className="border-border-base mt-4 space-y-2 border-t pt-4">
+      {sorted.map((comment) => (
+        <li key={comment.id} className="flex items-start gap-2 text-sm">
+          <span className="text-text-heading shrink-0 font-medium">
+            {comment.author.nickname}
+          </span>
+          <span className="text-text-body flex-1">{comment.content}</span>
+          <time
+            dateTime={comment.created_at}
+            className="text-text-muted shrink-0 text-xs"
+          >
+            {formatDate(comment.created_at)}
+          </time>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+// ── QnaDetailPage ─────────────────────────────────────────────────────────────
 
 export function QnaDetailPage() {
   const { questionId } = useParams<{ questionId: string }>()
@@ -31,7 +110,6 @@ export function QnaDetailPage() {
   const { isAuthenticated, user } = useAuthStore()
   const { toast, showToast, hideToast } = useToast()
 
-  // RBAC: 로그인 + 허용 role인 경우에만 답변 버튼 노출
   const canAnswer =
     isAuthenticated &&
     user?.role != null &&
@@ -43,21 +121,22 @@ export function QnaDetailPage() {
 
   const numericQuestionId = questionId ? Number(questionId) : 0
 
-  // ── hooks는 조건부 호출 불가 — early return은 아래에서 처리 ──────────────────
+  // ── hooks는 조건부 호출 불가 — early return은 아래에서 처리 ──────────────
   const {
     data: questionDetail,
     isLoading: isQuestionLoading,
     isError: isQuestionError,
   } = useGetQuestionDetail(numericQuestionId)
+
   const {
     data: answers,
     isLoading: isAnswersLoading,
     isError: isAnswersError,
   } = useGetAnswers(numericQuestionId)
+
   const { mutate: postAnswer, isPending: isPostPending } =
     usePostAnswer(numericQuestionId)
 
-  // 현재 로그인 유저가 작성한 답변 — usePutAnswer hook 인자로 필요해 hooks 앞에 위치
   const myAnswer = answers?.find(
     (a) => user?.id != null && a.author.id === user.id
   )
@@ -71,17 +150,21 @@ export function QnaDetailPage() {
     numericQuestionId
   )
 
-  // 채택 답변 상단 정렬 — 매 렌더링 sort 방지
   const sortedAnswers = useMemo(
     () =>
       answers
-        ? [...answers].sort(
-            (a, b) => Number(b.is_adopted) - Number(a.is_adopted)
-          )
+        ? [...answers].sort((a, b) => {
+            const byAdopted = Number(b.is_adopted) - Number(a.is_adopted)
+            if (byAdopted !== 0) return byAdopted
+            return (
+              new Date(a.created_at).getTime() -
+              new Date(b.created_at).getTime()
+            )
+          })
         : [],
     [answers]
   )
-  // ─────────────────────────────────────────────────────────────────────────────
+  // ──────────────────────────────────────────────────────────────────────────
 
   if (
     !questionId ||
@@ -91,7 +174,6 @@ export function QnaDetailPage() {
     return <Navigate to={ROUTES.QNA.LIST} />
   }
 
-  // early return 이후에 위치 — questionId가 유효할 때만 의미 있는 값
   const questionTitle = questionDetail?.title ?? '질문 내용을 불러오는 중...'
   const anyAdopted = answers?.some((a) => a.is_adopted) ?? false
   const isQuestionOwner =
@@ -129,7 +211,6 @@ export function QnaDetailPage() {
 
   const handleEditSubmit = (content: string, imageUrls: string[]) => {
     if (!myAnswer) return
-
     putAnswer(
       { content, img_urls: imageUrls },
       {
@@ -163,7 +244,6 @@ export function QnaDetailPage() {
 
   const handleConfirmAccept = () => {
     if (confirmAcceptId === null) return
-
     acceptAnswer(confirmAcceptId, {
       onSuccess: () => {
         showToast('답변이 채택되었습니다.', 'success')
@@ -193,25 +273,102 @@ export function QnaDetailPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
-      {/* 질문 상세 영역 (추후 구현) */}
-      <div className="border-border-base bg-bg-base rounded-lg border p-6">
+      {/* 질문 상세 */}
+      <section className="border-border-base bg-bg-base rounded-lg border p-6">
         {isQuestionLoading && (
-          <p className="text-text-muted text-sm">질문을 불러오는 중...</p>
+          <div className="flex justify-center py-10">
+            <Spinner label="질문을 불러오는 중..." />
+          </div>
         )}
         {isQuestionError && (
           <p className="text-error text-sm">
             질문을 불러오지 못했습니다. 다시 시도해 주세요.
           </p>
         )}
-        {!isQuestionLoading && !isQuestionError && (
-          <p className="text-text-muted">질의응답 상세</p>
+        {questionDetail && (
+          <>
+            {/* 카테고리 */}
+            <span className="text-text-muted text-xs font-medium">
+              {questionDetail.category.name}
+            </span>
+
+            {/* 제목 */}
+            <h1 className="text-text-heading mt-1.5 text-xl leading-snug font-bold">
+              {questionDetail.title}
+            </h1>
+
+            {/* 메타 정보 */}
+            <div className="mt-3 flex items-center justify-between">
+              <div className="text-text-muted flex flex-wrap items-center gap-1.5 text-sm">
+                <span className="text-text-heading font-medium">
+                  {questionDetail.author.nickname}
+                </span>
+                <span>·</span>
+                <span>
+                  {questionDetail.author.course_name}{' '}
+                  {questionDetail.author.cohort_name}
+                </span>
+                <span>·</span>
+                <time dateTime={questionDetail.created_at}>
+                  {formatDate(questionDetail.created_at)}
+                </time>
+                <span>·</span>
+                <span>조회 {questionDetail.view_count.toLocaleString()}</span>
+              </div>
+              {isQuestionOwner && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() =>
+                    navigate(
+                      ROUTES.QNA.EDIT.replace(
+                        ':questionId',
+                        String(numericQuestionId)
+                      ),
+                      { replace: true }
+                    )
+                  }
+                >
+                  수정
+                </Button>
+              )}
+            </div>
+
+            <hr className="border-border-base my-4" />
+
+            {/* 본문 — 마크다운 렌더링 */}
+            <div data-color-mode="light">
+              <MDEditor.Markdown
+                source={questionDetail.content}
+                rehypePlugins={[rehypeSanitize]}
+              />
+            </div>
+
+            {/* 첨부 이미지 */}
+            {questionDetail.images.length > 0 && (
+              <div className="mt-4 flex flex-wrap gap-2">
+                {questionDetail.images.map((img, idx) => (
+                  <img
+                    key={img.id}
+                    src={img.img_url}
+                    alt={`첨부 이미지 ${idx + 1}`}
+                    loading="lazy"
+                    decoding="async"
+                    className="max-h-64 rounded-md object-contain"
+                  />
+                ))}
+              </div>
+            )}
+          </>
         )}
-      </div>
+      </section>
 
       {/* 답변 목록 */}
-      <section aria-labelledby="answers-heading" className="mt-6">
+      <section aria-labelledby="answers-heading" className="mt-8">
         {isAnswersLoading && (
-          <p className="text-text-muted text-sm">답변을 불러오는 중...</p>
+          <div className="flex justify-center py-10">
+            <Spinner label="답변을 불러오는 중..." />
+          </div>
         )}
         {isAnswersError && (
           <p className="text-error text-sm">
@@ -228,92 +385,104 @@ export function QnaDetailPage() {
             </h2>
 
             {sortedAnswers.length === 0 ? (
-              <p className="text-text-muted mt-4 text-center text-sm">
-                아직 등록된 답변이 없습니다.
-              </p>
+              <div className="text-text-muted mt-6 flex flex-col items-center py-12 text-center">
+                <p className="text-base font-medium">
+                  아직 등록된 답변이 없습니다.
+                </p>
+                <p className="mt-1 text-sm">첫 번째 답변을 작성해 보세요.</p>
+              </div>
             ) : (
               <div className="mt-4 space-y-6">
-                {sortedAnswers.map((answer) => {
-                  // 채택 배지(absolute)가 있는 경우에만 relative + 상단 여백 필요
-                  const wrapperClass = answer.is_adopted
-                    ? 'relative mt-4'
-                    : undefined
-                  const cardBorderClass = answer.is_adopted
-                    ? 'border-primary'
-                    : 'border-border-base'
-
-                  return (
-                    <div key={answer.id} className={wrapperClass}>
-                      {/* 질문자 채택 배지 — 카드 상단 테두리에 반 걸쳐서 표시 */}
-                      {answer.is_adopted && (
-                        <div
-                          role="status"
-                          aria-label="질문자가 채택한 답변"
-                          className="bg-primary absolute top-0 left-3 -translate-y-1/2 rounded-full px-3 py-1.5 text-xs font-bold text-white"
-                        >
-                          질문자 채택
-                        </div>
-                      )}
-
-                      <article
-                        className={`bg-bg-base rounded-lg border p-6 ${cardBorderClass}`}
+                {sortedAnswers.map((answer) => (
+                  <div
+                    key={answer.id}
+                    className={answer.is_adopted ? 'relative mt-4' : undefined}
+                  >
+                    {/* 채택 배지 — 카드 상단 테두리에 반 걸쳐서 표시 */}
+                    {answer.is_adopted && (
+                      <div
+                        role="status"
+                        aria-label="질문자가 채택한 답변"
+                        className="bg-primary absolute top-0 left-3 -translate-y-1/2 rounded-full px-3 py-1.5 text-xs font-bold text-white"
                       >
-                        {/* 작성자 정보 + 채택하기 버튼 + 수정 시각 */}
-                        <div className="mb-4 flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <span className="text-text-heading text-sm font-medium">
-                              {answer.author.nickname}
-                            </span>
-                            <span className="text-text-muted text-xs">
-                              {answer.author.course_name} ·{' '}
-                              {answer.author.cohort_name}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <time
-                              dateTime={answer.updated_at}
-                              className="text-text-muted text-xs"
-                            >
-                              수정일: {formatDate(answer.updated_at)}
-                            </time>
-                            {/* 채택하기 버튼 — 질문 작성자 + 미채택 + 본인 답변 제외 */}
-                            {isQuestionOwner &&
-                              !anyAdopted &&
-                              answer.author.id !== user?.id && (
-                                <Button
-                                  size="sm"
-                                  type="button"
-                                  onClick={() => setConfirmAcceptId(answer.id)}
-                                  disabled={isAcceptPending}
-                                  loading={
-                                    isAcceptPending &&
-                                    confirmAcceptId === answer.id
-                                  }
-                                >
-                                  채택하기
-                                </Button>
-                              )}
-                          </div>
-                        </div>
+                        질문자 채택
+                      </div>
+                    )}
 
-                        {/* 답변 내용 (마크다운 렌더링) */}
-                        <div data-color-mode="light">
-                          <MDEditor.Markdown
-                            source={answer.content}
-                            rehypePlugins={[rehypeSanitize]}
-                          />
+                    <article
+                      className={[
+                        'bg-bg-base rounded-lg border p-6',
+                        answer.is_adopted
+                          ? 'border-primary'
+                          : 'border-border-base',
+                      ].join(' ')}
+                    >
+                      {/* 작성자 정보 + 채택하기 버튼 */}
+                      <div className="mb-4 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="text-text-heading text-sm font-medium">
+                            {answer.author.nickname}
+                          </span>
+                          <span className="text-text-muted text-xs">
+                            {answer.author.course_name} ·{' '}
+                            {answer.author.cohort_name}
+                          </span>
                         </div>
-                      </article>
-                    </div>
-                  )
-                })}
+                        <div className="flex items-center gap-3">
+                          <time
+                            dateTime={answer.updated_at}
+                            className="text-text-muted text-xs"
+                          >
+                            수정일: {formatDate(answer.updated_at)}
+                          </time>
+                          {/* 채택하기 — 질문 작성자 + 미채택 + 본인 답변 제외 */}
+                          {isQuestionOwner &&
+                            !anyAdopted &&
+                            answer.author.id !== user?.id && (
+                              <Button
+                                size="sm"
+                                type="button"
+                                onClick={() => setConfirmAcceptId(answer.id)}
+                                disabled={isAcceptPending}
+                                loading={
+                                  isAcceptPending &&
+                                  confirmAcceptId === answer.id
+                                }
+                              >
+                                채택하기
+                              </Button>
+                            )}
+                        </div>
+                      </div>
+
+                      {/* 답변 내용 — 마크다운 렌더링 */}
+                      <div data-color-mode="light">
+                        <MDEditor.Markdown
+                          source={answer.content}
+                          rehypePlugins={[rehypeSanitize]}
+                        />
+                      </div>
+
+                      {/* 댓글 목록 (오래된순 정렬) */}
+                      <CommentList comments={answer.comments} />
+
+                      {/* 댓글 폼 — 로그인 유저만 */}
+                      {isAuthenticated && (
+                        <CommentForm
+                          answerId={answer.id}
+                          questionId={numericQuestionId}
+                        />
+                      )}
+                    </article>
+                  </div>
+                ))}
               </div>
             )}
           </>
         )}
       </section>
 
-      {/* 답변 섹션 — 채택된 본인 답변은 수정 버튼 비활성 */}
+      {/* 답변 작성 / 수정 섹션 */}
       {canAnswer && !isAnswersLoading && !isAnswersError && (
         <div className="mt-6">
           {!showForm ? (

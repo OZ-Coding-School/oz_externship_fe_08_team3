@@ -6,6 +6,7 @@ import { categoriesHandler } from '@/features/qna/categories'
 import { questionsHandler } from '@/features/qna/questions'
 import { questionWriteHandler } from '@/features/qna/question-write'
 import { questionDetailHandler } from '@/features/qna/question-detail'
+import { answerCommentsHandlers } from '@/features/qna/answer-comments'
 
 export const handlers = [
   http.get('/api/health', () => {
@@ -13,6 +14,7 @@ export const handlers = [
   }),
   ...answersHandlers,
   ...answerAcceptHandlers,
+  ...answerCommentsHandlers,
   ...presignedUrlHandlers,
   ...categoriesHandler,
   ...questionsHandler,
