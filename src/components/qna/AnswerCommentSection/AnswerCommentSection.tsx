@@ -42,7 +42,7 @@ export function AnswerCommentSection({
     questionId
   )
 
-  const isOverLimit = content.length > MAX_COMMENT_LENGTH
+  const isAtLimit = content.length >= MAX_COMMENT_LENGTH
   const sortedComments = useMemo(() => {
     const sorted = [...initialComments].sort(
       (a, b) =>
@@ -67,11 +67,6 @@ export function AnswerCommentSection({
       textareaRef.current?.focus()
       return
     }
-    if (isOverLimit) {
-      showToast(`최대 ${MAX_COMMENT_LENGTH}자까지 입력 가능합니다.`, 'error')
-      return
-    }
-
     postComment(
       { content: content.trim() },
       {
@@ -140,80 +135,91 @@ export function AnswerCommentSection({
 
       {/* 댓글 리스트 */}
       {sortedComments.length > 0 && (
-        <ul className="mb-4 space-y-3">
-          {sortedComments.map((comment) => (
-            <li key={comment.id} className="flex gap-3">
-              {comment.author.profile_image_url ? (
-                <img
-                  src={comment.author.profile_image_url}
-                  alt={comment.author.nickname}
-                  className="h-7 w-7 shrink-0 rounded-full object-cover"
-                />
-              ) : (
-                <div className="h-7 w-7 shrink-0 rounded-full bg-gray-200" />
-              )}
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-text-heading text-xs font-medium">
-                    {comment.author.nickname}
-                  </span>
-                  <time
-                    dateTime={comment.created_at}
-                    className="text-text-muted text-xs"
-                  >
-                    {formatDate(comment.created_at)}
-                  </time>
+        <ul className="mb-4">
+          {sortedComments.map((comment, index) => (
+            <li key={comment.id}>
+              <div className="flex gap-3 py-3">
+                {comment.author.profile_image_url ? (
+                  <img
+                    src={comment.author.profile_image_url}
+                    alt={comment.author.nickname}
+                    className="h-7 w-7 shrink-0 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="h-7 w-7 shrink-0 rounded-full bg-gray-200" />
+                )}
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-text-heading text-xs font-medium">
+                      {comment.author.nickname}
+                    </span>
+                    <time
+                      dateTime={comment.created_at}
+                      className="text-text-muted text-xs"
+                    >
+                      {formatDate(comment.created_at)}
+                    </time>
+                  </div>
+                  <p className="text-text-body mt-0.5 text-sm break-words">
+                    {comment.content}
+                  </p>
                 </div>
-                <p className="text-text-body mt-0.5 text-sm break-words">
-                  {comment.content}
-                </p>
               </div>
+              {index < sortedComments.length - 1 && (
+                <hr className="border-border-base" />
+              )}
             </li>
           ))}
         </ul>
       )}
 
       {/* 댓글 입력 영역 */}
-      <div className="flex flex-col gap-2">
-        <div className="relative">
+      <div
+        className={`rounded-xl border px-4 py-4 transition-colors ${
+          isAtLimit
+            ? 'border-error'
+            : 'border-border-base focus-within:border-primary'
+        } ${!isAuthenticated ? 'bg-bg-subtle' : 'bg-bg-base'}`}
+      >
+        <div className="flex items-end gap-3">
           <textarea
             ref={textareaRef}
             value={content}
-            onChange={(e) => setContent(e.target.value)}
+            onChange={(e) => {
+              const newContent = e.target.value
+              setContent(newContent)
+              if (newContent.length >= MAX_COMMENT_LENGTH) {
+                showToast(
+                  `최대 ${MAX_COMMENT_LENGTH}자까지 입력 가능합니다.`,
+                  'error'
+                )
+              }
+            }}
             onClick={handleTextareaClick}
             readOnly={!isAuthenticated}
             maxLength={MAX_COMMENT_LENGTH}
-            placeholder={
-              isAuthenticated
-                ? '댓글을 입력해 주세요. (최대 500자)'
-                : '로그인 후 댓글을 작성할 수 있습니다.'
-            }
+            placeholder="개인정보를 공유 및 요청하거나, 명예 회손, 무단 광고, 불법 정보 유포시 모니터링 후 삭제될 수 있습니다."
             rows={3}
-            className={`placeholder:text-text-muted focus:ring-primary/30 w-full resize-none rounded-md border px-3 py-2 text-sm transition-colors outline-none focus:ring-2 ${
-              isOverLimit
-                ? 'border-error focus:border-error'
-                : 'border-border-base focus:border-primary'
-            } ${!isAuthenticated ? 'bg-bg-subtle cursor-pointer' : 'bg-bg-base'}`}
-          />
-          <span
-            className={`absolute right-3 bottom-2 text-xs ${
-              isOverLimit ? 'text-error font-semibold' : 'text-text-muted'
+            className={`placeholder:text-text-muted min-w-0 flex-1 resize-none bg-transparent text-sm outline-none ${
+              !isAuthenticated ? 'cursor-pointer' : ''
             }`}
-          >
-            {content.length}/{MAX_COMMENT_LENGTH}
-          </span>
-        </div>
-
-        <div className="flex justify-end">
+          />
           <Button
             type="button"
             size="sm"
             onClick={handleSubmit}
-            disabled={isPending}
+            disabled={!content.trim() || isPending}
             loading={isPending}
           >
             등록
           </Button>
+        </div>
+        <div className="mt-1 flex justify-end">
+          <span
+            className={`text-xs ${isAtLimit ? 'text-error font-semibold' : 'text-text-muted'}`}
+          >
+            {content.length}/{MAX_COMMENT_LENGTH}
+          </span>
         </div>
       </div>
 
