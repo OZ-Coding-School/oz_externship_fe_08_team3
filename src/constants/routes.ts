@@ -30,6 +30,10 @@ export const ROUTES = {
     EDIT: '/qna/:questionId/edit',
   },
 
+  CHATBOT: {
+    HOME: '/chatbot',
+  },
+
   COMMUNITY: {
     LIST: '',
     WRITE: '',
