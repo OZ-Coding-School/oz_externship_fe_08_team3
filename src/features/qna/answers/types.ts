@@ -1,3 +1,5 @@
+import type { AnswerComment } from '../answer-comments/types'
+
 export interface PostAnswerRequest {
   content: string
   img_urls: string[]
@@ -29,7 +31,7 @@ export interface GetAnswerItem {
   content: string
   is_adopted: boolean
   images: AnswerImage[]
-  comments: unknown[]
+  comments: AnswerComment[]
   created_at: string
   updated_at: string
 }
