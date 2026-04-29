@@ -10,6 +10,7 @@ import { questionDetailHandler } from '@/features/qna/question-detail'
 import { aiAnswerHandlers } from '@/features/qna/question-ai-answer'
 import { csChatbotHandlers } from '@/features/chatbot/cs/handler'
 import { sessionsHandlers } from '@/features/chatbot/sessions/handler'
+import { qnaChatbotHandlers } from '@/features/chatbot/qna/handler'
 
 export const handlers = [
   http.get('/api/health', () => {
@@ -26,4 +27,5 @@ export const handlers = [
   ...aiAnswerHandlers,
   ...csChatbotHandlers,
   ...sessionsHandlers,
+  ...qnaChatbotHandlers,
 ]
