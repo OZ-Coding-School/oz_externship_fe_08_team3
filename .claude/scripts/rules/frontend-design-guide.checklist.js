@@ -21,7 +21,7 @@ const checklist = [
     category: "Readability",
     name: "매직 넘버 명명",
     description: "의미 있는 숫자 리터럴이 명명된 상수로 추출되어 있는가?",
-    // ChatbotFab: SVG 좌표값은 아이콘 경로, 의미 있는 매직넘버 없음
+    // HubView: SVG 좌표값/크기만 존재, 의미 있는 매직넘버 없음
     status: "N/A",
     violations: [],
   },
@@ -30,8 +30,8 @@ const checklist = [
     category: "Readability",
     name: "구현 세부사항 추상화 (인증/권한)",
     description: "인증 체크, 권한 검사 등 공통 로직이 래퍼/가드 컴포넌트로 분리되어 있는가?",
-    // ChatbotFab: useAuthStore isAuthenticated 체크로 미인증 시 null 반환 — 적절한 가드
-    status: "O",
+    // HubView: 인증 체크 없음 (FAB 단에서 처리), sessions/queries: API 훅만
+    status: "N/A",
     violations: [],
   },
   {
@@ -39,7 +39,7 @@ const checklist = [
     category: "Readability",
     name: "구현 세부사항 추상화 (인터랙션)",
     description: "다이얼로그/오버레이 등 복잡한 인터랙션이 전용 컴포넌트로 추출되어 있는가?",
-    // 다이얼로그/오버레이 인터랙션 없음 — 단순 UI 컴포넌트
+    // 다이얼로그/오버레이 인터랙션 없음
     status: "N/A",
     violations: [],
   },
@@ -48,8 +48,8 @@ const checklist = [
     category: "Readability",
     name: "조건부 렌더링 분리",
     description: "역할/상태에 따라 크게 다른 UI/로직이 별도 컴포넌트로 분리되어 있는가?",
-    // ChatbotFab: isOpen 분기로 X/로봇 아이콘 전환 — 간결한 삼항으로 적절
-    status: "N/A",
+    // HubView: isLoading/isError 분기가 있지만 각각 짧고 단순, 별도 분리 불필요
+    status: "O",
     violations: [],
   },
   {
@@ -57,7 +57,7 @@ const checklist = [
     category: "Readability",
     name: "복잡한 삼항 연산자 단순화",
     description: "중첩 삼항 연산자가 if/else 또는 IIFE로 대체되어 있는가?",
-    // MessageList: isUser 삼항 — 단일 레벨, 중첩 없음
+    // 중첩 삼항 없음
     status: "N/A",
     violations: [],
   },
@@ -66,7 +66,7 @@ const checklist = [
     category: "Readability",
     name: "시선 이동 감소 (Colocation)",
     description: "단일 사용처에서만 쓰이는 단순 로직이 사용 위치 근처에 배치되어 있는가?",
-    // renderAssistantContent은 MessageList 내부에서만 사용 — colocation 준수
+    // handleCsClick, handleSessionClick은 HubView 내부에서만 사용 — colocation 준수
     status: "O",
     violations: [],
   },
@@ -75,7 +75,7 @@ const checklist = [
     category: "Readability",
     name: "복잡한 조건에 이름 붙이기",
     description: "2개 이상 조합된 boolean 표현식이 의미 있는 변수명으로 추출되어 있는가?",
-    // 복합 조건식 없음
+    // !isLoading && !isError 조합이 있지만 직관적이고 2개 조건
     status: "N/A",
     violations: [],
   },
@@ -86,8 +86,8 @@ const checklist = [
     category: "Predictability",
     name: "API 훅 반환 타입 표준화",
     description: "유사한 API 훅들이 일관된 반환 타입(UseQueryResult 등)을 사용하는가?",
-    // API 훅 없음 (store, types, utility hook)
-    status: "N/A",
+    // useGetSessions: UseQueryResult 직접 반환, cs/queries의 useGetCsHistory와 동일 패턴
+    status: "O",
     violations: [],
   },
   {
@@ -104,7 +104,7 @@ const checklist = [
     category: "Predictability",
     name: "숨겨진 사이드 이펙트 제거",
     description: "함수가 이름에 드러나지 않은 사이드 이펙트(로깅, 분석 등)를 수행하지 않는가?",
-    // 함수 이름이 동작을 정확히 설명 (handleSend, handleBack, handleClose)
+    // handleCsClick: setView만, handleSessionClick: enterQna만 — 이름이 동작을 정확히 설명
     status: "O",
     violations: [],
   },
@@ -133,7 +133,7 @@ const checklist = [
     category: "Cohesion",
     name: "도메인별 디렉토리 구조",
     description: "기능/도메인 관련 코드가 도메인 폴더에 묶여 있는가?",
-    // components/chatbot/ 도메인 폴더에 ChatInput/ChatbotHeader/MessageList 응집
+    // features/chatbot/hub/, features/chatbot/sessions/ 도메인 폴더 구조 준수
     status: "O",
     violations: [],
   },
@@ -142,8 +142,8 @@ const checklist = [
     category: "Cohesion",
     name: "상수와 로직의 근접성",
     description: "상수가 사용 로직과 가까운 위치에 정의되어 있거나 이름으로 용도가 명확한가?",
-    // 상수 정의 없음
-    status: "N/A",
+    // SESSIONS_QUERY_KEY: queries.ts에 정의, mockSessions: handler.ts에 정의 — 사용처 근접
+    status: "O",
     violations: [],
   },
 
@@ -153,7 +153,7 @@ const checklist = [
     category: "Coupling",
     name: "성급한 추상화 지양",
     description: "단순히 비슷하다는 이유로 섣불리 공통 훅/함수로 추출되지 않았는가?",
-    // 각 컴포넌트가 단일 역할 수행, 불필요한 공통화 없음
+    // HubView: 단일 역할(목록+진입점), sessions 모듈: 단일 API, 불필요한 공통화 없음
     status: "O",
     violations: [],
   },
@@ -162,7 +162,7 @@ const checklist = [
     category: "Coupling",
     name: "상태 관리 범위 축소",
     description: "여러 관심사가 하나의 훅/컨텍스트에 묶이지 않고 분리되어 있는가?",
-    // ChatbotHeader: store에서 close/setView만 사용, ChatInput: 자체 state만 — 단일 관심사
+    // HubView: useGetSessions(서버상태) + chatbotStore(UI상태) 분리, 관심사별 분리
     status: "O",
     violations: [],
   },
@@ -171,7 +171,7 @@ const checklist = [
     category: "Coupling",
     name: "Props Drilling 제거",
     description: "3단계 이상 props 전달이 컴포지션(children)으로 대체되어 있는가?",
-    // ChatInput: 1레벨 props만, ChatbotHeader: store 직접 사용 — drilling 없음
+    // props drilling 없음, store 직접 사용
     status: "N/A",
     violations: [],
   },
