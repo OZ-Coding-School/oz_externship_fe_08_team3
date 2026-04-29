@@ -55,10 +55,12 @@ export function useCsChat() {
 
     hasInitializedHistoryRef.current = true
 
-    if (historyData.results.length === 0) {
+    const results = historyData.results ?? []
+
+    if (results.length === 0) {
       setMessages([WELCOME_MESSAGE])
     } else {
-      setMessages(mapHistoryToMessages(historyData.results))
+      setMessages(mapHistoryToMessages(results))
     }
   }, [historyData])
 
