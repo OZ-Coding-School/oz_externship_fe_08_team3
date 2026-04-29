@@ -69,12 +69,12 @@ export function useCsChat() {
 
       // 사용자 메시지 낙관적 추가
       const userMsg: ChatMessage = {
-        id: `cs-user-${Date.now()}`,
+        id: `cs-user-${crypto.randomUUID()}`,
         role: 'user',
         message: trimmed,
       }
 
-      const assistantId = `cs-assistant-${Date.now()}`
+      const assistantId = `cs-assistant-${crypto.randomUUID()}`
       const assistantMsg: ChatMessage = {
         id: assistantId,
         role: 'assistant',
@@ -141,7 +141,13 @@ export function useCsChat() {
               break
             }
 
-            const parsed = JSON.parse(data) as CsSseChunk
+            let parsed: CsSseChunk
+            try {
+              parsed = JSON.parse(data) as CsSseChunk
+            } catch {
+              // malformed chunk 무시, 다음 이벤트 계속 처리
+              continue
+            }
             hasReceivedChunk = true
 
             setMessages((prev) =>
