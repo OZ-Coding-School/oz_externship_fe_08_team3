@@ -2,6 +2,7 @@ import MDEditor from '@uiw/react-md-editor'
 import rehypeSanitize from 'rehype-sanitize'
 import type { GetAnswerItem } from '@/features/qna/answers'
 import { Button } from '@/components/common/Button'
+import { UserAvatar } from '@/components/common/UserAvatar'
 import { CommentList } from '@/components/qna/CommentList'
 import { CommentForm } from '@/components/qna/CommentForm'
 import { formatDate } from '@/utils/formatDate'
@@ -52,17 +53,10 @@ export function AnswerCard({
         {/* 카드 헤더: 프로필 좌측 / 채택 버튼 우측 */}
         <div className="mb-4 flex items-start justify-between">
           <div className="flex items-center gap-2">
-            {answer.author.profile_image_url ? (
-              <img
-                src={answer.author.profile_image_url}
-                alt={answer.author.nickname}
-                className="h-8 w-8 rounded-full object-cover"
-              />
-            ) : (
-              <div className="bg-bg-subtle flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold">
-                {[...answer.author.nickname][0] ?? '?'}
-              </div>
-            )}
+            <UserAvatar
+              profileImageUrl={answer.author.profile_image_url}
+              nickname={answer.author.nickname}
+            />
             <div>
               <span className="text-text-heading text-sm font-medium">
                 {answer.author.nickname}
