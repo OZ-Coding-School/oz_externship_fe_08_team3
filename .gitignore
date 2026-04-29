@@ -29,6 +29,9 @@ dist-ssr
 *.sw?
 settings.local.json
 
+# pnpm
+.pnpm-store/
+
 # Playwright
 playwright-report/
 test-results/
