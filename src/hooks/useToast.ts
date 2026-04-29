@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { ToastVariant } from '@/components/common/Toast'
+import type { ToastVariant } from '@/components'
 
 type ToastState =
   | { visible: false }

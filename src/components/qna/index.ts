@@ -1,4 +1,7 @@
 export * from './MarkdownEditor'
+export * from './AnswerCard'
 export * from './AnswerForm'
 export * from './QuestionCard'
 export * from './CategoryFilter'
+export * from './CommentForm'
+export * from './CommentList'

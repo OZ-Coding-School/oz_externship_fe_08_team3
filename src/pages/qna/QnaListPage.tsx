@@ -12,9 +12,9 @@ import {
   Modal,
   Button,
   Spinner,
+  QuestionCard,
+  CategoryFilter,
 } from '@/components'
-import { QuestionCard } from '@/components/qna/QuestionCard'
-import { CategoryFilter } from '@/components/qna/CategoryFilter'
 import { useQnaQuestions } from '@/features/qna/questions'
 import type { QuestionsListParams } from '@/features/qna/questions'
 import { ROUTES } from '@/constants/routes'

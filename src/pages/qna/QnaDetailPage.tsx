@@ -6,11 +6,15 @@ import { useRef, useState, useMemo } from 'react'
 import { useParams, useNavigate, Navigate, Link } from 'react-router'
 import rehypeSanitize from 'rehype-sanitize'
 import MDEditor from '@uiw/react-md-editor'
-import { Button, Spinner } from '@/components'
-import { ConfirmModal } from '@/components/common/Modal'
-import { Toast } from '@/components/common/Toast'
-import { AnswerForm } from '@/components/qna/AnswerForm'
-import type { AnswerFormHandle } from '@/components/qna/AnswerForm'
+import {
+  Button,
+  Spinner,
+  ConfirmModal,
+  Toast,
+  AnswerForm,
+  AnswerCard,
+} from '@/components'
+import type { AnswerFormHandle } from '@/components'
 import { useAuthStore } from '@/stores/authStore'
 import { ANSWER_ALLOWED_ROLES } from '@/constants/roles'
 import {
@@ -20,8 +24,6 @@ import {
 } from '@/features/qna/answers'
 import { useAcceptAnswer } from '@/features/qna/answer-accept'
 import { useGetQuestionDetail } from '@/features/qna/question-detail'
-import { usePostComment } from '@/features/qna/answer-comments'
-import type { AnswerComment } from '@/features/qna/answer-comments'
 import { useToast } from '@/hooks/useToast'
 import { formatDate } from '@/utils/formatDate'
 import { handleApiError } from '@/utils/handleApiError'
@@ -96,136 +98,6 @@ function RobotIcon() {
         strokeLinejoin="round"
       />
     </svg>
-  )
-}
-
-// ── 댓글 폼 ───────────────────────────────────────────────────────────────────
-
-function CommentForm({
-  answerId,
-  questionId,
-}: {
-  answerId: number
-  questionId: number
-}) {
-  const [content, setContent] = useState('')
-  const { mutate, isPending } = usePostComment(answerId, questionId)
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!content.trim()) return
-    mutate({ content: content.trim() }, { onSuccess: () => setContent('') })
-  }
-
-  const hasContent = content.trim().length > 0
-
-  return (
-    <form onSubmit={handleSubmit} className="mt-3 flex items-start gap-2">
-      <textarea
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-        placeholder="개인정보를 공유 및 요청하거나, 명예 훼손, 무단 광고, 불법 정보 유포시 모니터링 후 삭제될 수 있습니다."
-        aria-label="댓글 입력"
-        rows={2}
-        disabled={isPending}
-        className="border-border-base focus:border-primary flex-1 resize-none rounded-md border px-3 py-2 text-sm outline-none disabled:opacity-50"
-      />
-      <button
-        type="submit"
-        disabled={!hasContent || isPending}
-        aria-busy={isPending}
-        className={[
-          'h-9 shrink-0 rounded-sm px-3 text-sm font-medium transition-colors',
-          hasContent && !isPending
-            ? 'bg-primary hover:bg-primary-700 text-white'
-            : 'bg-disable text-text-muted cursor-not-allowed',
-        ].join(' ')}
-      >
-        {isPending ? '등록 중...' : '등록'}
-      </button>
-    </form>
-  )
-}
-
-// ── 댓글 목록 ─────────────────────────────────────────────────────────────────
-
-type SortOrder = 'oldest' | 'latest'
-
-function CommentList({ comments }: { comments: AnswerComment[] }) {
-  const [sortOrder, setSortOrder] = useState<SortOrder>('oldest')
-  const [isSortOpen, setIsSortOpen] = useState(false)
-  const sortRef = useRef<HTMLDivElement>(null)
-
-  const sorted = useMemo(() => {
-    const copy = [...comments]
-    if (sortOrder === 'latest') {
-      return copy.sort(
-        (a, b) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      )
-    }
-    return copy.sort(
-      (a, b) =>
-        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-    )
-  }, [comments, sortOrder])
-
-  if (comments.length === 0) return null
-
-  const sortLabel = sortOrder === 'latest' ? '최신순' : '오래된순'
-
-  return (
-    <div className="border-border-base mt-4 border-t pt-4">
-      {/* 정렬 버튼 */}
-      <div className="relative mb-3 flex justify-end" ref={sortRef}>
-        <button
-          type="button"
-          onClick={() => setIsSortOpen((v) => !v)}
-          className="text-text-muted hover:text-text-body flex items-center gap-1 text-xs"
-        >
-          {sortLabel} ↕
-        </button>
-        {isSortOpen && (
-          <div className="border-border-base bg-bg-base absolute top-6 right-0 z-10 min-w-[100px] rounded-md border shadow-md">
-            {(['oldest', 'latest'] as const).map((order) => (
-              <button
-                key={order}
-                type="button"
-                onClick={() => {
-                  setSortOrder(order)
-                  setIsSortOpen(false)
-                }}
-                className={[
-                  'hover:bg-bg-muted block w-full px-3 py-2 text-left text-xs',
-                  sortOrder === order
-                    ? 'text-primary font-semibold'
-                    : 'text-text-body',
-                ].join(' ')}
-              >
-                {order === 'oldest' ? '오래된순' : '최신순'}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <ul className="space-y-2">
-        {sorted.map((comment) => (
-          <li key={comment.id} className="flex items-start gap-2 text-sm">
-            <span className="text-text-heading shrink-0 font-medium">
-              {comment.author.nickname}
-            </span>
-            <span className="text-text-body flex-1">{comment.content}</span>
-            <time
-              dateTime={comment.created_at}
-              className="text-text-muted shrink-0 text-xs"
-            >
-              {formatDate(comment.created_at)}
-            </time>
-          </li>
-        ))}
-      </ul>
-    </div>
   )
 }
 
@@ -639,95 +511,18 @@ export function QnaDetailPage() {
             ) : (
               <div className="mt-4 space-y-6">
                 {sortedAnswers.map((answer) => (
-                  <div
+                  <AnswerCard
                     key={answer.id}
-                    className={answer.is_adopted ? 'relative mt-4' : undefined}
-                  >
-                    {answer.is_adopted && (
-                      <div
-                        aria-label="질문자가 채택한 답변"
-                        className="bg-primary absolute top-0 left-3 -translate-y-1/2 rounded-full px-3 py-1 text-xs font-bold text-white"
-                      >
-                        질문자 채택
-                      </div>
-                    )}
-
-                    <article
-                      className={[
-                        'bg-bg-base rounded-lg border p-6',
-                        answer.is_adopted
-                          ? 'border-primary'
-                          : 'border-border-base',
-                      ].join(' ')}
-                    >
-                      {/* 카드 헤더: 프로필 좌측 / 채택 버튼 우측 */}
-                      <div className="mb-4 flex items-start justify-between">
-                        <div className="flex items-center gap-2">
-                          {answer.author.profile_image_url ? (
-                            <img
-                              src={answer.author.profile_image_url}
-                              alt={answer.author.nickname}
-                              className="h-8 w-8 rounded-full object-cover"
-                            />
-                          ) : (
-                            <div className="bg-bg-subtle flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold">
-                              {[...answer.author.nickname][0] ?? '?'}
-                            </div>
-                          )}
-                          <div>
-                            <span className="text-text-heading text-sm font-medium">
-                              {answer.author.nickname}
-                            </span>
-                            <span className="text-text-muted ml-1 text-xs">
-                              {answer.author.course_name} ·{' '}
-                              {answer.author.cohort_name}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                          <time
-                            dateTime={answer.updated_at}
-                            className="text-text-muted text-xs"
-                          >
-                            수정일: {formatDate(answer.updated_at)}
-                          </time>
-                          {isQuestionOwner &&
-                            !anyAdopted &&
-                            answer.author.id !== user?.id && (
-                              <Button
-                                size="sm"
-                                type="button"
-                                onClick={() => setConfirmAcceptId(answer.id)}
-                                disabled={isAcceptPending}
-                                loading={
-                                  isAcceptPending &&
-                                  confirmAcceptId === answer.id
-                                }
-                              >
-                                채택하기
-                              </Button>
-                            )}
-                        </div>
-                      </div>
-
-                      <div data-color-mode="light">
-                        <MDEditor.Markdown
-                          source={answer.content}
-                          rehypePlugins={[rehypeSanitize]}
-                        />
-                      </div>
-
-                      <CommentList comments={answer.comments} />
-
-                      {isAuthenticated && (
-                        <CommentForm
-                          answerId={answer.id}
-                          questionId={numericQuestionId}
-                        />
-                      )}
-                    </article>
-                  </div>
+                    answer={answer}
+                    isQuestionOwner={isQuestionOwner}
+                    anyAdopted={anyAdopted}
+                    isAcceptPending={isAcceptPending}
+                    confirmAcceptId={confirmAcceptId}
+                    numericQuestionId={numericQuestionId}
+                    isAuthenticated={isAuthenticated}
+                    userId={user?.id}
+                    onAccept={setConfirmAcceptId}
+                  />
                 ))}
               </div>
             )}

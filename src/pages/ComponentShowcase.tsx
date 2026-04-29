@@ -22,7 +22,7 @@ import {
   Tab,
   TabPanel,
   Toast,
-} from '../components'
+} from '@/components'
 
 function Section({
   title,
