@@ -1,5 +1,6 @@
 export * from './QaBadge'
 export * from './MarkdownEditor'
+export * from './MarkdownViewer'
 export * from './AnswerCard'
 export * from './AnswerForm'
 export * from './QuestionCard'

@@ -1,6 +1,5 @@
-import rehypeSanitize from 'rehype-sanitize'
-import MDEditor from '@uiw/react-md-editor'
 import { Button } from '@/components/common/Button'
+import { MarkdownViewer } from '@/components/qna/MarkdownViewer'
 import { UserAvatar } from '@/components/common/UserAvatar'
 import { LoadingBox } from '@/components/common/LoadingBox'
 import { QaBadge } from '@/components/qna/QaBadge'
@@ -127,12 +126,7 @@ export function QuestionDetail({
           <hr className="border-border-base my-4" />
 
           {/* 본문 — 마크다운 렌더링 */}
-          <div data-color-mode="light">
-            <MDEditor.Markdown
-              source={questionDetail.content}
-              rehypePlugins={[rehypeSanitize]}
-            />
-          </div>
+          <MarkdownViewer content={questionDetail.content} />
 
           {/* 첨부 이미지 */}
           {questionDetail.images.length > 0 && (

@@ -1,6 +1,5 @@
-import MDEditor from '@uiw/react-md-editor'
-import rehypeSanitize from 'rehype-sanitize'
 import type { GetAnswerItem } from '@/features/qna/answers'
+import { MarkdownViewer } from '@/components/qna/MarkdownViewer'
 import { Button } from '@/components/common/Button'
 import { UserAvatar } from '@/components/common/UserAvatar'
 import { CommentList } from '@/components/qna/CommentList'
@@ -88,12 +87,7 @@ export function AnswerCard({
           </div>
         </div>
 
-        <div data-color-mode="light">
-          <MDEditor.Markdown
-            source={answer.content}
-            rehypePlugins={[rehypeSanitize]}
-          />
-        </div>
+        <MarkdownViewer content={answer.content} />
 
         <CommentList comments={answer.comments} />
 
