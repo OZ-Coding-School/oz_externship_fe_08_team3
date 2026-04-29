@@ -24,9 +24,11 @@ function renderApp() {
   )
 }
 
+// MSW 초기화 완료 후 렌더링 — 모킹 없이 API 호출되면 Vite가 HTML을 반환하여 크래시됨
 enableMocking()
-  .then(() => renderApp())
   .catch((error) => {
     console.error('MSW 초기화 실패:', error)
+  })
+  .finally(() => {
     renderApp()
   })
