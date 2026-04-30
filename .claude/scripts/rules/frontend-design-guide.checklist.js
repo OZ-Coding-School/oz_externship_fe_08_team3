@@ -21,8 +21,10 @@ const checklist = [
     category: "Readability",
     name: "매직 넘버 명명",
     description: "의미 있는 숫자 리터럴이 명명된 상수로 추출되어 있는가?",
-    // queries.ts: 30_000은 axios timeout config 인라인 옵션, handler.ts: mock 데이터/delay — 매직넘버 해당 없음
-    status: "N/A",
+    // AnswerForm.tsx: DEBOUNCE_DELAY_MS = 500 으로 상수 추출 완료 ✓
+    // MarkdownEditor.tsx: UNDO_LIMIT = 50 이미 추출 ✓
+    // QuestionForm.tsx: MIN_CONTENT_LENGTH, MIN_TITLE_LENGTH, MAX_TITLE_LENGTH 추출 ✓
+    status: "O",
     violations: [],
   },
   {
@@ -30,8 +32,8 @@ const checklist = [
     category: "Readability",
     name: "구현 세부사항 추상화 (인증/권한)",
     description: "인증 체크, 권한 검사 등 공통 로직이 래퍼/가드 컴포넌트로 분리되어 있는가?",
-    // isAuthenticated를 props로 전달하여 조건부 렌더링 — 단순 boolean 1개, 과도한 추상화 불필요
-    status: "O",
+    // 세 파일 모두 인증/권한 로직 없음
+    status: "N/A",
     violations: [],
   },
   {
@@ -39,7 +41,7 @@ const checklist = [
     category: "Readability",
     name: "구현 세부사항 추상화 (인터랙션)",
     description: "다이얼로그/오버레이 등 복잡한 인터랙션이 전용 컴포넌트로 추출되어 있는가?",
-    // 다이얼로그/오버레이 인터랙션 없음
+    // 다이얼로그/오버레이 패턴 없음 (AlertModal은 이미 추출된 컴포넌트 사용)
     status: "N/A",
     violations: [],
   },
@@ -48,7 +50,7 @@ const checklist = [
     category: "Readability",
     name: "조건부 렌더링 분리",
     description: "역할/상태에 따라 크게 다른 UI/로직이 별도 컴포넌트로 분리되어 있는가?",
-    // AiFirstAnswerSection: success/idle 분기를 early return으로 깔끔하게 처리
+    // 모든 조건부 렌더링이 단순 boolean 플래그 기반, 복잡한 역할/상태 분기 없음
     status: "O",
     violations: [],
   },
@@ -57,7 +59,7 @@ const checklist = [
     category: "Readability",
     name: "복잡한 삼항 연산자 단순화",
     description: "중첩 삼항 연산자가 if/else 또는 IIFE로 대체되어 있는가?",
-    // 단일 삼항만 사용(isPending ? ... : ...), 중첩 없음
+    // 단일 삼항만 사용(isEdit ? '수정하기' : '등록하기'), 중첩 없음
     status: "N/A",
     violations: [],
   },
@@ -66,7 +68,7 @@ const checklist = [
     category: "Readability",
     name: "시선 이동 감소 (Colocation)",
     description: "단일 사용처에서만 쓰이는 단순 로직이 사용 위치 근처에 배치되어 있는가?",
-    // handleRequest, handleAskMore는 AiFirstAnswerSection 내부에서만 사용 — 근접 배치
+    // 핸들러들이 컴포넌트 내부에 근접 배치, 모듈 상수는 모듈 레벨 커맨드에서 사용
     status: "O",
     violations: [],
   },
@@ -75,8 +77,9 @@ const checklist = [
     category: "Readability",
     name: "복잡한 조건에 이름 붙이기",
     description: "2개 이상 조합된 boolean 표현식이 의미 있는 변수명으로 추출되어 있는가?",
-    // status === 'success' && data — 2개 조건이지만 직관적, 추출 불필요
-    status: "N/A",
+    // QuestionForm: isCategoryMissing, isTitleInvalid, isContentInvalid, isDirty 모두 추출 ✓
+    // AnswerForm: isEdit && answerId != null — 단순 2개 조건, 직관적으로 읽힘
+    status: "O",
     violations: [],
   },
 
@@ -86,8 +89,8 @@ const checklist = [
     category: "Predictability",
     name: "API 훅 반환 타입 표준화",
     description: "유사한 API 훅들이 일관된 반환 타입(UseQueryResult 등)을 사용하는가?",
-    // useCreateAiFirstAnswer: UseMutationResult 직접 반환, 기존 usePostAnswer와 동일 패턴
-    status: "O",
+    // 세 파일 모두 API 훅을 정의하지 않음 (useGetPresignedUrl 소비만)
+    status: "N/A",
     violations: [],
   },
   {
@@ -95,7 +98,7 @@ const checklist = [
     category: "Predictability",
     name: "검증 함수 반환 타입 표준화",
     description: "검증 함수들이 일관된 Discriminated Union 타입을 반환하는가?",
-    // 검증 함수 없음
+    // 독립 검증 함수 없음 (handleSubmit 내 인라인 검증)
     status: "N/A",
     violations: [],
   },
@@ -104,7 +107,7 @@ const checklist = [
     category: "Predictability",
     name: "숨겨진 사이드 이펙트 제거",
     description: "함수가 이름에 드러나지 않은 사이드 이펙트(로깅, 분석 등)를 수행하지 않는가?",
-    // handleRequest: 요청 수행, handleAskMore: 챗봇 진입 — 이름이 동작을 정확히 설명
+    // handleSubmit, handleContentChange, handleRestoreAccept/Reject — 이름이 동작 정확히 설명
     status: "O",
     violations: [],
   },
@@ -124,8 +127,8 @@ const checklist = [
     category: "Cohesion",
     name: "폼 응집도 선택",
     description: "폼 검증이 용도에 맞게 필드 단위 또는 폼 단위로 일관되게 선택되어 있는가?",
-    // 폼 없음
-    status: "N/A",
+    // QuestionForm, AnswerForm 모두 handleSubmit에서 폼 단위 검증 — 일관됨 ✓
+    status: "O",
     violations: [],
   },
   {
@@ -133,7 +136,7 @@ const checklist = [
     category: "Cohesion",
     name: "도메인별 디렉토리 구조",
     description: "기능/도메인 관련 코드가 도메인 폴더에 묶여 있는가?",
-    // features/qna/question-ai-answer/, components/qna/AiFirstAnswerSection/ — 도메인 폴더 구조 준수
+    // 모든 파일이 src/components/qna/ 도메인 폴더에 위치 ✓
     status: "O",
     violations: [],
   },
@@ -142,7 +145,7 @@ const checklist = [
     category: "Cohesion",
     name: "상수와 로직의 근접성",
     description: "상수가 사용 로직과 가까운 위치에 정의되어 있거나 이름으로 용도가 명확한가?",
-    // AI_ANSWER_ERROR_MESSAGES: AiFirstAnswerSection.tsx에 정의, 사용처와 같은 파일
+    // QuestionForm: MIN/MAX 상수 동일 파일 상단 정의 ✓ / MarkdownEditor: UNDO_LIMIT, FONT_FAMILIES 등 동일 파일 ✓
     status: "O",
     violations: [],
   },
@@ -162,7 +165,8 @@ const checklist = [
     category: "Coupling",
     name: "상태 관리 범위 축소",
     description: "여러 관심사가 하나의 훅/컨텍스트에 묶이지 않고 분리되어 있는가?",
-    // useMutation(서버상태) + useChatbotStore(UI상태) + useState(로컬에러) — 관심사별 분리
+    // MarkdownEditor: isUploading/imageError/undoStack/redoStack 각각 분리 ✓
+    // AnswerForm: showRestorePrompt/pendingDraft/content/error 각각 분리 ✓
     status: "O",
     violations: [],
   },
@@ -171,9 +175,8 @@ const checklist = [
     category: "Coupling",
     name: "Props Drilling 제거",
     description: "3단계 이상 props 전달이 컴포지션(children)으로 대체되어 있는가?",
-    // showToast: QnaDetailPage → QuestionDetail → AiFirstAnswerSection (3단계)
-    // QuestionDetail 자체에서도 showToast를 사용할 수 있어 구조상 합리적
-    status: "O",
+    // 세 파일 모두 3단계 이상 props 전달 없음
+    status: "N/A",
     violations: [],
   },
 ];
