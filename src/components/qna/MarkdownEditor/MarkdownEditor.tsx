@@ -18,6 +18,9 @@ export interface MarkdownEditorProps {
   onImageUrlsChange: (urls: string[]) => void
   error?: boolean
   height?: number
+  uploadFn?: (data: {
+    file_name: string
+  }) => Promise<{ presigned_url: string; img_url: string }>
 }
 
 export interface MarkdownEditorHandle {
@@ -39,6 +42,7 @@ export const MarkdownEditor = forwardRef<
     onImageUrlsChange,
     error = false,
     height = 400,
+    uploadFn,
   },
   ref
 ) {
@@ -79,9 +83,9 @@ export const MarkdownEditor = forwardRef<
       })
 
       try {
-        const { presigned_url, img_url } = await getPresignedUrl({
-          file_name: file.name,
-        })
+        const { presigned_url, img_url } = uploadFn
+          ? await uploadFn({ file_name: file.name })
+          : await getPresignedUrl({ file_name: file.name })
 
         try {
           await fetch(presigned_url, {
@@ -109,7 +113,7 @@ export const MarkdownEditor = forwardRef<
         })
       }
     },
-    [getPresignedUrl, onChange, onImageUrlsChange]
+    [getPresignedUrl, onChange, onImageUrlsChange, uploadFn]
   )
 
   const handleFileChange = useCallback(
