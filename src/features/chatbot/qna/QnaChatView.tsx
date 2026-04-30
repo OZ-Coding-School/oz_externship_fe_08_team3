@@ -83,7 +83,8 @@ export function QnaChatView({ questionId }: QnaChatViewProps) {
 
       {isLimitExceeded && (
         <div className="border-t border-yellow-200 bg-yellow-50 px-4 py-2 text-center text-xs text-yellow-700">
-          더 필요한 질문은 질문 게시판을 이용해주세요
+          이 질문의 추가 질문 횟수(5회)를 초과했습니다. 더 필요한 질문은 질문
+          게시판을 이용해주세요
         </div>
       )}
 
