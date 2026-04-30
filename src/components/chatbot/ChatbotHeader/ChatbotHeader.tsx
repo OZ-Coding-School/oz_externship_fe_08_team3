@@ -49,13 +49,17 @@ export function ChatbotHeader({
       </div>
 
       {/* 중앙: 타이틀 */}
-      <h2 className="text-text-heading flex-1 text-center text-sm font-semibold">
+      <h2
+        id="chatbot-title"
+        className="text-text-heading flex-1 text-center text-sm font-semibold"
+      >
         {title}
       </h2>
 
       {/* 우: 닫기 */}
       <div className="w-8">
         <button
+          id="chatbot-close-button"
           type="button"
           onClick={handleClose}
           aria-label="닫기"
