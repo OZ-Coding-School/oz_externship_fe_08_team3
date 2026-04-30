@@ -23,6 +23,7 @@ export function ChatbotWidget() {
         initialFocus: '#chatbot-close-button',
         fallbackFocus: '#chatbot-widget',
         escapeDeactivates: false,
+        allowOutsideClick: true,
         returnFocusOnDeactivate: true,
       }}
     >

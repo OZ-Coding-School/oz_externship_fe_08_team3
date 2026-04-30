@@ -1,13 +1,21 @@
 import { useEffect, useRef } from 'react'
+import rehypeSanitize from 'rehype-sanitize'
+import MDEditor from '@uiw/react-md-editor'
 import type { ChatMessage } from '@/features/chatbot/widgetTypes'
 
 interface MessageListProps {
   messages: ChatMessage[]
 }
 
-// TODO: 추후 react-markdown + remark-gfm + sanitize 적용 예정
 function renderAssistantContent(message: ChatMessage) {
-  return <p className="whitespace-pre-wrap">{message.message}</p>
+  return (
+    <div data-color-mode="light" className="prose prose-sm max-w-none">
+      <MDEditor.Markdown
+        source={message.message}
+        rehypePlugins={[rehypeSanitize]}
+      />
+    </div>
+  )
 }
 
 export function MessageList({ messages }: MessageListProps) {
