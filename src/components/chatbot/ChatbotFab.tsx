@@ -11,6 +11,8 @@ export function ChatbotFab() {
     <button
       type="button"
       aria-label={isOpen ? 'AI 챗봇 닫기' : 'AI 챗봇 열기'}
+      aria-expanded={isOpen}
+      aria-controls={isOpen ? 'chatbot-widget' : undefined}
       onClick={toggle}
       className="fixed right-6 bottom-6 z-50 flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-transform hover:scale-110 active:scale-95"
       style={{ backgroundColor: '#EDE9FE' }}

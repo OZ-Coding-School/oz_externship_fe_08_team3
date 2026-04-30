@@ -33,14 +33,22 @@ export function ChatInput({
 
   return (
     <div className="border-t border-gray-200 p-3">
-      {notice && <p className="text-text-muted mb-2 text-xs">{notice}</p>}
+      {notice && (
+        <p id="chatbot-input-notice" className="text-text-muted mb-2 text-xs">
+          {notice}
+        </p>
+      )}
       <div className="flex items-end gap-2">
         <textarea
+          id="chatbot-message-input"
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           disabled={disabled}
+          aria-label="메시지 입력"
+          aria-disabled={disabled || undefined}
+          aria-describedby={notice ? 'chatbot-input-notice' : undefined}
           rows={1}
           className="focus:border-primary-400 disabled:text-text-muted flex-1 resize-none rounded-lg border border-gray-200 px-3 py-2 text-sm transition-colors outline-none disabled:bg-gray-100"
         />
@@ -48,6 +56,8 @@ export function ChatInput({
           type="button"
           onClick={handleSend}
           disabled={disabled || !value.trim()}
+          aria-label="메시지 전송"
+          aria-disabled={disabled || !value.trim() || undefined}
           className="bg-primary text-text-inverse hover:bg-primary-700 disabled:text-text-muted flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors disabled:bg-gray-200"
         >
           <svg
