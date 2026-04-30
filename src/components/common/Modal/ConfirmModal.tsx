@@ -43,12 +43,14 @@ export function ConfirmModal({
         </div>
         <div className="flex items-center justify-end gap-3">
           <button
+            type="button"
             onClick={handleCancel}
             className="bg-primary-100 text-primary-800 hover:bg-primary-200 focus-visible:ring-primary h-[42px] rounded-full px-6 text-base font-semibold tracking-tight transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
           >
             {cancelLabel}
           </button>
           <button
+            type="button"
             onClick={handleConfirm}
             className={`h-[42px] rounded-full px-6 text-base font-semibold tracking-tight text-white transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${danger ? 'bg-error hover:bg-error-dark focus-visible:ring-error' : 'bg-primary hover:bg-primary-700 focus-visible:ring-primary'}`}
           >

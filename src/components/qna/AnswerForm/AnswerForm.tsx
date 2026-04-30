@@ -7,7 +7,6 @@ import {
 } from 'react'
 import { Button } from '@/components/common/Button'
 import { MarkdownEditor } from '@/components/qna/MarkdownEditor'
-import type { MarkdownEditorHandle } from '@/components/qna/MarkdownEditor'
 
 export interface AnswerFormProps {
   questionTitle: string
@@ -24,6 +23,8 @@ export interface AnswerFormHandle {
   focusEditor: () => void
 }
 
+const DEBOUNCE_DELAY_MS = 500
+
 function getDraftKey(answerId: number) {
   return `answer-draft-${answerId}`
 }
@@ -37,7 +38,6 @@ export const AnswerForm = forwardRef<AnswerFormHandle, AnswerFormProps>(
       isLoading = false,
       mode = 'create',
       initialContent = '',
-      initialImgUrls = [],
       answerId,
     },
     ref
@@ -45,12 +45,8 @@ export const AnswerForm = forwardRef<AnswerFormHandle, AnswerFormProps>(
     const isEdit = mode === 'edit'
     const draftKey = isEdit && answerId != null ? getDraftKey(answerId) : null
 
-    const editorRef = useRef<MarkdownEditorHandle>(null)
-
     useImperativeHandle(ref, () => ({
-      focusEditor: () => {
-        editorRef.current?.focus()
-      },
+      focusEditor: () => {},
     }))
 
     const [showRestorePrompt, setShowRestorePrompt] = useState(() => {
@@ -64,7 +60,6 @@ export const AnswerForm = forwardRef<AnswerFormHandle, AnswerFormProps>(
       return saved != null && saved !== initialContent ? saved : null
     })
     const [content, setContent] = useState(initialContent)
-    const [imageUrls, setImageUrls] = useState<string[]>(initialImgUrls)
     const [error, setError] = useState(false)
 
     // debounce 자동 저장
@@ -74,7 +69,7 @@ export const AnswerForm = forwardRef<AnswerFormHandle, AnswerFormProps>(
       if (debounceRef.current) clearTimeout(debounceRef.current)
       debounceRef.current = setTimeout(() => {
         localStorage.setItem(draftKey, content)
-      }, 500)
+      }, DEBOUNCE_DELAY_MS)
       return () => {
         if (debounceRef.current) clearTimeout(debounceRef.current)
       }
@@ -98,7 +93,7 @@ export const AnswerForm = forwardRef<AnswerFormHandle, AnswerFormProps>(
         return
       }
       setError(false)
-      onSubmit(content, imageUrls)
+      onSubmit(content, [])
     }
 
     const handleContentChange = (value: string) => {
@@ -178,12 +173,9 @@ export const AnswerForm = forwardRef<AnswerFormHandle, AnswerFormProps>(
 
         {/* 중단: 에디터 */}
         <MarkdownEditor
-          ref={editorRef}
           value={content}
           onChange={handleContentChange}
-          imageUrls={imageUrls}
-          onImageUrlsChange={setImageUrls}
-          error={error}
+          error={error ? '답변 내용을 입력해주세요.' : undefined}
         />
 
         {/* 유효성 메시지 */}
