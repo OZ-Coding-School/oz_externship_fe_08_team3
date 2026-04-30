@@ -8,9 +8,7 @@ export const CS_HISTORY_QUERY_KEY = ['chatbot', 'cs', 'history'] as const
 export const csHistoryQueryOptions = queryOptions({
   queryKey: [...CS_HISTORY_QUERY_KEY],
   queryFn: () =>
-    api
-      .get<CsHistoryResponse>('/api/v1/chatbot/completions')
-      .then((r) => r.data),
+    api.get<CsHistoryResponse>('/chatbot/completions').then((r) => r.data),
   staleTime: 0,
 })
 

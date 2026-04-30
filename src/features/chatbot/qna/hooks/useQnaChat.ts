@@ -135,7 +135,7 @@ export function useQnaChat({ questionId }: { questionId: number }) {
         const baseUrl = import.meta.env.VITE_API_BASE_URL ?? ''
 
         const response = await fetch(
-          `${baseUrl}/api/v1/qna/questions/${questionId}/chatbot`,
+          `${baseUrl}/qna/questions/${questionId}/chatbot`,
           {
             method: 'POST',
             headers: {
