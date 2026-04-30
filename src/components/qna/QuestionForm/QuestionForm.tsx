@@ -51,7 +51,6 @@ export function QuestionForm({
 
   const [title, setTitle] = useState(initialValues?.title ?? '')
   const [content, setContent] = useState(initialValues?.content ?? '')
-  const [imageUrls, setImageUrls] = useState<string[]>([])
   const [alertMessage, setAlertMessage] = useState('')
   const [isAlertOpen, setIsAlertOpen] = useState(false)
 
@@ -156,13 +155,7 @@ export function QuestionForm({
         </div>
 
         {/* 마크다운 에디터 박스 */}
-        <MarkdownEditor
-          value={content}
-          onChange={setContent}
-          imageUrls={imageUrls}
-          onImageUrlsChange={setImageUrls}
-          height={400}
-        />
+        <MarkdownEditor value={content} onChange={setContent} />
 
         {/* 버튼 */}
         <div className="flex justify-end gap-3">
