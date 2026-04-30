@@ -14,6 +14,8 @@ const WELCOME_MESSAGE: ChatMessage = {
 }
 
 const ERROR_TEXT = '응답을 불러오지 못했습니다. 다시 시도해주세요.'
+const ERROR_BUFFER_TEXT = '응답이 너무 길어 중단되었습니다.'
+const SSE_MAX_BUFFER_SIZE = 100_000
 
 function mapHistoryToMessages(
   results: {
@@ -88,6 +90,8 @@ export function useCsChat() {
 
       let completed = false
       let hasReceivedChunk = false
+      let bufferExceeded = false
+      let assistantText = ''
 
       try {
         const signal = reset()
@@ -152,6 +156,14 @@ export function useCsChat() {
             }
             hasReceivedChunk = true
 
+            // assistant 누적 답변 길이 체크 (setMessages 전에 수행)
+            assistantText += parsed.message
+            if (assistantText.length > SSE_MAX_BUFFER_SIZE) {
+              bufferExceeded = true
+              abort()
+              break
+            }
+
             setMessages((prev) =>
               prev.map((msg) =>
                 msg.id === assistantId
@@ -161,7 +173,20 @@ export function useCsChat() {
             )
           }
 
-          if (completed) break
+          if (completed || bufferExceeded) break
+        }
+
+        // 버퍼 초과로 중단된 경우: 부분 응답 유지 + 에러 메시지
+        if (bufferExceeded) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: `cs-error-${crypto.randomUUID()}`,
+              role: 'assistant',
+              message: ERROR_BUFFER_TEXT,
+            },
+          ])
+          return
         }
 
         // reader가 done이고 [DONE]을 못 받았더라도 정상 종료로 간주
@@ -170,7 +195,8 @@ export function useCsChat() {
         }
       } catch (error) {
         if (error instanceof DOMException && error.name === 'AbortError') {
-          // 의도적 중단 — 무시
+          // bufferExceeded는 루프 직후에서 이미 처리됨
+          // 사용자 abort (X/뒤로가기/ESC) — 무시
           return
         }
 
@@ -202,7 +228,7 @@ export function useCsChat() {
         }
       }
     },
-    [isStreaming, reset, queryClient]
+    [isStreaming, reset, abort, queryClient]
   )
 
   return {
