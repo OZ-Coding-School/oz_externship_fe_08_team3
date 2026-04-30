@@ -444,6 +444,8 @@ export function MarkdownEditor({
   const [redoStack, setRedoStack] = useState<string[]>([])
   const valueRef = useRef(value)
   const objectUrlsRef = useRef<Set<string>>(new Set())
+  const [isDragOver, setIsDragOver] = useState(false)
+  const dragCounterRef = useRef(0)
 
   useEffect(() => {
     valueRef.current = value
@@ -511,6 +513,77 @@ export function MarkdownEditor({
     [redoStack.length, handleRedo]
   )
 
+  const uploadImageFile = useCallback(
+    async (file: File, insertFn: (md: string) => void) => {
+      if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+        setImageError('JPG, PNG, GIF, WEBP 형식만 업로드할 수 있습니다.')
+        return
+      }
+      setImageError(null)
+      setIsUploading(true)
+      const objectUrl = URL.createObjectURL(file)
+      objectUrlsRef.current.add(objectUrl)
+      insertFn(`![${file.name}](${objectUrl})`)
+      try {
+        const { presigned_url, img_url } = await getPresignedUrl({
+          file_name: file.name,
+        })
+        try {
+          await fetch(presigned_url, {
+            method: 'PUT',
+            body: file,
+            headers: { 'Content-Type': file.type },
+          })
+        } catch (err) {
+          if (!import.meta.env.DEV) throw err
+          // DEV(MSW) 환경에서는 S3 업로드 실패 무시 — objectUrl로 미리보기 유지
+        }
+        if (!import.meta.env.DEV) {
+          onChange(valueRef.current.replaceAll(objectUrl, img_url))
+          URL.revokeObjectURL(objectUrl)
+          objectUrlsRef.current.delete(objectUrl)
+        }
+      } catch {
+        URL.revokeObjectURL(objectUrl)
+        objectUrlsRef.current.delete(objectUrl)
+        setImageError('이미지 업로드에 실패했습니다. 다시 시도해 주세요.')
+      } finally {
+        setIsUploading(false)
+      }
+    },
+    [getPresignedUrl, onChange]
+  )
+
+  const handleDrop = useCallback(
+    async (e: React.DragEvent<HTMLDivElement>) => {
+      e.preventDefault()
+      dragCounterRef.current = 0
+      setIsDragOver(false)
+      const files = Array.from(e.dataTransfer.files)
+      const imageFiles = files.filter((f) =>
+        ACCEPTED_IMAGE_TYPES.includes(f.type)
+      )
+      if (imageFiles.length === 0) {
+        if (files.length > 0)
+          setImageError('JPG, PNG, GIF, WEBP 형식만 업로드할 수 있습니다.')
+        return
+      }
+      for (const file of imageFiles) {
+        await uploadImageFile(file, (md) => {
+          const current = valueRef.current
+          const sep = current.length > 0 && !current.endsWith('\n') ? '\n' : ''
+          setUndoStack((prev) => {
+            const next = [...prev, current]
+            return next.length > UNDO_LIMIT ? next.slice(-UNDO_LIMIT) : next
+          })
+          setRedoStack([])
+          onChange(current + sep + md)
+        })
+      }
+    },
+    [uploadImageFile, onChange]
+  )
+
   const imageCommand: ICommand = useMemo(
     () => ({
       name: 'image',
@@ -531,46 +604,12 @@ export function MarkdownEditor({
         input.onchange = async () => {
           const file = input.files?.[0]
           if (!file) return
-          if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
-            setImageError('JPG, PNG, GIF, WEBP 형식만 업로드할 수 있습니다.')
-            return
-          }
-          setImageError(null)
-          setIsUploading(true)
-          const objectUrl = URL.createObjectURL(file)
-          objectUrlsRef.current.add(objectUrl)
-          api.replaceSelection(`![${file.name}](${objectUrl})`)
-          try {
-            const { presigned_url, img_url } = await getPresignedUrl({
-              file_name: file.name,
-            })
-            try {
-              await fetch(presigned_url, {
-                method: 'PUT',
-                body: file,
-                headers: { 'Content-Type': file.type },
-              })
-            } catch (err) {
-              if (!import.meta.env.DEV) throw err
-              // DEV(MSW) 환경에서는 S3 업로드 실패 무시 — objectUrl로 미리보기 유지
-            }
-            if (!import.meta.env.DEV) {
-              onChange(valueRef.current.replaceAll(objectUrl, img_url))
-              URL.revokeObjectURL(objectUrl)
-              objectUrlsRef.current.delete(objectUrl)
-            }
-          } catch {
-            URL.revokeObjectURL(objectUrl)
-            objectUrlsRef.current.delete(objectUrl)
-            setImageError('이미지 업로드에 실패했습니다. 다시 시도해 주세요.')
-          } finally {
-            setIsUploading(false)
-          }
+          await uploadImageFile(file, (md) => api.replaceSelection(md))
         }
         input.click()
       },
     }),
-    [getPresignedUrl, onChange]
+    [uploadImageFile]
   )
 
   const editorCommands: ICommand[] = useMemo(
@@ -611,7 +650,25 @@ export function MarkdownEditor({
   )
 
   return (
-    <div className="bg-bg-base rounded-[20px] border border-[#cdcdcd]">
+    <div
+      className={`bg-bg-base relative rounded-[20px] border ${isDragOver ? 'border-primary border-2' : 'border-[#cdcdcd]'}`}
+      onDrop={handleDrop}
+      onDragOver={(e) => e.preventDefault()}
+      onDragEnter={(e) => {
+        e.preventDefault()
+        dragCounterRef.current++
+        setIsDragOver(true)
+      }}
+      onDragLeave={() => {
+        dragCounterRef.current--
+        if (dragCounterRef.current === 0) setIsDragOver(false)
+      }}
+    >
+      {isDragOver && (
+        <div className="border-primary bg-primary/5 pointer-events-none absolute inset-0 z-10 flex items-center justify-center rounded-[20px] border-2 border-dashed">
+          <p className="text-primary font-medium">이미지를 여기에 놓으세요</p>
+        </div>
+      )}
       <div data-color-mode="light" className="post-editor-wrap">
         <MDEditor
           value={value}

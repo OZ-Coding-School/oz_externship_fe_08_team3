@@ -21,7 +21,7 @@ const checklist = [
     category: "Readability",
     name: "매직 넘버 명명",
     description: "의미 있는 숫자 리터럴이 명명된 상수로 추출되어 있는가?",
-    // 변경 내용이 텍스트 문자열만이므로 매직넘버 해당 없음
+    // 숫자 리터럴 없음
     status: "N/A",
     violations: [],
   },
@@ -30,7 +30,7 @@ const checklist = [
     category: "Readability",
     name: "구현 세부사항 추상화 (인증/권한)",
     description: "인증 체크, 권한 검사 등 공통 로직이 래퍼/가드 컴포넌트로 분리되어 있는가?",
-    // 인증 로직 변경 없음
+    // DevAuthPanel 삭제로 인증 로직 없음
     status: "N/A",
     violations: [],
   },
@@ -39,7 +39,7 @@ const checklist = [
     category: "Readability",
     name: "구현 세부사항 추상화 (인터랙션)",
     description: "다이얼로그/오버레이 등 복잡한 인터랙션이 전용 컴포넌트로 추출되어 있는가?",
-    // 인터랙션 변경 없음
+    // 인터랙션 없음
     status: "N/A",
     violations: [],
   },
@@ -48,7 +48,7 @@ const checklist = [
     category: "Readability",
     name: "조건부 렌더링 분리",
     description: "역할/상태에 따라 크게 다른 UI/로직이 별도 컴포넌트로 분리되어 있는가?",
-    // 렌더링 로직 변경 없음
+    // 조건부 렌더링 없음
     status: "N/A",
     violations: [],
   },
@@ -57,7 +57,7 @@ const checklist = [
     category: "Readability",
     name: "복잡한 삼항 연산자 단순화",
     description: "중첩 삼항 연산자가 if/else 또는 IIFE로 대체되어 있는가?",
-    // 삼항 연산자 변경 없음
+    // 삼항 연산자 없음
     status: "N/A",
     violations: [],
   },
@@ -66,7 +66,7 @@ const checklist = [
     category: "Readability",
     name: "시선 이동 감소 (Colocation)",
     description: "단일 사용처에서만 쓰이는 단순 로직이 사용 위치 근처에 배치되어 있는가?",
-    // 코드 구조 변경 없음
+    // 단순 레이아웃 컴포넌트, 로직 없음
     status: "N/A",
     violations: [],
   },
@@ -75,7 +75,7 @@ const checklist = [
     category: "Readability",
     name: "복잡한 조건에 이름 붙이기",
     description: "2개 이상 조합된 boolean 표현식이 의미 있는 변수명으로 추출되어 있는가?",
-    // 조건식 변경 없음
+    // 조건식 없음
     status: "N/A",
     violations: [],
   },
@@ -86,7 +86,7 @@ const checklist = [
     category: "Predictability",
     name: "API 훅 반환 타입 표준화",
     description: "유사한 API 훅들이 일관된 반환 타입(UseQueryResult 등)을 사용하는가?",
-    // 반환 타입 변경 없음, URL 문자열만 수정
+    // API 훅 없음
     status: "N/A",
     violations: [],
   },
@@ -104,7 +104,7 @@ const checklist = [
     category: "Predictability",
     name: "숨겨진 사이드 이펙트 제거",
     description: "함수가 이름에 드러나지 않은 사이드 이펙트(로깅, 분석 등)를 수행하지 않는가?",
-    // 사이드 이펙트 변경 없음
+    // 함수 없음
     status: "N/A",
     violations: [],
   },
@@ -113,8 +113,8 @@ const checklist = [
     category: "Predictability",
     name: "고유하고 설명적인 네이밍",
     description: "표준 라이브러리 래퍼가 원본과 구분되는 고유한 이름을 가지는가?",
-    // 네이밍 변경 없음
-    status: "N/A",
+    // 래퍼 없음, DefaultLayout은 명확한 이름
+    status: "O",
     violations: [],
   },
 
@@ -133,8 +133,8 @@ const checklist = [
     category: "Cohesion",
     name: "도메인별 디렉토리 구조",
     description: "기능/도메인 관련 코드가 도메인 폴더에 묶여 있는가?",
-    // 텍스트 문자열 변경만, 파일 구조 변경 없음
-    status: "N/A",
+    // layout/ 디렉토리에 올바르게 위치
+    status: "O",
     violations: [],
   },
   {
@@ -142,7 +142,7 @@ const checklist = [
     category: "Cohesion",
     name: "상수와 로직의 근접성",
     description: "상수가 사용 로직과 가까운 위치에 정의되어 있거나 이름으로 용도가 명확한가?",
-    // 상수 변경 없음
+    // 상수 없음
     status: "N/A",
     violations: [],
   },
@@ -153,7 +153,7 @@ const checklist = [
     category: "Coupling",
     name: "성급한 추상화 지양",
     description: "단순히 비슷하다는 이유로 섣불리 공통 훅/함수로 추출되지 않았는가?",
-    // 추상화 변경 없음
+    // 추상화 없음
     status: "N/A",
     violations: [],
   },
@@ -162,7 +162,7 @@ const checklist = [
     category: "Coupling",
     name: "상태 관리 범위 축소",
     description: "여러 관심사가 하나의 훅/컨텍스트에 묶이지 않고 분리되어 있는가?",
-    // 상태 관리 변경 없음
+    // 상태 관리 없음
     status: "N/A",
     violations: [],
   },
@@ -171,7 +171,7 @@ const checklist = [
     category: "Coupling",
     name: "Props Drilling 제거",
     description: "3단계 이상 props 전달이 컴포지션(children)으로 대체되어 있는가?",
-    // props 변경 없음
+    // props 없음
     status: "N/A",
     violations: [],
   },
