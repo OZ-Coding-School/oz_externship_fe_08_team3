@@ -94,7 +94,7 @@ export function useCsChat() {
         const token = localStorage.getItem('accessToken')
         const baseUrl = import.meta.env.VITE_API_BASE_URL ?? ''
 
-        const response = await fetch(`${baseUrl}/api/v1/chatbot/completions`, {
+        const response = await fetch(`${baseUrl}/chatbot/completions`, {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${token}`,
