@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useLocation } from 'react-router'
 import { useChatbotStore } from '@/stores/chatbotStore'
 
@@ -8,12 +8,21 @@ export function ChatbotPageContextSync() {
   const setCurrentPageQuestionId = useChatbotStore(
     (s) => s.setCurrentPageQuestionId
   )
+  const close = useChatbotStore((s) => s.close)
+  const isOpen = useChatbotStore((s) => s.isOpen)
+  const prevPathnameRef = useRef(pathname)
 
   useEffect(() => {
     const match = pathname.match(/^\/qna\/(\d+)$/)
     const questionId = match ? Number(match[1]) : null
     setCurrentPageQuestionId(questionId)
-  }, [pathname, setCurrentPageQuestionId])
+
+    // 페이지 이동 시 챗봇 위젯 닫기
+    if (prevPathnameRef.current !== pathname && isOpen) {
+      close()
+    }
+    prevPathnameRef.current = pathname
+  }, [pathname, setCurrentPageQuestionId, close, isOpen])
 
   return null
 }

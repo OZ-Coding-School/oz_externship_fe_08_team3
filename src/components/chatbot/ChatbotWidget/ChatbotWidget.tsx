@@ -23,6 +23,7 @@ export function ChatbotWidget() {
         initialFocus: '#chatbot-close-button',
         fallbackFocus: '#chatbot-widget',
         escapeDeactivates: false,
+        allowOutsideClick: true,
         returnFocusOnDeactivate: true,
       }}
     >
@@ -33,7 +34,7 @@ export function ChatbotWidget() {
         aria-labelledby="chatbot-title"
         tabIndex={-1}
         onKeyDown={handleKeyDown}
-        className="bg-bg-base fixed right-6 bottom-24 z-50 flex h-[600px] w-96 flex-col overflow-hidden rounded-2xl border border-gray-200 shadow-xl"
+        className="bg-bg-base fixed right-6 bottom-24 z-50 flex h-[600px] max-h-[calc(100vh-7rem)] w-96 flex-col overflow-clip rounded-2xl border border-gray-200 shadow-xl"
       >
         {currentView === 'hub' && <HubView />}
         {currentView === 'cs' && <CsChatView />}
