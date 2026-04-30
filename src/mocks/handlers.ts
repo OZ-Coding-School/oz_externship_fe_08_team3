@@ -7,8 +7,10 @@ import { categoriesHandler } from '@/features/qna/categories'
 import { questionsHandler } from '@/features/qna/questions'
 import { questionWriteHandler } from '@/features/qna/question-write'
 import { questionDetailHandler } from '@/features/qna/question-detail'
+import { aiAnswerHandlers } from '@/features/qna/question-ai-answer'
 import { csChatbotHandlers } from '@/features/chatbot/cs/handler'
 import { sessionsHandlers } from '@/features/chatbot/sessions/handler'
+import { qnaChatbotHandlers } from '@/features/chatbot/qna/handler'
 
 export const handlers = [
   http.get('/api/health', () => {
@@ -22,6 +24,8 @@ export const handlers = [
   ...questionsHandler,
   ...questionWriteHandler,
   ...questionDetailHandler,
+  ...aiAnswerHandlers,
   ...csChatbotHandlers,
   ...sessionsHandlers,
+  ...qnaChatbotHandlers,
 ]

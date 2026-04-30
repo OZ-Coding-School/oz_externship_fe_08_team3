@@ -229,8 +229,10 @@ export function QnaDetailPage() {
         isLoading={isQuestionLoading}
         isError={isQuestionError}
         isQuestionOwner={isQuestionOwner}
+        isAuthenticated={isAuthenticated}
         onShare={handleShare}
         onEdit={handleEdit}
+        showToast={showToast}
       />
 
       {/* 답변하기 버튼 */}

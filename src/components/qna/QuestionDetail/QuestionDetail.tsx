@@ -1,13 +1,13 @@
-import { useNavigate } from 'react-router'
 import rehypeSanitize from 'rehype-sanitize'
 import MDEditor from '@uiw/react-md-editor'
 import { Button } from '@/components/common/Button'
 import { UserAvatar } from '@/components/common/UserAvatar'
 import { LoadingBox } from '@/components/common/LoadingBox'
 import { QaBadge } from '@/components/qna/QaBadge'
+import { AiFirstAnswerSection } from '@/components/qna/AiFirstAnswerSection'
 import { formatDate } from '@/utils/formatDate'
-import { ROUTES } from '@/constants/routes'
 import type { GetQuestionDetailResponse } from '@/features/qna/question-detail'
+import type { ToastVariant } from '@/components'
 
 // ── 아이콘 ────────────────────────────────────────────────────────────────────
 
@@ -38,49 +38,6 @@ function LinkIcon() {
   )
 }
 
-function RobotIcon() {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      aria-hidden="true"
-    >
-      <rect
-        x="3"
-        y="7"
-        width="18"
-        height="13"
-        rx="3"
-        stroke="currentColor"
-        strokeWidth="1.5"
-      />
-      <circle cx="9" cy="13" r="1.5" fill="currentColor" />
-      <circle cx="15" cy="13" r="1.5" fill="currentColor" />
-      <path
-        d="M9 4h6"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-      <path
-        d="M12 4v3"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-      <path
-        d="M7 20l1 2h8l1-2"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}
-
 // ── QuestionDetail ─────────────────────────────────────────────────────────────
 
 interface QuestionDetailProps {
@@ -88,8 +45,10 @@ interface QuestionDetailProps {
   isLoading: boolean
   isError: boolean
   isQuestionOwner: boolean
+  isAuthenticated: boolean
   onShare: () => void
   onEdit: () => void
+  showToast: (message: string, variant: ToastVariant) => void
 }
 
 export function QuestionDetail({
@@ -97,11 +56,11 @@ export function QuestionDetail({
   isLoading,
   isError,
   isQuestionOwner,
+  isAuthenticated,
   onShare,
   onEdit,
+  showToast,
 }: QuestionDetailProps) {
-  const navigate = useNavigate()
-
   return (
     <section className="border-border-base bg-bg-base rounded-lg border p-6">
       {isLoading && <LoadingBox label="질문을 불러오는 중..." />}
@@ -191,24 +150,14 @@ export function QuestionDetail({
             </div>
           )}
 
-          {/* AI 챗봇 답변 미리보기 박스 */}
-          <div className="bg-primary-50 border-primary-200 mt-6 flex items-center justify-between rounded-lg border px-4 py-3">
-            <div className="flex items-center gap-2">
-              <span className="text-primary">
-                <RobotIcon />
-              </span>
-              <span className="text-primary text-sm font-medium">
-                질문에 대한 AI 질의응답 챗봇 답변 보기
-              </span>
-            </div>
-            <button
-              type="button"
-              onClick={() => navigate(ROUTES.CHATBOT.HOME)}
-              className="text-primary text-sm font-semibold"
-            >
-              ▼
-            </button>
-          </div>
+          {/* AI 1차 답변 */}
+          {isAuthenticated && (
+            <AiFirstAnswerSection
+              questionId={questionDetail.id}
+              questionTitle={questionDetail.title}
+              showToast={showToast}
+            />
+          )}
         </>
       )}
     </section>
