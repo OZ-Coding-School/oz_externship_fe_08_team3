@@ -34,7 +34,8 @@ export function ChatbotWidget() {
         aria-labelledby="chatbot-title"
         tabIndex={-1}
         onKeyDown={handleKeyDown}
-        className="bg-bg-base fixed right-6 bottom-24 z-50 flex h-[600px] max-h-[calc(100vh-7rem)] w-96 flex-col overflow-clip rounded-2xl border border-gray-200 shadow-xl"
+        className="bg-bg-base fixed right-6 bottom-[120px] z-50 flex h-[608px] max-h-[calc(100vh-9rem)] w-[360px] flex-col overflow-hidden rounded-xl border border-gray-200"
+        style={{ boxShadow: '0px 25px 50px -12px rgba(0,0,0,0.25)' }}
       >
         {currentView === 'hub' && <HubView />}
         {currentView === 'cs' && <CsChatView />}
