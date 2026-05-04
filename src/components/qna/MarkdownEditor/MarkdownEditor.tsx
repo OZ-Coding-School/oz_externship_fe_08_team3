@@ -18,6 +18,7 @@ import {
   IndentIncrease,
   IndentDecrease,
 } from 'lucide-react'
+import remarkBreaks from 'remark-breaks'
 import './MarkdownEditor.css'
 import { useGetPresignedUrl } from '@/features/qna/presigned-url'
 
@@ -35,18 +36,39 @@ const ACCEPTED_IMAGE_TYPES = [
   'image/webp',
 ]
 
+// 웹폰트 로드 실패 시 시스템 폰트(fallback)로 자동 대체됨
 const FONT_FAMILIES = [
   { label: '기본서체', value: 'inherit' },
-  { label: 'Arial', value: 'Arial, sans-serif' },
-  { label: '돋움', value: 'Dotum, sans-serif' },
-  { label: '맑은 고딕', value: "'Malgun Gothic', sans-serif" },
-  { label: 'Georgia', value: 'Georgia, serif' },
-  { label: 'Courier New', value: "'Courier New', monospace" },
+  {
+    label: '노토 산스',
+    value: "'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif",
+  },
+  {
+    label: '나눔고딕',
+    value: "'Nanum Gothic', 'Dotum', '돋움', sans-serif",
+  },
+  {
+    label: '나눔명조',
+    value: "'Nanum Myeongjo', 'Batang', '바탕', serif",
+  },
+  {
+    label: 'Roboto',
+    value: "'Roboto', Arial, Helvetica, sans-serif",
+  },
+  {
+    label: 'Merriweather',
+    value: "'Merriweather', Georgia, 'Times New Roman', serif",
+  },
+  {
+    label: 'Source Code Pro',
+    value: "'Source Code Pro', 'Courier New', Consolas, monospace",
+  },
 ]
 
 const FONT_SIZES = [10, 12, 14, 16, 18, 20, 24, 28, 32]
 
-const PALETTE_COLORS = [
+const TEXT_PALETTE_COLORS = [
+  '#ffffff', // 흰색 (배경이 어두울 때 사용)
   '#000000',
   '#434343',
   '#666666',
@@ -68,6 +90,9 @@ const PALETTE_COLORS = [
   '#8e7cc3',
   '#c27ba0',
 ]
+
+// 배경색 전용 팔레트: 흰색 + 배경 제거(투명) 포함
+const BG_PALETTE_COLORS = ['#ffffff', ...TEXT_PALETTE_COLORS]
 
 const PILL: React.CSSProperties = {
   borderRadius: 6,
@@ -93,78 +118,71 @@ function safeSelected(
   return (s && 'selectedText' in s ? s.selectedText : '') || ''
 }
 
-const fontFamilyCommand: ICommand = {
-  name: 'font-family',
-  keyCommand: 'group',
-  groupName: 'font-family',
-  buttonProps: { 'aria-label': '글꼴', title: '글꼴', style: PILL },
-  icon: (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
-      기본서체 <ChevronDown size={10} />
-    </span>
-  ),
-  children: ({ close, getState, textApi }) => (
-    <div className="toolbar-popup">
-      {FONT_FAMILIES.map(({ label, value }) => (
-        <button
-          key={value}
-          type="button"
-          style={{ fontFamily: value === 'inherit' ? undefined : value }}
-          onClick={() => {
-            const inner = safeSelected(getState)
-            textApi?.replaceSelection(
-              `<span style="font-family: ${value}">${inner}</span>`
-            )
-            close()
-          }}
-        >
-          {label}
-        </button>
-      ))}
-    </div>
-  ),
-  execute: () => {},
+/**
+ * 선택 텍스트가 이미 <span style="..."> 이면 해당 CSS 속성만 교체/추가하고,
+ * 그렇지 않으면 새 <span>으로 감쌉니다.
+ * 중첩 span 누적을 방지합니다.
+ */
+function wrapWithStyle(
+  selected: string,
+  property: string,
+  value: string
+): string {
+  const match = selected.match(/^<span style="([^"]*)">([\s\S]*)<\/span>$/)
+  if (match) {
+    const existingStyle = match[1]
+    const inner = match[2]
+    const propRe = new RegExp(`(^|;\\s*)${property}\\s*:[^;]*`, 'i')
+    let newStyle: string
+    if (propRe.test(existingStyle)) {
+      newStyle = existingStyle
+        .replace(
+          new RegExp(`${property}\\s*:[^;]*`, 'i'),
+          `${property}: ${value}`
+        )
+        .replace(/^;\s*/, '')
+        .trim()
+    } else if (existingStyle) {
+      newStyle = `${existingStyle}; ${property}: ${value}`
+    } else {
+      newStyle = `${property}: ${value}`
+    }
+    return `<span style="${newStyle}">${inner}</span>`
+  }
+  return `<span style="${property}: ${value}">${selected}</span>`
 }
 
-const fontSizeCommand: ICommand = {
-  name: 'font-size',
-  keyCommand: 'group',
-  groupName: 'font-size',
-  buttonProps: { 'aria-label': '글자 크기', title: '글자 크기', style: PILL },
-  icon: (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
-      16 <ChevronDown size={10} />
-    </span>
-  ),
-  children: ({ close, getState, textApi }) => (
-    <div className="toolbar-popup" style={{ minWidth: 60 }}>
-      {FONT_SIZES.map((size) => (
-        <button
-          key={size}
-          type="button"
-          onClick={() => {
-            const inner = safeSelected(getState)
-            textApi?.replaceSelection(
-              `<span style="font-size: ${size}px">${inner}</span>`
-            )
-            close()
-          }}
-        >
-          {size}
-        </button>
-      ))}
-    </div>
-  ),
-  execute: () => {},
+/**
+ * 선택 텍스트가 이미 <mark style="..."> 이면 background-color만 교체하고,
+ * 그렇지 않으면 새 <mark>으로 감쌉니다.
+ */
+function wrapMarkWithStyle(selected: string, color: string): string {
+  const match = selected.match(/^<mark style="([^"]*)">([\s\S]*)<\/mark>$/)
+  if (match) {
+    const existingStyle = match[1]
+    const inner = match[2]
+    const newStyle = existingStyle
+      .replace(/background-color\s*:[^;]*/i, `background-color: ${color}`)
+      .replace(/^;\s*/, '')
+      .trim()
+    return `<mark style="${newStyle}">${inner}</mark>`
+  }
+  return `<mark style="background-color: ${color}">${selected}</mark>`
 }
 
+/** 밑줄 토글: 이미 <u>로 감싸져 있으면 제거, 아니면 추가 */
 const underlineCommand: ICommand = {
   name: 'underline',
   keyCommand: 'underline',
   buttonProps: { 'aria-label': '밑줄', title: '밑줄' },
   icon: <Underline size={14} />,
   execute: (state, api) => {
-    api.replaceSelection(`<u>${state.selectedText}</u>`)
+    const uMatch = state.selectedText.match(/^<u>([\s\S]*)<\/u>$/)
+    if (uMatch) {
+      api.replaceSelection(uMatch[1])
+    } else {
+      api.replaceSelection(`<u>${state.selectedText}</u>`)
+    }
   },
 }
 
@@ -172,22 +190,30 @@ function makeColorCommand(
   name: string,
   label: string,
   icon: React.ReactElement,
+  colors: string[],
   wrap: (color: string, text: string) => string
 ): ICommand {
   return {
     name,
     keyCommand: 'group',
     groupName: name,
-    buttonProps: { 'aria-label': label, title: label },
+    // onMouseDown: preventDefault → 팔레트 클릭 시 에디터 포커스/선택 영역 유지
+    buttonProps: {
+      'aria-label': label,
+      title: label,
+      onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) =>
+        e.preventDefault(),
+    },
     icon,
     children: ({ close, getState, textApi }) => (
-      <div className="color-palette">
-        {PALETTE_COLORS.map((color) => (
+      <div className="color-palette" onMouseDown={(e) => e.preventDefault()}>
+        {colors.map((color) => (
           <div
             key={color}
             className="color-swatch"
             style={{ background: color }}
-            title={color}
+            data-white={color === '#ffffff' ? 'true' : undefined}
+            title={color === '#ffffff' ? '흰색' : color}
             onClick={() => {
               const selected = safeSelected(getState)
               textApi?.replaceSelection(wrap(color, selected))
@@ -201,24 +227,78 @@ function makeColorCommand(
   }
 }
 
-const bgColorCommand = makeColorCommand(
-  'bg-color',
-  '배경색',
-  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
-    <span
-      style={{
-        width: 16,
-        height: 16,
-        borderRadius: 3,
-        background: '#4285f4',
-        border: '1px solid rgba(0,0,0,0.12)',
-        display: 'inline-block',
-      }}
-    />
-    <ChevronDown size={10} />
-  </span>,
-  (color, text) => `<mark style="background-color: ${color}">${text}</mark>`
-)
+const bgColorCommand: ICommand = {
+  name: 'bg-color',
+  keyCommand: 'group',
+  groupName: 'bg-color',
+  buttonProps: {
+    'aria-label': '배경색',
+    title: '배경색',
+    onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => e.preventDefault(),
+  },
+  icon: (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+      <span
+        style={{
+          width: 16,
+          height: 16,
+          borderRadius: 3,
+          background: '#4285f4',
+          border: '1px solid rgba(0,0,0,0.12)',
+          display: 'inline-block',
+        }}
+      />
+      <ChevronDown size={10} />
+    </span>
+  ),
+  children: ({ close, getState, textApi }) => (
+    <div className="bg-color-popup" onMouseDown={(e) => e.preventDefault()}>
+      {/* 배경 제거 버튼 */}
+      <button
+        type="button"
+        className="bg-color-remove-btn"
+        onClick={() => {
+          const selected = safeSelected(getState)
+          if (!selected) {
+            close()
+            return
+          }
+          const cleaned = selected.replace(
+            /<mark[^>]*>([\s\S]*?)<\/mark>/g,
+            '$1'
+          )
+          textApi?.replaceSelection(cleaned)
+          close()
+        }}
+      >
+        ✕ 배경 제거
+      </button>
+      {/* 색상 팔레트 */}
+      <div className="color-palette">
+        {BG_PALETTE_COLORS.map((color) => (
+          <div
+            key={color}
+            className="color-swatch"
+            style={{
+              background: color,
+              border:
+                color === '#ffffff'
+                  ? '1px solid #cdcdcd'
+                  : '1px solid rgba(0,0,0,0.12)',
+            }}
+            title={color === '#ffffff' ? '흰색' : color}
+            onClick={() => {
+              const selected = safeSelected(getState)
+              textApi?.replaceSelection(wrapMarkWithStyle(selected, color))
+              close()
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  ),
+  execute: () => {},
+}
 
 const textColorCommand = makeColorCommand(
   'text-color',
@@ -243,7 +323,8 @@ const textColorCommand = makeColorCommand(
       }}
     />
   </span>,
-  (color, text) => `<span style="color: ${color}">${text}</span>`
+  TEXT_PALETTE_COLORS,
+  (color, text) => wrapWithStyle(text, 'color', color)
 )
 
 const alignLeftCommand: ICommand = {
@@ -294,7 +375,11 @@ const listDropdownCmd: ICommand = {
   name: 'list-style',
   keyCommand: 'group',
   groupName: 'list-style',
-  buttonProps: { 'aria-label': '목록', title: '목록' },
+  buttonProps: {
+    'aria-label': '목록',
+    title: '목록',
+    onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => e.preventDefault(),
+  },
   icon: (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2 }}>
       <List size={13} />
@@ -302,7 +387,7 @@ const listDropdownCmd: ICommand = {
     </span>
   ),
   children: ({ close, getState, textApi }) => (
-    <div className="toolbar-popup">
+    <div className="toolbar-popup" onMouseDown={(e) => e.preventDefault()}>
       <button
         type="button"
         onClick={() => {
@@ -360,10 +445,18 @@ const lineHeightCmd: ICommand = {
   name: 'line-height',
   keyCommand: 'group',
   groupName: 'line-height',
-  buttonProps: { 'aria-label': '줄 간격', title: '줄 간격' },
+  buttonProps: {
+    'aria-label': '줄 간격',
+    title: '줄 간격',
+    onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => e.preventDefault(),
+  },
   icon: <ArrowUpDown size={14} />,
   children: ({ close, getState, textApi }) => (
-    <div className="toolbar-popup" style={{ minWidth: 80 }}>
+    <div
+      className="toolbar-popup"
+      style={{ minWidth: 80 }}
+      onMouseDown={(e) => e.preventDefault()}
+    >
       {['1', '1.5', '2', '2.5', '3'].map((h) => (
         <button
           key={h}
@@ -422,6 +515,8 @@ const clearFormatCmd: ICommand = {
   buttonProps: { 'aria-label': '서식 제거', title: '서식 제거' },
   icon: <RemoveFormatting size={14} />,
   execute: (state, api) => {
+    // 선택된 텍스트가 없으면 아무것도 하지 않음
+    if (!state.selectedText) return
     const cleaned = state.selectedText
       .replace(/\*\*(.*?)\*\*/gs, '$1')
       .replace(/\*(.*?)\*/gs, '$1')
@@ -444,6 +539,8 @@ export function MarkdownEditor({
   const [imageError, setImageError] = useState<string | null>(null)
   const [undoStack, setUndoStack] = useState<string[]>([])
   const [redoStack, setRedoStack] = useState<string[]>([])
+  const [selectedFontLabel, setSelectedFontLabel] = useState('기본서체')
+  const [selectedFontSize, setSelectedFontSize] = useState(16)
   const valueRef = useRef(value)
   const objectUrlsRef = useRef<Set<string>>(new Set())
   const [isDragOver, setIsDragOver] = useState(false)
@@ -513,6 +610,95 @@ export function MarkdownEditor({
       execute: handleRedo,
     }),
     [redoStack.length, handleRedo]
+  )
+
+  const fontFamilyCommand = useMemo<ICommand>(
+    () => ({
+      name: 'font-family',
+      keyCommand: 'group',
+      groupName: 'font-family',
+      buttonProps: {
+        'aria-label': '글꼴',
+        title: '글꼴',
+        style: PILL,
+        onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) =>
+          e.preventDefault(),
+      },
+      icon: (
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+          {selectedFontLabel} <ChevronDown size={10} />
+        </span>
+      ),
+      children: ({ close, getState, textApi }) => (
+        <div className="toolbar-popup" onMouseDown={(e) => e.preventDefault()}>
+          {FONT_FAMILIES.map(({ label, value }) => (
+            <button
+              key={value}
+              type="button"
+              style={{ fontFamily: value === 'inherit' ? undefined : value }}
+              onClick={() => {
+                const inner = safeSelected(getState)
+                textApi?.replaceSelection(
+                  wrapWithStyle(inner, 'font-family', value)
+                )
+                close()
+                setTimeout(() => setSelectedFontLabel(label), 0)
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      ),
+      execute: () => {},
+    }),
+    [selectedFontLabel]
+  )
+
+  const fontSizeCommand = useMemo<ICommand>(
+    () => ({
+      name: 'font-size',
+      keyCommand: 'group',
+      groupName: 'font-size',
+      buttonProps: {
+        'aria-label': '글자 크기',
+        title: '글자 크기',
+        style: PILL,
+        onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) =>
+          e.preventDefault(),
+      },
+      icon: (
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+          {selectedFontSize} <ChevronDown size={10} />
+        </span>
+      ),
+      children: ({ close, getState, textApi }) => (
+        <div
+          className="toolbar-popup"
+          style={{ minWidth: 60 }}
+          onMouseDown={(e) => e.preventDefault()}
+        >
+          {FONT_SIZES.map((size) => (
+            <button
+              key={size}
+              type="button"
+              onClick={() => {
+                const inner = safeSelected(getState)
+                textApi?.replaceSelection(
+                  wrapWithStyle(inner, 'font-size', `${size}px`)
+                )
+                close()
+                setTimeout(() => setSelectedFontSize(size), 0)
+              }}
+            >
+              {size}
+            </button>
+          ))}
+        </div>
+      ),
+      execute: () => {},
+    }),
+    [selectedFontSize]
   )
 
   const uploadImageFile = useCallback(
@@ -632,7 +818,7 @@ export function MarkdownEditor({
       mdCommands.link,
       imageCommand,
     ],
-    [imageCommand, undoCommand, redoCommand]
+    [imageCommand, undoCommand, redoCommand, fontFamilyCommand, fontSizeCommand]
   )
 
   const editorExtraCommands: ICommand[] = useMemo(
@@ -678,6 +864,12 @@ export function MarkdownEditor({
           preview="live"
           commands={editorCommands}
           extraCommands={editorExtraCommands}
+          previewOptions={{
+            // react-markdown v10은 allowDangerousHtml 없이 inline HTML을 텍스트로 이스케이프함
+            // remarkRehypeOptions: { allowDangerousHtml: true } 로 inline HTML 노드 통과 허용
+            remarkPlugins: [[remarkBreaks]],
+            remarkRehypeOptions: { allowDangerousHtml: true },
+          }}
         />
       </div>
       {isUploading && (
