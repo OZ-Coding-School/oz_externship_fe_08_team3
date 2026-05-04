@@ -21,7 +21,7 @@ export function QnaChatView({ questionId }: QnaChatViewProps) {
     abort,
   } = useQnaChat({ questionId })
 
-  const { questionTitle, setView, close } = useChatbotStore()
+  const { setView, close } = useChatbotStore()
 
   const handleBack = () => {
     abort()
@@ -38,7 +38,7 @@ export function QnaChatView({ questionId }: QnaChatViewProps) {
     if (isLimitExceeded) return '추가 질문 횟수를 모두 사용했습니다'
     if (isStreaming) return '응답 중입니다...'
     if (isError) return '대화를 불러온 뒤 이용할 수 있습니다'
-    return '질문을 입력하세요'
+    return '더 궁금한 것이 있다면 이어서 질문해 보세요.'
   }
 
   const getDisabledReason = () => {
@@ -52,7 +52,8 @@ export function QnaChatView({ questionId }: QnaChatViewProps) {
   return (
     <div className="flex h-full flex-col">
       <ChatbotHeader
-        title={questionTitle ?? 'Q&A 챗봇'}
+        title="질의응답 챗봇"
+        subtitle="추가 질문은 최대 5회까지 가능하며, 대화 기록은 30분 동안 유지됩니다."
         showBack
         onBack={handleBack}
         onClose={handleClose}

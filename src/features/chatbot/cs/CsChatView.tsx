@@ -29,7 +29,7 @@ export function CsChatView() {
   const getPlaceholder = () => {
     if (isError) return '대화를 불러온 뒤 이용할 수 있습니다'
     if (isStreaming) return '응답 중입니다...'
-    return 'CS 상담 메시지를 입력하세요'
+    return '더 궁금한 것이 있다면 이어서 질문해 보세요.'
   }
 
   const getDisabledReason = () => {
