@@ -7,6 +7,7 @@ import { categoriesHandler } from '@/features/qna/categories'
 import { questionsHandler } from '@/features/qna/questions'
 import { questionWriteHandler } from '@/features/qna/question-write'
 import { questionDetailHandler } from '@/features/qna/question-detail'
+import { questionEditHandler } from '@/features/qna/question-edit'
 import { aiAnswerHandlers } from '@/features/qna/question-ai-answer'
 import { csChatbotHandlers } from '@/features/chatbot/cs/handler'
 import { sessionsHandlers } from '@/features/chatbot/sessions/handler'
@@ -24,6 +25,7 @@ export const handlers = [
   ...questionsHandler,
   ...questionWriteHandler,
   ...questionDetailHandler,
+  ...questionEditHandler,
   ...aiAnswerHandlers,
   ...csChatbotHandlers,
   ...sessionsHandlers,
