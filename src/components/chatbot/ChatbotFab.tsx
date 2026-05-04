@@ -1,5 +1,6 @@
 import { useChatbotStore } from '@/stores/chatbotStore'
 import { useAuthStore } from '@/stores/authStore'
+import chatbotRobot from '@/assets/chatbot-robot.png'
 
 export function ChatbotFab() {
   const { isOpen, toggle } = useChatbotStore()
@@ -14,33 +15,13 @@ export function ChatbotFab() {
       aria-expanded={isOpen}
       aria-controls={isOpen ? 'chatbot-widget' : undefined}
       onClick={toggle}
-      className="fixed right-6 bottom-6 z-50 flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-transform hover:scale-110 active:scale-95"
-      style={{ backgroundColor: '#EDE9FE' }}
+      className="fixed right-6 bottom-6 z-50 flex h-[78px] w-[78px] items-center justify-center rounded-full transition-transform hover:scale-105 active:scale-95"
+      style={{
+        backgroundColor: '#E7D5FF',
+        boxShadow: '0px 4px 4px 0px rgba(0,0,0,0.25)',
+      }}
     >
       {isOpen ? (
-        <svg
-          width="28"
-          height="28"
-          viewBox="0 0 24 24"
-          fill="none"
-          aria-hidden="true"
-        >
-          <path
-            d="M18 6L6 18"
-            stroke="#6201e0"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M6 6L18 18"
-            stroke="#6201e0"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      ) : (
         <svg
           width="32"
           height="32"
@@ -49,45 +30,28 @@ export function ChatbotFab() {
           aria-hidden="true"
         >
           <path
-            d="M12 2v3"
-            stroke="#6201e0"
-            strokeWidth="1.8"
+            d="M18 6L6 18"
+            stroke="#58249D"
+            strokeWidth="2.5"
             strokeLinecap="round"
-          />
-          <circle cx="12" cy="2" r="1" fill="#6201e0" />
-          <rect x="3" y="6" width="18" height="13" rx="3" fill="#DDD6FE" />
-          <rect
-            x="3"
-            y="6"
-            width="18"
-            height="13"
-            rx="3"
-            stroke="#7c35d9"
-            strokeWidth="1.5"
-          />
-          <circle cx="9" cy="12" r="2" fill="#6201e0" />
-          <circle cx="15" cy="12" r="2" fill="#6201e0" />
-          <circle cx="9.7" cy="11.3" r="0.6" fill="white" />
-          <circle cx="15.7" cy="11.3" r="0.6" fill="white" />
-          <path
-            d="M9 15.5h6"
-            stroke="#7c35d9"
-            strokeWidth="1.5"
-            strokeLinecap="round"
+            strokeLinejoin="round"
           />
           <path
-            d="M8 19l-1 2"
-            stroke="#7c35d9"
-            strokeWidth="1.5"
+            d="M6 6L18 18"
+            stroke="#58249D"
+            strokeWidth="2.5"
             strokeLinecap="round"
-          />
-          <path
-            d="M16 19l1 2"
-            stroke="#7c35d9"
-            strokeWidth="1.5"
-            strokeLinecap="round"
+            strokeLinejoin="round"
           />
         </svg>
+      ) : (
+        <img
+          src={chatbotRobot}
+          alt=""
+          aria-hidden="true"
+          className="h-[52px] w-[49px] object-contain"
+          draggable={false}
+        />
       )}
     </button>
   )
