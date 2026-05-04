@@ -25,6 +25,7 @@ export interface MarkdownEditorProps {
   value: string
   onChange: (value: string) => void
   error?: string
+  actions?: React.ReactNode
 }
 
 const ACCEPTED_IMAGE_TYPES = [
@@ -436,6 +437,7 @@ export function MarkdownEditor({
   value,
   onChange,
   error,
+  actions,
 }: MarkdownEditorProps) {
   const { mutateAsync: getPresignedUrl } = useGetPresignedUrl()
   const [isUploading, setIsUploading] = useState(false)
@@ -693,6 +695,7 @@ export function MarkdownEditor({
           {error}
         </p>
       )}
+      {actions && <div className="flex justify-end px-4 pb-3">{actions}</div>}
     </div>
   )
 }

@@ -9,7 +9,7 @@ interface CommentListProps {
 }
 
 export function CommentList({ comments }: CommentListProps) {
-  const [sortOrder, setSortOrder] = useState<SortOrder>('oldest')
+  const [sortOrder, setSortOrder] = useState<SortOrder>('latest')
   const [isSortOpen, setIsSortOpen] = useState(false)
 
   const sorted = useMemo(() => {
@@ -43,7 +43,7 @@ export function CommentList({ comments }: CommentListProps) {
         </button>
         {isSortOpen && (
           <div className="border-border-base bg-bg-base absolute top-6 right-0 z-10 min-w-[100px] rounded-md border shadow-md">
-            {(['oldest', 'latest'] as const).map((order) => (
+            {(['latest', 'oldest'] as const).map((order) => (
               <button
                 key={order}
                 type="button"
