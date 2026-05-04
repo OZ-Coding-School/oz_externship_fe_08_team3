@@ -32,7 +32,6 @@ export function QuestionForm({
   isPending,
   submitLabel = '등록하기',
   onSubmit,
-  onCancel,
 }: QuestionFormProps) {
   const {
     largeCategoryId,
@@ -108,17 +107,17 @@ export function QuestionForm({
 
   return (
     <>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        {/* 카테고리 + 제목 박스 */}
-        <div className="border-border-base rounded-xl border">
+      <form onSubmit={handleSubmit} className="flex w-full flex-col gap-6">
+        {/* 박스 1: 카테고리 & 제목 (패딩 p-8, 둥글기 rounded-[16px] 적용) */}
+        <div className="w-full rounded-[16px] border border-[#E5E7EB] bg-white p-8 shadow-sm">
           {/* 카테고리 드롭다운 3개 */}
-          <div className="flex gap-3 p-4">
+          <div className="mb-6 grid w-full grid-cols-3 gap-4">
             <Dropdown
               options={largeOptions}
               value={largeCategoryId}
               onChange={handleLargeChange}
               placeholder="대분류 선택"
-              className="flex-1"
+              className="w-full"
             />
             <Dropdown
               options={mediumOptions}
@@ -126,7 +125,7 @@ export function QuestionForm({
               onChange={handleMediumChange}
               placeholder="중분류 선택"
               disabled={!largeCategoryId || !hasMedium}
-              className="flex-1"
+              className="w-full"
             />
             <Dropdown
               options={smallOptions}
@@ -134,40 +133,40 @@ export function QuestionForm({
               onChange={handleSmallChange}
               placeholder="소분류 선택"
               disabled={!validMediumCategoryId || !hasSmall}
-              className="flex-1"
+              className="w-full"
             />
           </div>
 
-          {/* 구분선 */}
-          <div className="border-border-base border-t" />
-
-          {/* 제목 입력 */}
-          <div className="p-4">
+          {/* 제목 입력 (테두리 제거, 연보라 배경색만 적용) */}
+          <div className="w-full">
             <input
               type="text"
-              placeholder={`제목을 입력해 주세요. (${MIN_TITLE_LENGTH}~${MAX_TITLE_LENGTH}자)`}
+              placeholder="제목을 입력해 주세요"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               maxLength={MAX_TITLE_LENGTH}
-              className="placeholder:text-text-muted text-text-heading border-border-base bg-primary-50 focus:border-primary h-12 w-full rounded-sm border px-4 text-base transition-colors duration-150 outline-none"
+              className="h-[56px] w-full rounded-[8px] bg-[#F7F2FF] px-6 text-base text-gray-900 placeholder-gray-500 transition-colors outline-none focus:ring-1 focus:ring-[#6201E0]"
             />
           </div>
         </div>
 
-        {/* 마크다운 에디터 박스 */}
-        <MarkdownEditor value={content} onChange={setContent} />
+        {/* 박스 2: 마크다운 에디터 (둥글기 rounded-[16px] 적용 및 placeholder 추가) */}
+        <div className="w-full overflow-hidden rounded-[16px] border border-[#E5E7EB] bg-white shadow-sm">
+          <MarkdownEditor
+            value={content}
+            onChange={setContent}
+            placeholder="내용을 입력해 주세요."
+          />
+        </div>
 
-        {/* 버튼 */}
-        <div className="flex justify-end gap-3">
+        {/* 하단 버튼 영역 */}
+        <div className="mt-2 flex justify-end">
           <Button
-            type="button"
-            variant="secondary"
-            onClick={onCancel}
-            disabled={isPending}
+            type="submit"
+            variant="primary"
+            loading={isPending}
+            className="rounded-[8px] bg-[#6201E0] px-10 py-3 text-base font-medium text-white transition-colors hover:bg-[#5201c0]"
           >
-            취소
-          </Button>
-          <Button type="submit" variant="primary" loading={isPending}>
             {submitLabel}
           </Button>
         </div>

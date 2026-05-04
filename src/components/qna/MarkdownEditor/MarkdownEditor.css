@@ -30,6 +30,17 @@
   box-shadow: inset 1px 0 0 0 #cdcdcd !important;
 }
 
+/* ── 프리뷰 placeholder (value가 비었을 때) ── */
+.post-editor-wrap[data-preview-empty]
+  .w-md-editor-preview
+  .wmde-markdown::before {
+  content: '내용을 입력해 주세요.';
+  color: #9ca3af;
+  display: block;
+  pointer-events: none;
+  font-size: 14px;
+}
+
 .post-editor-wrap .wmde-markdown {
   background-color: #fafafa !important;
 }

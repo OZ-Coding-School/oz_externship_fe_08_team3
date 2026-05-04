@@ -25,6 +25,7 @@ export interface MarkdownEditorProps {
   value: string
   onChange: (value: string) => void
   error?: string
+  placeholder?: string // 👈 이 부분이 추가되어 타입 에러가 해결됩니다.
 }
 
 const ACCEPTED_IMAGE_TYPES = [
@@ -436,6 +437,7 @@ export function MarkdownEditor({
   value,
   onChange,
   error,
+  placeholder, // 👈 Props에서 받아옵니다.
 }: MarkdownEditorProps) {
   const { mutateAsync: getPresignedUrl } = useGetPresignedUrl()
   const [isUploading, setIsUploading] = useState(false)
@@ -669,13 +671,18 @@ export function MarkdownEditor({
           <p className="text-primary font-medium">이미지를 여기에 놓으세요</p>
         </div>
       )}
-      <div data-color-mode="light" className="post-editor-wrap">
+      <div
+        data-color-mode="light"
+        className="post-editor-wrap"
+        data-preview-empty={!value.trim() ? '' : undefined}
+      >
         <MDEditor
           value={value}
           onChange={(v) => handleChange(v ?? '')}
           preview="live"
           commands={editorCommands}
           extraCommands={editorExtraCommands}
+          textareaProps={{ placeholder }} // 👈 textareaProps를 통해 UIW 에디터 내부에 placeholder를 전달합니다.
         />
       </div>
       {isUploading && (
