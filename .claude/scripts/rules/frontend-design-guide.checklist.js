@@ -21,7 +21,7 @@ const checklist = [
     category: "Readability",
     name: "매직 넘버 명명",
     description: "의미 있는 숫자 리터럴이 명명된 상수로 추출되어 있는가?",
-    // HubView: SVG 좌표값/크기만 존재, 의미 있는 매직넘버 없음
+    // 변경된 파일에 의미 있는 숫자 리터럴 없음. Tailwind 클래스 내 숫자(px-3, pb-10 등)는 CSS 관례이므로 해당 없음
     status: "N/A",
     violations: [],
   },
@@ -30,7 +30,7 @@ const checklist = [
     category: "Readability",
     name: "구현 세부사항 추상화 (인증/권한)",
     description: "인증 체크, 권한 검사 등 공통 로직이 래퍼/가드 컴포넌트로 분리되어 있는가?",
-    // HubView: 인증 체크 없음 (FAB 단에서 처리), sessions/queries: API 훅만
+    // 변경된 파일에 인증/권한 로직 없음 (DefaultLayout의 DevAuthPanel은 DEV 전용 테스트 패널)
     status: "N/A",
     violations: [],
   },
@@ -39,8 +39,9 @@ const checklist = [
     category: "Readability",
     name: "구현 세부사항 추상화 (인터랙션)",
     description: "다이얼로그/오버레이 등 복잡한 인터랙션이 전용 컴포넌트로 추출되어 있는가?",
-    // 다이얼로그/오버레이 인터랙션 없음
-    status: "N/A",
+    // CommentList의 isSortOpen 토글은 단순 드롭다운 수준으로 별도 추출 불필요
+    // MarkdownEditor의 actions 슬롯은 적절한 합성 패턴
+    status: "O",
     violations: [],
   },
   {
@@ -48,7 +49,8 @@ const checklist = [
     category: "Readability",
     name: "조건부 렌더링 분리",
     description: "역할/상태에 따라 크게 다른 UI/로직이 별도 컴포넌트로 분리되어 있는가?",
-    // HubView: isLoading/isError 분기가 있지만 각각 짧고 단순, 별도 분리 불필요
+    // AnswerForm: isEdit ? '수정' : '등록' — 단순 텍스트 분기, 별도 분리 불필요
+    // CommentList: sortOrder 분기에 따른 UI 변화 단순
     status: "O",
     violations: [],
   },
@@ -57,8 +59,8 @@ const checklist = [
     category: "Readability",
     name: "복잡한 삼항 연산자 단순화",
     description: "중첩 삼항 연산자가 if/else 또는 IIFE로 대체되어 있는가?",
-    // 중첩 삼항 없음
-    status: "N/A",
+    // 변경된 파일 모두 단순 삼항(1단계)만 사용, 중첩 삼항 없음
+    status: "O",
     violations: [],
   },
   {
@@ -66,7 +68,7 @@ const checklist = [
     category: "Readability",
     name: "시선 이동 감소 (Colocation)",
     description: "단일 사용처에서만 쓰이는 단순 로직이 사용 위치 근처에 배치되어 있는가?",
-    // handleCsClick, handleSessionClick은 HubView 내부에서만 사용 — colocation 준수
+    // 각 컴포넌트의 상수/로직이 모두 사용 위치 근처에 정의됨
     status: "O",
     violations: [],
   },
@@ -75,8 +77,9 @@ const checklist = [
     category: "Readability",
     name: "복잡한 조건에 이름 붙이기",
     description: "2개 이상 조합된 boolean 표현식이 의미 있는 변수명으로 추출되어 있는가?",
-    // !isLoading && !isError 조합이 있지만 직관적이고 2개 조건
-    status: "N/A",
+    // CommentForm: hasContent = content.trim().length > 0 — 조건 명명 적절
+    // CommentList: sortOrder === order — 단일 조건으로 명명 불필요
+    status: "O",
     violations: [],
   },
 
@@ -86,8 +89,8 @@ const checklist = [
     category: "Predictability",
     name: "API 훅 반환 타입 표준화",
     description: "유사한 API 훅들이 일관된 반환 타입(UseQueryResult 등)을 사용하는가?",
-    // useGetSessions: UseQueryResult 직접 반환, cs/queries의 useGetCsHistory와 동일 패턴
-    status: "O",
+    // CommentForm: usePostComment → { mutate, isPending } TanStack Query 표준 패턴
+    status: "N/A",
     violations: [],
   },
   {
@@ -104,7 +107,7 @@ const checklist = [
     category: "Predictability",
     name: "숨겨진 사이드 이펙트 제거",
     description: "함수가 이름에 드러나지 않은 사이드 이펙트(로깅, 분석 등)를 수행하지 않는가?",
-    // handleCsClick: setView만, handleSessionClick: enterQna만 — 이름이 동작을 정확히 설명
+    // handleSubmit: mutate 호출 후 onSuccess에서 setContent('') — 폼 리셋으로 명백한 동작
     status: "O",
     violations: [],
   },
@@ -124,8 +127,9 @@ const checklist = [
     category: "Cohesion",
     name: "폼 응집도 선택",
     description: "폼 검증이 용도에 맞게 필드 단위 또는 폼 단위로 일관되게 선택되어 있는가?",
-    // 폼 없음
-    status: "N/A",
+    // CommentForm: hasContent 단일 검사로 단순 폼에 적합
+    // AnswerForm: MarkdownEditor 내부에서 error 처리, 일관성 있음
+    status: "O",
     violations: [],
   },
   {
@@ -133,7 +137,7 @@ const checklist = [
     category: "Cohesion",
     name: "도메인별 디렉토리 구조",
     description: "기능/도메인 관련 코드가 도메인 폴더에 묶여 있는가?",
-    // features/chatbot/hub/, features/chatbot/sessions/ 도메인 폴더 구조 준수
+    // 모든 컴포넌트가 올바른 도메인 폴더에 위치 (qna/, common/, layout/)
     status: "O",
     violations: [],
   },
@@ -142,7 +146,7 @@ const checklist = [
     category: "Cohesion",
     name: "상수와 로직의 근접성",
     description: "상수가 사용 로직과 가까운 위치에 정의되어 있거나 이름으로 용도가 명확한가?",
-    // SESSIONS_QUERY_KEY: queries.ts에 정의, mockSessions: handler.ts에 정의 — 사용처 근접
+    // CommentList: (['latest', 'oldest'] as const) 인라인 선언으로 사용 위치와 밀접
     status: "O",
     violations: [],
   },
@@ -153,7 +157,7 @@ const checklist = [
     category: "Coupling",
     name: "성급한 추상화 지양",
     description: "단순히 비슷하다는 이유로 섣불리 공통 훅/함수로 추출되지 않았는가?",
-    // HubView: 단일 역할(목록+진입점), sessions 모듈: 단일 API, 불필요한 공통화 없음
+    // MarkdownEditor의 actions 슬롯은 AnswerForm 요구사항에서 자연스럽게 도출된 합성 패턴
     status: "O",
     violations: [],
   },
@@ -162,7 +166,8 @@ const checklist = [
     category: "Coupling",
     name: "상태 관리 범위 축소",
     description: "여러 관심사가 하나의 훅/컨텍스트에 묶이지 않고 분리되어 있는가?",
-    // HubView: useGetSessions(서버상태) + chatbotStore(UI상태) 분리, 관심사별 분리
+    // CommentList: sortOrder/isSortOpen 로컬 UI 상태만 관리
+    // CommentForm: content 로컬 상태 + usePostComment 서버 상태 분리
     status: "O",
     violations: [],
   },
@@ -171,7 +176,7 @@ const checklist = [
     category: "Coupling",
     name: "Props Drilling 제거",
     description: "3단계 이상 props 전달이 컴포지션(children)으로 대체되어 있는가?",
-    // props drilling 없음, store 직접 사용
+    // AnswerForm → MarkdownEditor(actions) 1단계 전달, 드릴링 아님
     status: "N/A",
     violations: [],
   },
