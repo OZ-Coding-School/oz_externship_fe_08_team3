@@ -1,48 +1,50 @@
+import { FocusTrap } from 'focus-trap-react'
 import { useChatbotStore } from '@/stores/chatbotStore'
-import { ChatbotHeader } from '../ChatbotHeader'
-import { MessageList } from '../MessageList'
-import { ChatInput } from '../ChatInput'
 import { CsChatView } from '@/features/chatbot/cs'
 import { HubView } from '@/features/chatbot/hub'
-import type { ChatMessage } from '@/features/chatbot/widgetTypes'
-
-const QNA_PLACEHOLDER_MESSAGES: ChatMessage[] = [
-  {
-    id: 'qna-1',
-    role: 'assistant',
-    message: 'Q&A 챗봇입니다. 궁금한 점을 질문해주세요.',
-  },
-]
-
-function QnaView() {
-  return (
-    <>
-      <MessageList messages={QNA_PLACEHOLDER_MESSAGES} />
-      <ChatInput
-        onSend={() => {
-          // TODO: QnA SSE 연동 시 구현
-        }}
-        placeholder="질문을 입력하세요"
-      />
-    </>
-  )
-}
+import { QnaChatView } from '@/features/chatbot/qna'
 
 export function ChatbotWidget() {
-  const { isOpen, currentView, questionTitle } = useChatbotStore()
+  const { isOpen, currentView, activeQnaQuestionId, close } = useChatbotStore()
 
   if (!isOpen) return null
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      e.stopPropagation()
+      close()
+    }
+  }
+
   return (
-    <div className="bg-bg-base fixed right-6 bottom-24 z-50 flex h-[600px] w-96 flex-col overflow-hidden rounded-2xl border border-gray-200 shadow-xl">
-      {currentView === 'hub' && <HubView />}
-      {currentView === 'cs' && <CsChatView />}
-      {currentView === 'qna' && (
-        <>
-          <ChatbotHeader title={questionTitle ?? 'Q&A 챗봇'} showBack />
-          <QnaView />
-        </>
-      )}
-    </div>
+    <FocusTrap
+      active={isOpen}
+      focusTrapOptions={{
+        initialFocus: '#chatbot-close-button',
+        fallbackFocus: '#chatbot-widget',
+        escapeDeactivates: false,
+        allowOutsideClick: true,
+        returnFocusOnDeactivate: true,
+      }}
+    >
+      <div
+        id="chatbot-widget"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="chatbot-title"
+        tabIndex={-1}
+        onKeyDown={handleKeyDown}
+        className="bg-bg-base fixed right-6 bottom-24 z-50 flex h-[600px] max-h-[calc(100vh-7rem)] w-96 flex-col overflow-clip rounded-2xl border border-gray-200 shadow-xl"
+      >
+        {currentView === 'hub' && <HubView />}
+        {currentView === 'cs' && <CsChatView />}
+        {currentView === 'qna' && activeQnaQuestionId != null && (
+          <QnaChatView
+            key={activeQnaQuestionId}
+            questionId={activeQnaQuestionId}
+          />
+        )}
+      </div>
+    </FocusTrap>
   )
 }

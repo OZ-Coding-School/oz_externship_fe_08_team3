@@ -318,6 +318,7 @@ export function QnaListPage() {
         <div className="space-y-1">
           {SORT_OPTIONS.map((opt) => (
             <button
+              type="button"
               key={opt}
               onClick={() => {
                 updateParam('sort', opt)

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
-import MDEditor from '@uiw/react-md-editor'
-import rehypeSanitize from 'rehype-sanitize'
 import { Button } from '@/components/common/Button'
+import { MarkdownEditor } from '@/components/qna/MarkdownEditor'
 import { Dropdown } from '@/components/common/Dropdown'
 import { AlertModal } from '@/components/common/Modal'
 import { useCategorySelector } from '@/hooks/useCategorySelector'
@@ -156,18 +155,7 @@ export function QuestionForm({
         </div>
 
         {/* 마크다운 에디터 박스 */}
-        <div className="border-border-base overflow-hidden rounded-xl border">
-          <div data-color-mode="light">
-            <MDEditor
-              value={content}
-              onChange={(v) => setContent(v ?? '')}
-              height={400}
-              preview="live"
-              visibleDragbar={false}
-              previewOptions={{ rehypePlugins: [[rehypeSanitize]] }}
-            />
-          </div>
-        </div>
+        <MarkdownEditor value={content} onChange={setContent} />
 
         {/* 버튼 */}
         <div className="flex justify-end gap-3">

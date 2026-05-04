@@ -9,6 +9,7 @@ interface ChatbotState {
   currentPageQuestionId: number | null
   firstAnswerFromProps: string | null
   questionTitle: string | null
+  qnaLimitExceededIds: Set<number>
 
   open: () => void
   close: () => void
@@ -20,6 +21,8 @@ interface ChatbotState {
     questionTitle?: string | null
     firstAnswer?: string | null
   }) => void
+  markQnaLimitExceeded: (questionId: number) => void
+  clearQnaLimitExceeded: (questionId: number) => void
 }
 
 export const useChatbotStore = create<ChatbotState>()(
@@ -31,6 +34,7 @@ export const useChatbotStore = create<ChatbotState>()(
       currentPageQuestionId: null,
       firstAnswerFromProps: null,
       questionTitle: null,
+      qnaLimitExceededIds: new Set<number>(),
 
       open: () =>
         set({ isOpen: true, currentView: 'cs' }, undefined, 'chatbot/open'),
@@ -78,6 +82,26 @@ export const useChatbotStore = create<ChatbotState>()(
           undefined,
           'chatbot/enterQna'
         ),
+
+      markQnaLimitExceeded: (questionId) => {
+        const next = new Set(get().qnaLimitExceededIds)
+        next.add(questionId)
+        set(
+          { qnaLimitExceededIds: next },
+          undefined,
+          'chatbot/markQnaLimitExceeded'
+        )
+      },
+
+      clearQnaLimitExceeded: (questionId) => {
+        const next = new Set(get().qnaLimitExceededIds)
+        next.delete(questionId)
+        set(
+          { qnaLimitExceededIds: next },
+          undefined,
+          'chatbot/clearQnaLimitExceeded'
+        )
+      },
     }),
     { name: 'ChatbotStore' }
   )

@@ -10,7 +10,6 @@ import type { UserCategory } from '@/features/qna/categories'
 import {
   useSuspenseGetQuestionDetail,
   useUpdateQuestion,
-  useGetQuestionPresignedUrl,
 } from '@/features/qna/question-edit'
 import type { GetQuestionDetailResponse } from '@/features/qna/question-detail'
 import { useAuthStore } from '@/stores/authStore'
@@ -59,7 +58,6 @@ function QnaEditFormInner({ questionId, question }: QnaEditFormInnerProps) {
   const navigate = useNavigate()
   const { data: categories } = useQnaCategories()
   const { mutate: updateQuestion, isPending } = useUpdateQuestion(questionId)
-  const { mutateAsync: getQuestionPresignedUrl } = useGetQuestionPresignedUrl()
 
   const initialPath = useMemo(
     () => findCategoryPath(categories, question.category.id),
@@ -77,9 +75,6 @@ function QnaEditFormInner({ questionId, question }: QnaEditFormInnerProps) {
   )
   const [title, setTitle] = useState(question.title)
   const [content, setContent] = useState(question.content)
-  const [imageUrls, setImageUrls] = useState<string[]>(() =>
-    question.images.map((img) => img.img_url)
-  )
   const [alertMessage, setAlertMessage] = useState('')
   const [isAlertOpen, setIsAlertOpen] = useState(false)
 
@@ -137,16 +132,10 @@ function QnaEditFormInner({ questionId, question }: QnaEditFormInnerProps) {
       ? Number(validMediumCategoryId)
       : Number(largeCategoryId)
 
-  const initialImageUrls = useMemo(
-    () => question.images.map((img) => img.img_url),
-    [question.images]
-  )
-
   const isDirty =
     title !== question.title ||
     content !== question.content ||
-    currentCategoryId !== question.category.id ||
-    JSON.stringify(imageUrls) !== JSON.stringify(initialImageUrls)
+    currentCategoryId !== question.category.id
 
   useEffect(() => {
     if (!isDirty) return
@@ -188,6 +177,10 @@ function QnaEditFormInner({ questionId, question }: QnaEditFormInnerProps) {
       setIsAlertOpen(true)
       return
     }
+
+    const imageUrls = [
+      ...content.matchAll(/!\[.*?\]\((https?:\/\/[^)]+)\)/g),
+    ].map((m) => m[1])
 
     updateQuestion(
       {
@@ -259,14 +252,7 @@ function QnaEditFormInner({ questionId, question }: QnaEditFormInnerProps) {
 
         {/* 마크다운 에디터 박스 */}
         <div className="overflow-hidden rounded-xl">
-          <MarkdownEditor
-            value={content}
-            onChange={setContent}
-            imageUrls={imageUrls}
-            onImageUrlsChange={setImageUrls}
-            uploadFn={getQuestionPresignedUrl}
-            height={400}
-          />
+          <MarkdownEditor value={content} onChange={setContent} />
         </div>
 
         {/* 버튼 */}
