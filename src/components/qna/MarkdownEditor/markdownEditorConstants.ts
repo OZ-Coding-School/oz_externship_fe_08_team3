@@ -76,8 +76,8 @@ export const TEXT_PALETTE_COLORS = [
   '#c27ba0',
 ]
 
-// 배경색 전용 팔레트: 흰색 + 배경 제거(투명) 포함
-export const BG_PALETTE_COLORS = ['#ffffff', ...TEXT_PALETTE_COLORS]
+// 배경색 전용 팔레트 (TEXT_PALETTE_COLORS 첫 번째 요소가 이미 '#ffffff'이므로 그대로 사용)
+export const BG_PALETTE_COLORS = TEXT_PALETTE_COLORS
 
 // 버튼 클릭 시 textarea 포커스/선택 영역 유지를 위한 공통 props
 export const NO_BLUR_PROPS = {
