@@ -13,12 +13,33 @@ interface RoleOption {
   role: UserRole
   label: string
   color: string
+  nickname?: string
 }
 
 const ROLE_OPTIONS: RoleOption[] = [
   { role: 'USER', label: '일반회원', color: 'bg-gray-500' },
-  { role: 'STUDENT', label: '수강생', color: 'bg-blue-500' },
-  { role: 'STUDENT', id: 100, label: '수강생 (작성자)', color: 'bg-blue-700' },
+  { role: 'STUDENT', label: '수강생', color: 'bg-blue-400' },
+  {
+    role: 'STUDENT',
+    id: 100,
+    label: '질문 작성자',
+    color: 'bg-blue-600',
+    nickname: '질문자',
+  },
+  {
+    role: 'STUDENT',
+    id: 211,
+    label: '답변 작성자',
+    color: 'bg-indigo-600',
+    nickname: '테스트유저',
+  },
+  {
+    role: 'STUDENT',
+    id: 301,
+    label: '댓글 작성자',
+    color: 'bg-violet-600',
+    nickname: '댓글러',
+  },
   { role: 'TA', label: '튜터 (TA)', color: 'bg-green-500' },
   { role: 'OM', label: '운영매니저 (OM)', color: 'bg-yellow-500' },
   { role: 'LC', label: '강사 (LC)', color: 'bg-orange-500' },
@@ -31,11 +52,11 @@ function DevAuthPanel() {
 
   if (!import.meta.env.DEV) return null
 
-  const handleLogin = ({ id, role, label }: RoleOption) => {
+  const handleLogin = ({ id, role, label, nickname }: RoleOption) => {
     localStorage.setItem('accessToken', 'dev-mock-token')
     login({
       id,
-      nickname: `Dev ${label}`,
+      nickname: nickname ?? `Dev ${label}`,
       email: `${role.toLowerCase()}@test.com`,
       role,
     })
@@ -56,9 +77,7 @@ function DevAuthPanel() {
               const isActive =
                 isAuthenticated &&
                 user?.role === option.role &&
-                (option.id == null
-                  ? user?.id == null || user?.id !== 100
-                  : user?.id === option.id)
+                user?.id === option.id
               return (
                 <button
                   key={`${option.role}-${option.id ?? 'default'}`}
