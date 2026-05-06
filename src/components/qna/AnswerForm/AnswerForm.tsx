@@ -173,7 +173,7 @@ export const AnswerForm = forwardRef<AnswerFormHandle, AnswerFormProps>(
               loading={isLoading}
               disabled={isLoading}
             >
-              {isEdit ? '수정' : '등록'}
+              {isEdit ? '수정하기' : '답변하기'}
             </Button>
           }
         />

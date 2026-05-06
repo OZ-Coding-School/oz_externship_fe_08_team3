@@ -21,8 +21,9 @@ const checklist = [
     category: "Readability",
     name: "매직 넘버 명명",
     description: "의미 있는 숫자 리터럴이 명명된 상수로 추출되어 있는가?",
-    // 변경된 파일에 의미 있는 숫자 리터럴 없음. Tailwind 클래스 내 숫자(px-3, pb-10 등)는 CSS 관례이므로 해당 없음
-    status: "N/A",
+    // MarkdownEditor: UNDO_LIMIT=50, FONT_SIZES 배열, CSS 픽셀값(레이아웃 관례 허용)
+    // CommentForm: MAX_LENGTH=500, NEAR_LIMIT_THRESHOLD=50 으로 추출됨 (수정 완료)
+    status: "O",
     violations: [],
   },
   {
@@ -30,7 +31,7 @@ const checklist = [
     category: "Readability",
     name: "구현 세부사항 추상화 (인증/권한)",
     description: "인증 체크, 권한 검사 등 공통 로직이 래퍼/가드 컴포넌트로 분리되어 있는가?",
-    // 변경된 파일에 인증/권한 로직 없음 (DefaultLayout의 DevAuthPanel은 DEV 전용 테스트 패널)
+    // 스테이징된 파일에 인증/권한 로직 없음
     status: "N/A",
     violations: [],
   },
@@ -39,8 +40,8 @@ const checklist = [
     category: "Readability",
     name: "구현 세부사항 추상화 (인터랙션)",
     description: "다이얼로그/오버레이 등 복잡한 인터랙션이 전용 컴포넌트로 추출되어 있는가?",
-    // CommentList의 isSortOpen 토글은 단순 드롭다운 수준으로 별도 추출 불필요
-    // MarkdownEditor의 actions 슬롯은 적절한 합성 패턴
+    // MarkdownEditor 툴바 드롭다운은 MDEditor group command 패턴으로 적절히 처리됨
+    // CommentForm/AnswerForm 은 단순 폼 UI
     status: "O",
     violations: [],
   },
@@ -49,8 +50,8 @@ const checklist = [
     category: "Readability",
     name: "조건부 렌더링 분리",
     description: "역할/상태에 따라 크게 다른 UI/로직이 별도 컴포넌트로 분리되어 있는가?",
-    // AnswerForm: isEdit ? '수정' : '등록' — 단순 텍스트 분기, 별도 분리 불필요
-    // CommentList: sortOrder 분기에 따른 UI 변화 단순
+    // MarkdownEditor: isDragOver 오버레이는 단순 분기
+    // CommentForm: counterColor 분기는 동일 요소의 스타일만 변경
     status: "O",
     violations: [],
   },
@@ -59,7 +60,7 @@ const checklist = [
     category: "Readability",
     name: "복잡한 삼항 연산자 단순화",
     description: "중첩 삼항 연산자가 if/else 또는 IIFE로 대체되어 있는가?",
-    // 변경된 파일 모두 단순 삼항(1단계)만 사용, 중첩 삼항 없음
+    // CommentForm: isAtLimit ? err : isNearLimit ? warn : muted → if/else 블록으로 수정 완료
     status: "O",
     violations: [],
   },
@@ -68,7 +69,7 @@ const checklist = [
     category: "Readability",
     name: "시선 이동 감소 (Colocation)",
     description: "단일 사용처에서만 쓰이는 단순 로직이 사용 위치 근처에 배치되어 있는가?",
-    // 각 컴포넌트의 상수/로직이 모두 사용 위치 근처에 정의됨
+    // 모든 상수(FONT_FAMILIES, FONT_SIZES, MAX_LENGTH 등)가 사용 위치 근처에 정의됨
     status: "O",
     violations: [],
   },
@@ -77,8 +78,8 @@ const checklist = [
     category: "Readability",
     name: "복잡한 조건에 이름 붙이기",
     description: "2개 이상 조합된 boolean 표현식이 의미 있는 변수명으로 추출되어 있는가?",
-    // CommentForm: hasContent = content.trim().length > 0 — 조건 명명 적절
-    // CommentList: sortOrder === order — 단일 조건으로 명명 불필요
+    // CommentForm: isNearLimit, isAtLimit, hasContent 로 모두 명명됨
+    // MarkdownEditor: isCursorInsideTag 등 헬퍼 함수로 추출됨
     status: "O",
     violations: [],
   },
@@ -89,7 +90,7 @@ const checklist = [
     category: "Predictability",
     name: "API 훅 반환 타입 표준화",
     description: "유사한 API 훅들이 일관된 반환 타입(UseQueryResult 등)을 사용하는가?",
-    // CommentForm: usePostComment → { mutate, isPending } TanStack Query 표준 패턴
+    // useGetPresignedUrl, usePostComment → TanStack Query 표준 패턴 사용
     status: "N/A",
     violations: [],
   },
@@ -98,7 +99,7 @@ const checklist = [
     category: "Predictability",
     name: "검증 함수 반환 타입 표준화",
     description: "검증 함수들이 일관된 Discriminated Union 타입을 반환하는가?",
-    // 검증 함수 없음
+    // 스테이징된 파일에 검증 함수 없음
     status: "N/A",
     violations: [],
   },
@@ -107,7 +108,7 @@ const checklist = [
     category: "Predictability",
     name: "숨겨진 사이드 이펙트 제거",
     description: "함수가 이름에 드러나지 않은 사이드 이펙트(로깅, 분석 등)를 수행하지 않는가?",
-    // handleSubmit: mutate 호출 후 onSuccess에서 setContent('') — 폼 리셋으로 명백한 동작
+    // uploadImageFile, handleDrop, handleChange 모두 이름에 드러난 동작만 수행
     status: "O",
     violations: [],
   },
@@ -127,8 +128,8 @@ const checklist = [
     category: "Cohesion",
     name: "폼 응집도 선택",
     description: "폼 검증이 용도에 맞게 필드 단위 또는 폼 단위로 일관되게 선택되어 있는가?",
-    // CommentForm: hasContent 단일 검사로 단순 폼에 적합
-    // AnswerForm: MarkdownEditor 내부에서 error 처리, 일관성 있음
+    // CommentForm: 단순 길이 검증만 존재, 필드 단위 적합
+    // AnswerForm: 기존 방식 유지 (버튼 텍스트만 변경)
     status: "O",
     violations: [],
   },
@@ -137,7 +138,7 @@ const checklist = [
     category: "Cohesion",
     name: "도메인별 디렉토리 구조",
     description: "기능/도메인 관련 코드가 도메인 폴더에 묶여 있는가?",
-    // 모든 컴포넌트가 올바른 도메인 폴더에 위치 (qna/, common/, layout/)
+    // 모든 파일이 src/components/qna/ 도메인 폴더에 올바르게 위치
     status: "O",
     violations: [],
   },
@@ -146,7 +147,8 @@ const checklist = [
     category: "Cohesion",
     name: "상수와 로직의 근접성",
     description: "상수가 사용 로직과 가까운 위치에 정의되어 있거나 이름으로 용도가 명확한가?",
-    // CommentList: (['latest', 'oldest'] as const) 인라인 선언으로 사용 위치와 밀접
+    // MAX_LENGTH, NEAR_LIMIT_THRESHOLD → 파일 상단, 사용처와 근접
+    // FONT_FAMILIES, FONT_SIZES 등 → MarkdownEditor 파일 상단 명확히 명명
     status: "O",
     violations: [],
   },
@@ -157,7 +159,8 @@ const checklist = [
     category: "Coupling",
     name: "성급한 추상화 지양",
     description: "단순히 비슷하다는 이유로 섣불리 공통 훅/함수로 추출되지 않았는가?",
-    // MarkdownEditor의 actions 슬롯은 AnswerForm 요구사항에서 자연스럽게 도출된 합성 패턴
+    // replaceInText, applyInlineFromDropdown 등은 각자 다른 역할로 구분됨
+    // makeColorCommand는 2개 이상 색상 커맨드에서 공통으로 쓰이는 정당한 추상화
     status: "O",
     violations: [],
   },
@@ -166,8 +169,8 @@ const checklist = [
     category: "Coupling",
     name: "상태 관리 범위 축소",
     description: "여러 관심사가 하나의 훅/컨텍스트에 묶이지 않고 분리되어 있는가?",
-    // CommentList: sortOrder/isSortOpen 로컬 UI 상태만 관리
-    // CommentForm: content 로컬 상태 + usePostComment 서버 상태 분리
+    // MarkdownEditor: isUploading, imageError, undoStack/redoStack, selectedFontLabel/Size, isDragOver → 각 관심사별 독립 state
+    // CommentForm: content(입력값) 단일 state
     status: "O",
     violations: [],
   },
@@ -176,7 +179,7 @@ const checklist = [
     category: "Coupling",
     name: "Props Drilling 제거",
     description: "3단계 이상 props 전달이 컴포지션(children)으로 대체되어 있는가?",
-    // AnswerForm → MarkdownEditor(actions) 1단계 전달, 드릴링 아님
+    // actions prop은 1단계 전달, props drilling 없음
     status: "N/A",
     violations: [],
   },

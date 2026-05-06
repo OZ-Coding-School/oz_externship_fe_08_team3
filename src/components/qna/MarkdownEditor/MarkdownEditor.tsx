@@ -19,6 +19,8 @@ import {
   IndentDecrease,
 } from 'lucide-react'
 import remarkBreaks from 'remark-breaks'
+import rehypeRaw from 'rehype-raw'
+import rehypeSanitize, { defaultSchema } from 'rehype-sanitize'
 import './MarkdownEditor.css'
 import { useGetPresignedUrl } from '@/features/qna/presigned-url'
 
@@ -27,6 +29,20 @@ export interface MarkdownEditorProps {
   onChange: (value: string) => void
   error?: string
   actions?: React.ReactNode
+}
+
+// style 속성 허용, blob: 이미지 src 허용, 스크립트/이벤트 핸들러는 차단
+const editorSanitizeSchema = {
+  ...defaultSchema,
+  attributes: {
+    ...defaultSchema.attributes,
+    '*': [...(defaultSchema.attributes?.['*'] ?? []), 'style'],
+  },
+  tagNames: [...(defaultSchema.tagNames ?? []), 'u', 'mark'],
+  protocols: {
+    ...defaultSchema.protocols,
+    src: [...(defaultSchema.protocols?.src ?? ['http', 'https']), 'blob'],
+  },
 }
 
 const ACCEPTED_IMAGE_TYPES = [
@@ -94,6 +110,11 @@ const TEXT_PALETTE_COLORS = [
 // 배경색 전용 팔레트: 흰색 + 배경 제거(투명) 포함
 const BG_PALETTE_COLORS = ['#ffffff', ...TEXT_PALETTE_COLORS]
 
+// 버튼 클릭 시 textarea 포커스/선택 영역 유지를 위한 공통 props
+const NO_BLUR_PROPS = {
+  onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => e.preventDefault(),
+}
+
 const PILL: React.CSSProperties = {
   borderRadius: 6,
   background: '#f0f2f5',
@@ -111,11 +132,295 @@ const PILL: React.CSSProperties = {
   fontWeight: 400,
 }
 
-function safeSelected(
-  getState?: () => false | { selectedText: string }
-): string {
+type EditorState = {
+  selectedText: string
+  text: string
+  selection: { start: number; end: number }
+}
+
+/** getState() 결과에서 전체 상태를 안전하게 꺼냅니다. */
+function safeGetState(
+  getState?: () => false | EditorState
+): EditorState | null {
   const s = getState?.()
-  return (s && 'selectedText' in s ? s.selectedText : '') || ''
+  return s && 'text' in s ? s : null
+}
+
+/** 커서가 HTML 태그 내부(<...> 사이)에 있는지 확인합니다. */
+function isCursorInsideTag(text: string, cursor: number): boolean {
+  const lastOpen = text.lastIndexOf('<', cursor - 1)
+  if (lastOpen === -1) return false
+  const lastClose = text.lastIndexOf('>', cursor - 1)
+  return lastOpen > lastClose
+}
+
+/** 커서 위치 기준 현재 단어 범위를 반환합니다 (인라인 서식용).
+ *  HTML 태그 문자(<, >)에서 단어 경계로 처리해 태그 내용 선택을 방지합니다. */
+function getWordRange(
+  text: string,
+  cursor: number
+): { start: number; end: number } | null {
+  if (isCursorInsideTag(text, cursor)) return null
+  let start = cursor
+  let end = cursor
+  while (start > 0 && /[^\s<>]/.test(text[start - 1])) start--
+  while (end < text.length && /[^\s<>]/.test(text[end])) end++
+  return start < end ? { start, end } : null
+}
+
+/** 커서를 감싸는 가장 가까운 <span style="...">...</span> 의 범위를 반환합니다.
+ *  이미 스타일이 적용된 span에 다시 서식을 적용할 때 중첩 방지용으로 사용합니다.
+ *  커서가 </span> 바로 뒤(spanEnd)에 있는 경우도 포함합니다. */
+function getEnclosingSpanRange(
+  text: string,
+  cursor: number
+): { start: number; end: number } | null {
+  // 순방향으로 모든 <span>을 찾아 커서가 포함되는지 확인합니다.
+  // cursor <= spanEnd 조건으로 </span> 바로 뒤에 커서가 있을 때도 매칭됩니다.
+  const spanOpenRe = /<span\b[^>]*>/gi
+  let match: RegExpExecArray | null
+  while ((match = spanOpenRe.exec(text)) !== null) {
+    const spanStart = match.index
+    const openEnd = spanStart + match[0].length
+    const closeIdx = text.indexOf('</span>', openEnd)
+    if (closeIdx === -1) continue
+    const spanEnd = closeIdx + '</span>'.length
+    if (cursor >= spanStart && cursor <= spanEnd) {
+      return { start: spanStart, end: spanEnd }
+    }
+  }
+  return null
+}
+
+/** 커서 위치 기준 현재 줄 범위를 반환합니다 (블록 서식용). */
+function getLineRange(
+  text: string,
+  cursor: number
+): { start: number; end: number } | null {
+  if (isCursorInsideTag(text, cursor)) return null
+  let start = cursor
+  let end = cursor
+  while (start > 0 && text[start - 1] !== '\n') start--
+  while (end < text.length && text[end] !== '\n') end++
+  return start < end ? { start, end } : null
+}
+
+/**
+ * execute 핸들러에서 선택 영역이 없으면 현재 단어를 자동 선택 후 wrapFn 적용.
+ * 인라인 서식(밑줄, 글자색 등)에 사용합니다.
+ */
+function applyInline(
+  state: EditorState,
+  api: {
+    replaceSelection: (t: string) => void
+    setSelectionRange: (r: { start: number; end: number }) => void
+  },
+  wrapFn: (text: string) => string
+) {
+  if (state.selectedText) {
+    api.replaceSelection(wrapFn(state.selectedText))
+    return
+  }
+  const range = getWordRange(state.text, state.selection.start)
+  if (range) {
+    api.setSelectionRange(range)
+    api.replaceSelection(wrapFn(state.text.slice(range.start, range.end)))
+  }
+}
+
+/**
+ * execute 핸들러에서 선택 영역이 없으면 현재 줄을 자동 선택 후 wrapFn 적용.
+ * 블록 서식(정렬, 들여쓰기 등)에 사용합니다.
+ */
+function applyBlock(
+  state: EditorState,
+  api: {
+    replaceSelection: (t: string) => void
+    setSelectionRange: (r: { start: number; end: number }) => void
+  },
+  wrapFn: (text: string) => string
+) {
+  if (state.selectedText) {
+    api.replaceSelection(wrapFn(state.selectedText))
+    return
+  }
+  const range = getLineRange(state.text, state.selection.start)
+  if (range) {
+    api.setSelectionRange(range)
+    api.replaceSelection(wrapFn(state.text.slice(range.start, range.end)))
+  }
+}
+
+/**
+ * 드롭다운 children 핸들러용 인라인 서식 적용.
+ * 선택 영역 있음 → 선택 텍스트에 적용.
+ * 선택 영역 없음 → 커서를 감싸는 기존 <span> 전체를 교체(스타일 코드 중첩 방지).
+ *               → span 없으면 현재 단어를 선택해 적용.
+ */
+type TextApiWithElement = {
+  replaceSelection: (t: string) => void
+  setSelectionRange: (r: { start: number; end: number }) => void
+  textArea?: HTMLTextAreaElement
+}
+
+/**
+ * textarea 값을 직접 교체하고 React onChange를 트리거합니다.
+ * setSelectionRange → replaceSelection 순서에서 insertTextAtPosition 내부의
+ * focus() 호출이 selection을 리셋하는 문제를 우회합니다.
+ *
+ * React native property setter hack:
+ * 원래 HTMLTextAreaElement.prototype.value setter를 호출하면 React가 변경을
+ * "dirty"로 인식한 뒤 input 이벤트에서 onChange를 정상 호출합니다.
+ */
+function replaceInText(
+  textApi: TextApiWithElement,
+  fullText: string,
+  start: number,
+  end: number,
+  replacement: string
+): boolean {
+  const ta = textApi.textArea
+  if (!ta) return false
+  const newValue = fullText.slice(0, start) + replacement + fullText.slice(end)
+  const nativeSetter = Object.getOwnPropertyDescriptor(
+    HTMLTextAreaElement.prototype,
+    'value'
+  )?.set
+  if (!nativeSetter) return false
+  nativeSetter.call(ta, newValue)
+  ta.dispatchEvent(new Event('input', { bubbles: true }))
+  ta.selectionStart = ta.selectionEnd = start + replacement.length
+  return true
+}
+
+/**
+ * 드롭다운 children 핸들러용 인라인 서식 적용.
+ *
+ * 우선순위:
+ * 1. 커서가 기존 <span> 안에 있으면 → span 전체를 교체 (선택 여부 무관, 중첩 방지)
+ * 2. 선택 영역 있음 → 선택 텍스트에 적용
+ * 3. 선택 없음 → 현재 단어 선택 후 적용
+ * 4. 아무것도 없으면 → 아무것도 하지 않음 (빈 span 삽입 방지)
+ *
+ * replaceInText를 우선 사용해 setSelectionRange + replaceSelection 패턴에서
+ * 발생하는 focus() → selection 리셋 문제를 방지합니다.
+ */
+function applyInlineFromDropdown(
+  getState: (() => false | EditorState) | undefined,
+  textApi: TextApiWithElement | undefined,
+  wrapFn: (text: string) => string
+) {
+  const s = safeGetState(getState)
+  if (!s || !textApi) return
+
+  // 1. 커서 시작 위치가 기존 <span> 안이면 span 전체를 교체 (중첩 방지)
+  const spanRange = getEnclosingSpanRange(s.text, s.selection.start)
+  if (spanRange) {
+    const innerText = s.text.slice(spanRange.start, spanRange.end)
+    const replacement = wrapFn(innerText)
+    if (
+      !replaceInText(
+        textApi,
+        s.text,
+        spanRange.start,
+        spanRange.end,
+        replacement
+      )
+    ) {
+      textApi.setSelectionRange(spanRange)
+      textApi.replaceSelection(replacement)
+    }
+    return
+  }
+
+  // 2. 선택 영역이 있으면 선택 텍스트에 적용
+  if (s.selectedText) {
+    const replacement = wrapFn(s.selectedText)
+    if (
+      !replaceInText(
+        textApi,
+        s.text,
+        s.selection.start,
+        s.selection.end,
+        replacement
+      )
+    ) {
+      textApi.replaceSelection(replacement)
+    }
+    return
+  }
+
+  // 3. 선택 없음 → 현재 단어를 선택 후 적용
+  const wordRange = getWordRange(s.text, s.selection.start)
+  if (wordRange) {
+    const innerText = s.text.slice(wordRange.start, wordRange.end)
+    const replacement = wrapFn(innerText)
+    if (
+      !replaceInText(
+        textApi,
+        s.text,
+        wordRange.start,
+        wordRange.end,
+        replacement
+      )
+    ) {
+      textApi.setSelectionRange(wordRange)
+      textApi.replaceSelection(replacement)
+    }
+  }
+  // 4. 아무것도 없으면 종료 (빈 <span></span> 삽입 안 함)
+}
+
+/**
+ * 드롭다운 children 핸들러용 블록 서식 적용.
+ * 선택 있음 → 선택 텍스트에 적용.
+ * 선택 없음 → wrapFn('') 를 커서 위치에 삽입.
+ */
+function applyBlockFromDropdown(
+  getState: (() => false | EditorState) | undefined,
+  textApi: TextApiWithElement | undefined,
+  wrapFn: (text: string) => string
+) {
+  const s = safeGetState(getState)
+  if (!s || !textApi) return
+  if (s.selectedText) {
+    textApi.replaceSelection(wrapFn(s.selectedText))
+    return
+  }
+  textApi.replaceSelection(wrapFn(''))
+}
+
+/**
+ * 목록 전용 삽입 함수.
+ * 선택 있음 → 각 줄 앞에 prefix 추가.
+ * 선택 없음 → 현재 줄의 맨 앞으로 커서 이동 후 prefix 삽입.
+ *   textarea.selectionStart/End 를 직접 수정해 setSelectionRange(→ focus()) 호출을 피합니다.
+ */
+function insertListPrefix(
+  getState: (() => false | EditorState) | undefined,
+  textApi: TextApiWithElement | undefined,
+  prefix: string
+) {
+  const s = safeGetState(getState)
+  if (!s || !textApi) return
+
+  if (s.selectedText) {
+    const lines = s.selectedText
+      .split('\n')
+      .map((l) => `${prefix}${l}`)
+      .join('\n')
+    textApi.replaceSelection(lines)
+    return
+  }
+
+  // 선택 없음: 줄 시작 위치를 계산하고 직접 selectionStart/End 설정
+  const lineStart = s.text.lastIndexOf('\n', s.selection.start - 1) + 1
+  const ta = (textApi as TextApiWithElement).textArea
+  if (ta) {
+    ta.selectionStart = lineStart
+    ta.selectionEnd = lineStart
+  }
+  textApi.replaceSelection(prefix)
 }
 
 /**
@@ -170,19 +475,84 @@ function wrapMarkWithStyle(selected: string, color: string): string {
   return `<mark style="background-color: ${color}">${selected}</mark>`
 }
 
-/** 밑줄 토글: 이미 <u>로 감싸져 있으면 제거, 아니면 추가 */
+/**
+ * 선택 텍스트가 이미 <div style="..."> 이면 해당 CSS 속성만 교체/추가하고,
+ * 그렇지 않으면 새 <div>로 감쌉니다.
+ * 중첩 div 누적을 방지합니다.
+ */
+function wrapDivWithStyle(
+  selected: string,
+  property: string,
+  value: string
+): string {
+  const match = selected.match(/^<div style="([^"]*)">([\s\S]*)<\/div>$/)
+  if (match) {
+    const existingStyle = match[1]
+    const inner = match[2]
+    const propRe = new RegExp(`${property}\\s*:[^;]*`, 'i')
+    let newStyle: string
+    if (propRe.test(existingStyle)) {
+      newStyle = existingStyle
+        .replace(propRe, `${property}: ${value}`)
+        .replace(/^;\s*/, '')
+        .trim()
+    } else if (existingStyle) {
+      newStyle = `${existingStyle}; ${property}: ${value}`
+    } else {
+      newStyle = `${property}: ${value}`
+    }
+    return `<div style="${newStyle}">${inner}</div>`
+  }
+  return `<div style="${property}: ${value}">${selected}</div>`
+}
+
+/** 커서를 감싸는 <u>...</u> 범위를 반환합니다. </u> 바로 뒤 커서도 포함합니다. */
+function getEnclosingURange(
+  text: string,
+  cursor: number
+): { start: number; end: number } | null {
+  const re = /<u>/gi
+  let m: RegExpExecArray | null
+  while ((m = re.exec(text)) !== null) {
+    const uStart = m.index
+    const closeIdx = text.indexOf('</u>', uStart + m[0].length)
+    if (closeIdx === -1) continue
+    const uEnd = closeIdx + '</u>'.length
+    if (cursor >= uStart && cursor <= uEnd) {
+      return { start: uStart, end: uEnd }
+    }
+  }
+  return null
+}
+
+/** 밑줄 토글: 커서가 <u> 안에 있거나 선택 텍스트가 <u>로 감싸져 있으면 제거, 아니면 추가 */
 const underlineCommand: ICommand = {
   name: 'underline',
   keyCommand: 'underline',
-  buttonProps: { 'aria-label': '밑줄', title: '밑줄' },
+  buttonProps: {
+    'aria-label': '밑줄',
+    title: '밑줄',
+    onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => e.preventDefault(),
+  },
   icon: <Underline size={14} />,
   execute: (state, api) => {
-    const uMatch = state.selectedText.match(/^<u>([\s\S]*)<\/u>$/)
-    if (uMatch) {
-      api.replaceSelection(uMatch[1])
-    } else {
-      api.replaceSelection(`<u>${state.selectedText}</u>`)
+    // 선택 없이 커서가 <u>...</u> 안에 있으면 → <u> 전체 선택 후 제거
+    if (!state.selectedText) {
+      const uRange = getEnclosingURange(state.text, state.selection.start)
+      if (uRange) {
+        const inner = state.text.slice(
+          uRange.start + '<u>'.length,
+          uRange.end - '</u>'.length
+        )
+        api.setSelectionRange(uRange)
+        api.replaceSelection(inner)
+        return
+      }
     }
+    applyInline(state, api, (text) => {
+      const uMatch = text.match(/^<u>([\s\S]*)<\/u>$/)
+      return uMatch ? uMatch[1] : `<u>${text}</u>`
+    })
   },
 }
 
@@ -215,8 +585,7 @@ function makeColorCommand(
             data-white={color === '#ffffff' ? 'true' : undefined}
             title={color === '#ffffff' ? '흰색' : color}
             onClick={() => {
-              const selected = safeSelected(getState)
-              textApi?.replaceSelection(wrap(color, selected))
+              applyInlineFromDropdown(getState, textApi, (t) => wrap(color, t))
               close()
             }}
           />
@@ -258,16 +627,9 @@ const bgColorCommand: ICommand = {
         type="button"
         className="bg-color-remove-btn"
         onClick={() => {
-          const selected = safeSelected(getState)
-          if (!selected) {
-            close()
-            return
-          }
-          const cleaned = selected.replace(
-            /<mark[^>]*>([\s\S]*?)<\/mark>/g,
-            '$1'
+          applyInlineFromDropdown(getState, textApi, (t) =>
+            t.replace(/<mark[^>]*>([\s\S]*?)<\/mark>/g, '$1')
           )
-          textApi?.replaceSelection(cleaned)
           close()
         }}
       >
@@ -288,8 +650,9 @@ const bgColorCommand: ICommand = {
             }}
             title={color === '#ffffff' ? '흰색' : color}
             onClick={() => {
-              const selected = safeSelected(getState)
-              textApi?.replaceSelection(wrapMarkWithStyle(selected, color))
+              applyInlineFromDropdown(getState, textApi, (t) =>
+                wrapMarkWithStyle(t, color)
+              )
               close()
             }}
           />
@@ -330,45 +693,53 @@ const textColorCommand = makeColorCommand(
 const alignLeftCommand: ICommand = {
   name: 'align-left',
   keyCommand: 'align-left',
-  buttonProps: { 'aria-label': '왼쪽 정렬', title: '왼쪽 정렬' },
+  buttonProps: {
+    'aria-label': '왼쪽 정렬',
+    title: '왼쪽 정렬',
+    onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => e.preventDefault(),
+  },
   icon: <AlignLeft size={14} />,
   execute: (state, api) =>
-    api.replaceSelection(
-      `<div style="text-align: left">${state.selectedText}</div>`
-    ),
+    applyBlock(state, api, (t) => wrapDivWithStyle(t, 'text-align', 'left')),
 }
 
 const alignCenterCommand: ICommand = {
   name: 'align-center',
   keyCommand: 'align-center',
-  buttonProps: { 'aria-label': '가운데 정렬', title: '가운데 정렬' },
+  buttonProps: {
+    'aria-label': '가운데 정렬',
+    title: '가운데 정렬',
+    onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => e.preventDefault(),
+  },
   icon: <AlignCenter size={14} />,
   execute: (state, api) =>
-    api.replaceSelection(
-      `<div style="text-align: center">${state.selectedText}</div>`
-    ),
+    applyBlock(state, api, (t) => wrapDivWithStyle(t, 'text-align', 'center')),
 }
 
 const alignRightCommand: ICommand = {
   name: 'align-right',
   keyCommand: 'align-right',
-  buttonProps: { 'aria-label': '오른쪽 정렬', title: '오른쪽 정렬' },
+  buttonProps: {
+    'aria-label': '오른쪽 정렬',
+    title: '오른쪽 정렬',
+    onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => e.preventDefault(),
+  },
   icon: <AlignRight size={14} />,
   execute: (state, api) =>
-    api.replaceSelection(
-      `<div style="text-align: right">${state.selectedText}</div>`
-    ),
+    applyBlock(state, api, (t) => wrapDivWithStyle(t, 'text-align', 'right')),
 }
 
 const alignJustifyCommand: ICommand = {
   name: 'align-justify',
   keyCommand: 'align-justify',
-  buttonProps: { 'aria-label': '양쪽 정렬', title: '양쪽 정렬' },
+  buttonProps: {
+    'aria-label': '양쪽 정렬',
+    title: '양쪽 정렬',
+    onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => e.preventDefault(),
+  },
   icon: <AlignJustify size={14} />,
   execute: (state, api) =>
-    api.replaceSelection(
-      `<div style="text-align: justify">${state.selectedText}</div>`
-    ),
+    applyBlock(state, api, (t) => wrapDivWithStyle(t, 'text-align', 'justify')),
 }
 
 const listDropdownCmd: ICommand = {
@@ -391,14 +762,7 @@ const listDropdownCmd: ICommand = {
       <button
         type="button"
         onClick={() => {
-          const text = safeSelected(getState)
-          const lines = text
-            ? text
-                .split('\n')
-                .map((l) => `- ${l}`)
-                .join('\n')
-            : '- '
-          textApi?.replaceSelection(lines)
+          insertListPrefix(getState, textApi, '- ')
           close()
         }}
       >
@@ -407,14 +771,7 @@ const listDropdownCmd: ICommand = {
       <button
         type="button"
         onClick={() => {
-          const text = safeSelected(getState)
-          const lines = text
-            ? text
-                .split('\n')
-                .map((l, i) => `${i + 1}. ${l}`)
-                .join('\n')
-            : '1. '
-          textApi?.replaceSelection(lines)
+          insertListPrefix(getState, textApi, '1. ')
           close()
         }}
       >
@@ -423,14 +780,7 @@ const listDropdownCmd: ICommand = {
       <button
         type="button"
         onClick={() => {
-          const text = safeSelected(getState)
-          const lines = text
-            ? text
-                .split('\n')
-                .map((l) => `- [ ] ${l}`)
-                .join('\n')
-            : '- [ ] '
-          textApi?.replaceSelection(lines)
+          insertListPrefix(getState, textApi, '- [ ] ')
           close()
         }}
       >
@@ -462,9 +812,8 @@ const lineHeightCmd: ICommand = {
           key={h}
           type="button"
           onClick={() => {
-            const text = safeSelected(getState)
-            textApi?.replaceSelection(
-              `<div style="line-height: ${h}">${text}</div>`
+            applyBlockFromDropdown(getState, textApi, (t) =>
+              wrapDivWithStyle(t, 'line-height', h)
             )
             close()
           }}
@@ -480,50 +829,56 @@ const lineHeightCmd: ICommand = {
 const outdentCmd: ICommand = {
   name: 'outdent',
   keyCommand: 'outdent',
-  buttonProps: { 'aria-label': '내어쓰기', title: '내어쓰기' },
-  icon: <IndentDecrease size={14} />,
-  execute: (state, api) => {
-    const lines = state.selectedText
-      ? state.selectedText
-          .split('\n')
-          .map((l) => (l.startsWith('  ') ? l.slice(2) : l))
-          .join('\n')
-      : ''
-    api.replaceSelection(lines)
+  buttonProps: {
+    'aria-label': '내어쓰기',
+    title: '내어쓰기',
+    onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => e.preventDefault(),
   },
+  icon: <IndentDecrease size={14} />,
+  execute: (state, api) =>
+    applyBlock(state, api, (t) =>
+      t
+        .split('\n')
+        .map((l) => (l.startsWith('  ') ? l.slice(2) : l))
+        .join('\n')
+    ),
 }
 
 const indentCmd: ICommand = {
   name: 'indent',
   keyCommand: 'indent',
-  buttonProps: { 'aria-label': '들여쓰기', title: '들여쓰기' },
-  icon: <IndentIncrease size={14} />,
-  execute: (state, api) => {
-    const lines = state.selectedText
-      ? state.selectedText
-          .split('\n')
-          .map((l) => `  ${l}`)
-          .join('\n')
-      : '  '
-    api.replaceSelection(lines)
+  buttonProps: {
+    'aria-label': '들여쓰기',
+    title: '들여쓰기',
+    onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => e.preventDefault(),
   },
+  icon: <IndentIncrease size={14} />,
+  execute: (state, api) =>
+    applyBlock(state, api, (t) =>
+      t
+        .split('\n')
+        .map((l) => `  ${l}`)
+        .join('\n')
+    ),
 }
 
 const clearFormatCmd: ICommand = {
   name: 'clear-format',
   keyCommand: 'clear-format',
-  buttonProps: { 'aria-label': '서식 제거', title: '서식 제거' },
-  icon: <RemoveFormatting size={14} />,
-  execute: (state, api) => {
-    // 선택된 텍스트가 없으면 아무것도 하지 않음
-    if (!state.selectedText) return
-    const cleaned = state.selectedText
-      .replace(/\*\*(.*?)\*\*/gs, '$1')
-      .replace(/\*(.*?)\*/gs, '$1')
-      .replace(/~~(.*?)~~/gs, '$1')
-      .replace(/<[^>]+>/gs, '')
-    api.replaceSelection(cleaned)
+  buttonProps: {
+    'aria-label': '서식 제거',
+    title: '서식 제거',
+    onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => e.preventDefault(),
   },
+  icon: <RemoveFormatting size={14} />,
+  execute: (state, api) =>
+    applyInline(state, api, (t) =>
+      t
+        .replace(/\*\*(.*?)\*\*/gs, '$1')
+        .replace(/\*(.*?)\*/gs, '$1')
+        .replace(/~~(.*?)~~/gs, '$1')
+        .replace(/<[^>]+>/gs, '')
+    ),
 }
 
 const UNDO_LIMIT = 50
@@ -590,6 +945,8 @@ export function MarkdownEditor({
         'aria-label': '실행 취소',
         title: '실행 취소',
         'data-inactive': undoStack.length === 0 ? 'true' : undefined,
+        onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) =>
+          e.preventDefault(),
       } as React.ButtonHTMLAttributes<HTMLButtonElement>,
       icon: <Undo2 size={14} />,
       execute: handleUndo,
@@ -605,6 +962,8 @@ export function MarkdownEditor({
         'aria-label': '다시 실행',
         title: '다시 실행',
         'data-inactive': redoStack.length === 0 ? 'true' : undefined,
+        onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) =>
+          e.preventDefault(),
       } as React.ButtonHTMLAttributes<HTMLButtonElement>,
       icon: <Redo2 size={14} />,
       execute: handleRedo,
@@ -637,9 +996,8 @@ export function MarkdownEditor({
               type="button"
               style={{ fontFamily: value === 'inherit' ? undefined : value }}
               onClick={() => {
-                const inner = safeSelected(getState)
-                textApi?.replaceSelection(
-                  wrapWithStyle(inner, 'font-family', value)
+                applyInlineFromDropdown(getState, textApi, (t) =>
+                  wrapWithStyle(t, 'font-family', value)
                 )
                 close()
                 setTimeout(() => setSelectedFontLabel(label), 0)
@@ -683,9 +1041,8 @@ export function MarkdownEditor({
               key={size}
               type="button"
               onClick={() => {
-                const inner = safeSelected(getState)
-                textApi?.replaceSelection(
-                  wrapWithStyle(inner, 'font-size', `${size}px`)
+                applyInlineFromDropdown(getState, textApi, (t) =>
+                  wrapWithStyle(t, 'font-size', `${size}px`)
                 )
                 close()
                 setTimeout(() => setSelectedFontSize(size), 0)
@@ -776,7 +1133,12 @@ export function MarkdownEditor({
     () => ({
       name: 'image',
       keyCommand: 'image',
-      buttonProps: { 'aria-label': '이미지 업로드', title: '이미지 업로드' },
+      buttonProps: {
+        'aria-label': '이미지 업로드',
+        title: '이미지 업로드',
+        onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) =>
+          e.preventDefault(),
+      },
       icon: (
         <svg width="14" height="14" viewBox="0 0 20 20">
           <path
@@ -808,14 +1170,29 @@ export function MarkdownEditor({
       fontFamilyCommand,
       fontSizeCommand,
       mdCommands.divider,
-      mdCommands.bold,
-      mdCommands.italic,
+      {
+        ...mdCommands.bold,
+        buttonProps: { ...mdCommands.bold.buttonProps, ...NO_BLUR_PROPS },
+      },
+      {
+        ...mdCommands.italic,
+        buttonProps: { ...mdCommands.italic.buttonProps, ...NO_BLUR_PROPS },
+      },
       underlineCommand,
-      mdCommands.strikethrough,
+      {
+        ...mdCommands.strikethrough,
+        buttonProps: {
+          ...mdCommands.strikethrough.buttonProps,
+          ...NO_BLUR_PROPS,
+        },
+      },
       bgColorCommand,
       textColorCommand,
       mdCommands.divider,
-      mdCommands.link,
+      {
+        ...mdCommands.link,
+        buttonProps: { ...mdCommands.link.buttonProps, ...NO_BLUR_PROPS },
+      },
       imageCommand,
     ],
     [imageCommand, undoCommand, redoCommand, fontFamilyCommand, fontSizeCommand]
@@ -865,10 +1242,12 @@ export function MarkdownEditor({
           commands={editorCommands}
           extraCommands={editorExtraCommands}
           previewOptions={{
-            // react-markdown v10은 allowDangerousHtml 없이 inline HTML을 텍스트로 이스케이프함
-            // remarkRehypeOptions: { allowDangerousHtml: true } 로 inline HTML 노드 통과 허용
             remarkPlugins: [[remarkBreaks]],
             remarkRehypeOptions: { allowDangerousHtml: true },
+            rehypePlugins: [
+              [rehypeRaw],
+              [rehypeSanitize, editorSanitizeSchema],
+            ],
           }}
         />
       </div>
