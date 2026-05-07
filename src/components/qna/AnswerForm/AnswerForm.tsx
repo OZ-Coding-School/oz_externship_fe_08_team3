@@ -2,6 +2,7 @@ import {
   useState,
   useEffect,
   useRef,
+  useCallback,
   forwardRef,
   useImperativeHandle,
 } from 'react'
@@ -9,9 +10,7 @@ import { Button } from '@/components/common/Button'
 import { MarkdownEditor } from '@/components/qna/MarkdownEditor'
 
 export interface AnswerFormProps {
-  questionTitle: string
   onSubmit: (content: string, imageUrls: string[]) => void
-  onCancel?: () => void
   isLoading?: boolean
   mode?: 'create' | 'edit'
   initialContent?: string
@@ -21,6 +20,7 @@ export interface AnswerFormProps {
 
 export interface AnswerFormHandle {
   focusEditor: () => void
+  submit: () => void
 }
 
 const DEBOUNCE_DELAY_MS = 500
@@ -32,22 +32,17 @@ function getDraftKey(answerId: number) {
 export const AnswerForm = forwardRef<AnswerFormHandle, AnswerFormProps>(
   function AnswerForm(
     {
-      questionTitle,
       onSubmit,
-      onCancel,
       isLoading = false,
       mode = 'create',
       initialContent = '',
+      initialImgUrls = [],
       answerId,
     },
     ref
   ) {
     const isEdit = mode === 'edit'
     const draftKey = isEdit && answerId != null ? getDraftKey(answerId) : null
-
-    useImperativeHandle(ref, () => ({
-      focusEditor: () => {},
-    }))
 
     const [showRestorePrompt, setShowRestorePrompt] = useState(() => {
       if (!isEdit || !draftKey) return false
@@ -60,6 +55,7 @@ export const AnswerForm = forwardRef<AnswerFormHandle, AnswerFormProps>(
       return saved != null && saved !== initialContent ? saved : null
     })
     const [content, setContent] = useState(initialContent)
+    const [imgUrls] = useState(initialImgUrls)
     const [error, setError] = useState(false)
 
     // debounce 자동 저장
@@ -87,14 +83,14 @@ export const AnswerForm = forwardRef<AnswerFormHandle, AnswerFormProps>(
         window.removeEventListener('beforeunload', handleBeforeUnload)
     }, [content])
 
-    const handleSubmit = () => {
+    const handleSubmit = useCallback(() => {
       if (!content.trim()) {
         setError(true)
         return
       }
       setError(false)
-      onSubmit(content, [])
-    }
+      onSubmit(content, imgUrls)
+    }, [content, imgUrls, onSubmit])
 
     const handleContentChange = (value: string) => {
       setContent(value)
@@ -113,11 +109,20 @@ export const AnswerForm = forwardRef<AnswerFormHandle, AnswerFormProps>(
       setPendingDraft(null)
     }
 
+    useImperativeHandle(
+      ref,
+      () => ({
+        focusEditor: () => {},
+        submit: handleSubmit,
+      }),
+      [handleSubmit]
+    )
+
     return (
-      <div className="border-border-base bg-bg-base rounded-lg border p-6">
+      <>
         {/* 임시 저장 복원 안내 */}
         {showRestorePrompt && (
-          <div className="bg-bg-subtle border-border-base mb-4 flex items-center justify-between rounded-md border px-4 py-3">
+          <div className="bg-bg-subtle border-border-base mx-8 mt-4 flex items-center justify-between rounded-md border px-4 py-3">
             <p className="text-text-body text-sm">
               이전에 작성 중이던 내용이 있습니다. 복원할까요?
             </p>
@@ -141,43 +146,13 @@ export const AnswerForm = forwardRef<AnswerFormHandle, AnswerFormProps>(
           </div>
         )}
 
-        {/* 상단: 질문 제목 + 취소 버튼 */}
-        <div className="mb-4 flex items-start justify-between gap-4">
-          <div>
-            <p className="text-text-muted text-xs">답변 대상 질문</p>
-            <p className="text-text-heading mt-0.5 line-clamp-2 text-sm font-medium">
-              {questionTitle}
-            </p>
-          </div>
-          {onCancel && (
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={onCancel}
-              disabled={isLoading}
-            >
-              취소
-            </Button>
-          )}
-        </div>
-
-        {/* 중단: 에디터 (하단에 등록 버튼 포함) */}
         <MarkdownEditor
           value={content}
           onChange={handleContentChange}
           error={error ? '답변 내용을 입력해주세요.' : undefined}
-          actions={
-            <Button
-              size="sm"
-              onClick={handleSubmit}
-              loading={isLoading}
-              disabled={isLoading}
-            >
-              {isEdit ? '수정하기' : '답변하기'}
-            </Button>
-          }
+          wrapperClassName="bg-bg-base relative border-t border-[#cdcdcd]"
         />
-      </div>
+      </>
     )
   }
 )

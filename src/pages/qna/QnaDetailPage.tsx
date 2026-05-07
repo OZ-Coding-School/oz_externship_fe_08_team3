@@ -93,7 +93,6 @@ export function QnaDetailPage() {
     return <Navigate to={ROUTES.QNA.LIST} />
   }
 
-  const questionTitle = questionDetail?.title ?? '질문 내용을 불러오는 중...'
   const anyAdopted = answers?.some((a) => a.is_adopted) ?? false
   const isQuestionOwner =
     user?.id != null && questionDetail?.author.id === user.id
@@ -235,43 +234,49 @@ export function QnaDetailPage() {
         showToast={showToast}
       />
 
-      {/* 답변 유도 카드 */}
-      {canAnswer && !isAnswersLoading && !isAnswersError && !showForm && (
-        <AnswerPromptCard
-          nickname={user?.nickname ?? ''}
-          profileImageUrl={user?.profileImage}
-          isEdit={isEdit}
-          disabled={anyAdopted}
-          onAction={() => setShowForm(true)}
-        />
-      )}
-
-      {/* 답변 작성 / 수정 폼 */}
-      {canAnswer && !isAnswersLoading && !isAnswersError && showForm && (
-        <div className="mt-4">
-          {isEdit ? (
-            <AnswerForm
-              ref={answerFormRef}
-              questionTitle={questionTitle}
-              onSubmit={handleEditSubmit}
-              onCancel={() => setShowForm(false)}
-              isLoading={isPutPending}
-              mode="edit"
-              initialContent={myAnswer.content}
-              initialImgUrls={myAnswer.images.map((img) => img.img_url)}
-              answerId={myAnswer.id}
+      {/* 답변 유도 카드 / 답변 작성·수정 폼 */}
+      {canAnswer &&
+        !isAnswersLoading &&
+        !isAnswersError &&
+        (showForm ? (
+          <div className="mt-[100px] overflow-hidden rounded-[20px] border border-[#CECECE] bg-white">
+            <AnswerPromptCard
+              nickname={user?.nickname ?? ''}
+              profileImageUrl={user?.profileImage}
+              isEdit={isEdit}
+              disabled={anyAdopted}
+              asCardHeader
+              showForm
+              isLoading={isEdit ? isPutPending : isPostPending}
+              onSubmit={() => answerFormRef.current?.submit()}
             />
-          ) : (
-            <AnswerForm
-              ref={answerFormRef}
-              questionTitle={questionTitle}
-              onSubmit={handleCreateSubmit}
-              onCancel={() => setShowForm(false)}
-              isLoading={isPostPending}
-            />
-          )}
-        </div>
-      )}
+            {isEdit ? (
+              <AnswerForm
+                ref={answerFormRef}
+                onSubmit={handleEditSubmit}
+                isLoading={isPutPending}
+                mode="edit"
+                initialContent={myAnswer.content}
+                initialImgUrls={myAnswer.images.map((img) => img.img_url)}
+                answerId={myAnswer.id}
+              />
+            ) : (
+              <AnswerForm
+                ref={answerFormRef}
+                onSubmit={handleCreateSubmit}
+                isLoading={isPostPending}
+              />
+            )}
+          </div>
+        ) : (
+          <AnswerPromptCard
+            nickname={user?.nickname ?? ''}
+            profileImageUrl={user?.profileImage}
+            isEdit={isEdit}
+            disabled={anyAdopted}
+            onAction={() => setShowForm(true)}
+          />
+        ))}
 
       {/* 답변 목록 */}
       <AnswerSection

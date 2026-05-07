@@ -45,6 +45,7 @@ export interface MarkdownEditorProps {
   onChange: (value: string) => void
   error?: string
   actions?: React.ReactNode
+  wrapperClassName?: string
 }
 
 export function MarkdownEditor({
@@ -52,6 +53,7 @@ export function MarkdownEditor({
   onChange,
   error,
   actions,
+  wrapperClassName,
 }: MarkdownEditorProps) {
   const [selectedFontLabel, setSelectedFontLabel] = useState('기본서체')
   const [selectedFontSize, setSelectedFontSize] = useState(16)
@@ -398,7 +400,11 @@ export function MarkdownEditor({
 
   return (
     <div
-      className={`bg-bg-base relative rounded-[20px] border ${isDragOver ? 'border-primary border-2' : 'border-[#cdcdcd]'}`}
+      className={
+        wrapperClassName != null
+          ? `${wrapperClassName}${isDragOver ? 'border-primary border-2' : ''}`
+          : `bg-bg-base relative rounded-[20px] border ${isDragOver ? 'border-primary border-2' : 'border-[#cdcdcd]'}`
+      }
       onDrop={handleDrop}
       onDragOver={(e) => e.preventDefault()}
       onDragEnter={(e) => {
