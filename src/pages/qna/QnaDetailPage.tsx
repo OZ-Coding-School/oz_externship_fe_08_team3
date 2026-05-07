@@ -2,12 +2,14 @@
  * @figma 질의응답 상세 페이지 - @https://www.figma.com/design/4rJmEFUU2HMWVy3qUcYZRs/%EC%A0%9C%EB%AA%A9-%EC%97%86%EC%9D%8C?node-id=1-7744&m=dev
  */
 
-import { useRef, useState, useMemo } from 'react'
-import { useParams, useNavigate, Navigate, Link } from 'react-router'
-import { Button, ConfirmModal, Toast, AnswerForm } from '@/components'
+import { Fragment, useRef, useState, useMemo } from 'react'
+import { useParams, useNavigate, Navigate } from 'react-router'
+import { ChevronRight } from 'lucide-react'
+import { ConfirmModal, Toast, AnswerForm } from '@/components'
 import type { AnswerFormHandle } from '@/components'
 import { QuestionDetail } from '@/components/qna/QuestionDetail'
 import { AnswerSection } from '@/components/qna/AnswerSection'
+import { AnswerPromptCard } from '@/components/qna/AnswerPromptCard'
 import { useAuthStore } from '@/stores/authStore'
 import { ANSWER_ALLOWED_ROLES } from '@/constants/roles'
 import {
@@ -203,23 +205,21 @@ export function QnaDetailPage() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8">
-      {/* Breadcrumb */}
+    <div className="mx-auto max-w-[944px] pt-[108px] pb-[200px]">
+      {/* 브레드크럼 — 대분류 > 중분류 > 소분류 */}
       {questionDetail && (
         <nav
           aria-label="breadcrumb"
-          className="mb-4 flex items-center gap-1.5 text-sm"
+          className="text-primary mb-10 flex items-center text-xl leading-normal font-bold tracking-[-0.03em]"
         >
-          <Link
-            to={ROUTES.QNA.LIST}
-            className="text-text-muted hover:text-primary transition-colors"
-          >
-            Q&amp;A
-          </Link>
-          <span className="text-text-muted">›</span>
-          <span className="text-text-body font-medium">
-            {questionDetail.category.name}
-          </span>
+          {questionDetail.category.names.map((name, i) => (
+            <Fragment key={i}>
+              {i > 0 && (
+                <ChevronRight className="mx-1 h-5 w-5" strokeWidth={2} />
+              )}
+              <span>{name}</span>
+            </Fragment>
+          ))}
         </nav>
       )}
 
@@ -235,17 +235,15 @@ export function QnaDetailPage() {
         showToast={showToast}
       />
 
-      {/* 답변하기 버튼 */}
+      {/* 답변 유도 카드 */}
       {canAnswer && !isAnswersLoading && !isAnswersError && !showForm && (
-        <div className="mt-4 flex justify-end">
-          <Button
-            type="button"
-            onClick={() => setShowForm(true)}
-            disabled={anyAdopted}
-          >
-            {isEdit ? '답변 수정하기' : '답변하기'}
-          </Button>
-        </div>
+        <AnswerPromptCard
+          nickname={user?.nickname ?? ''}
+          profileImageUrl={user?.profileImage}
+          isEdit={isEdit}
+          disabled={anyAdopted}
+          onAction={() => setShowForm(true)}
+        />
       )}
 
       {/* 답변 작성 / 수정 폼 */}

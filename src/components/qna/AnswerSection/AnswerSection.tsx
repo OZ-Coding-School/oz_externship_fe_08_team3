@@ -1,6 +1,5 @@
 import { LoadingBox } from '@/components/common/LoadingBox'
 import { AnswerCard } from '@/components/qna/AnswerCard'
-import { QaBadge } from '@/components/qna/QaBadge'
 import type { GetAnswerItem } from '@/features/qna/answers'
 
 // ── AnswerSection ─────────────────────────────────────────────────────────────
@@ -35,7 +34,7 @@ export function AnswerSection({
   onAccept,
 }: AnswerSectionProps) {
   return (
-    <section aria-labelledby="answers-heading" className="mt-8">
+    <section aria-labelledby="answers-heading" className="mt-[100px]">
       {isLoading && <LoadingBox label="답변을 불러오는 중..." />}
       {isError && (
         <p className="text-error text-sm">
@@ -44,26 +43,28 @@ export function AnswerSection({
       )}
       {!isLoading && !isError && answers && (
         <>
-          {/* A 아이콘 + 답변 수 */}
-          <div className="flex items-center gap-2">
-            <QaBadge type="A" />
+          {/* A 원형 뱃지 + 답변 수 */}
+          <div className="mb-10 flex items-center gap-4">
+            <span className="bg-primary flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-[28px] leading-none font-bold tracking-[-0.03em] text-white">
+              A
+            </span>
             <h2
               id="answers-heading"
-              className="text-text-heading text-base font-semibold"
+              className="text-[32px] leading-normal font-bold tracking-[-0.03em] text-[#121212]"
             >
               {sortedAnswers.length}개의 답변이 있어요
             </h2>
           </div>
 
           {sortedAnswers.length === 0 ? (
-            <div className="text-text-muted mt-6 flex flex-col items-center py-12 text-center">
+            <div className="flex flex-col items-center py-12 text-center text-[#9D9D9D]">
               <p className="text-base font-medium">
                 아직 등록된 답변이 없습니다.
               </p>
-              <p className="mt-1 text-sm">첫 번째 답변을 작성해 보세요.</p>
+              <p className="mt-1 text-base">첫 번째 답변을 작성해 보세요.</p>
             </div>
           ) : (
-            <div className="mt-4 space-y-6">
+            <div className="space-y-10">
               {sortedAnswers.map((answer) => (
                 <AnswerCard
                   key={answer.id}

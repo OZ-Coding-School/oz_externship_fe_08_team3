@@ -1,32 +1,29 @@
+import defaultProfile from '@/assets/default-profile.png'
+
 interface UserAvatarProps {
   profileImageUrl: string | null | undefined
   nickname: string
-  size?: 'sm' | 'md'
+  size?: 'sm' | 'md' | 'lg'
 }
+
+const SIZE_CLASS = {
+  sm: 'h-6 w-6',
+  md: 'h-8 w-8',
+  lg: 'h-12 w-12',
+} as const
 
 export function UserAvatar({
   profileImageUrl,
   nickname,
   size = 'md',
 }: UserAvatarProps) {
-  const sizeClass = size === 'sm' ? 'h-6 w-6' : 'h-8 w-8'
-  const initial = [...nickname][0] ?? '?'
-
-  if (profileImageUrl) {
-    return (
-      <img
-        src={profileImageUrl}
-        alt={nickname}
-        className={`${sizeClass} rounded-full object-cover`}
-      />
-    )
-  }
+  const sizeClass = SIZE_CLASS[size]
 
   return (
-    <div
-      className={`bg-bg-subtle flex ${sizeClass} items-center justify-center rounded-full text-xs font-bold`}
-    >
-      {initial}
-    </div>
+    <img
+      src={profileImageUrl ?? defaultProfile}
+      alt={nickname}
+      className={`${sizeClass} rounded-full object-cover`}
+    />
   )
 }

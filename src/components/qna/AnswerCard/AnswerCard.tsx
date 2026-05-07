@@ -2,9 +2,9 @@ import type { GetAnswerItem } from '@/features/qna/answers'
 import { MarkdownViewer } from '@/components/qna/MarkdownViewer'
 import { Button } from '@/components/common/Button'
 import { UserAvatar } from '@/components/common/UserAvatar'
-import { CommentList } from '@/components/qna/CommentList'
 import { CommentForm } from '@/components/qna/CommentForm'
-import { formatDate } from '@/utils/formatDate'
+import { CommentList } from '@/components/qna/CommentList'
+import { getRelativeTime } from '@/utils/relativeTime'
 
 interface AnswerCardProps {
   answer: GetAnswerItem
@@ -33,68 +33,68 @@ export function AnswerCard({
     isQuestionOwner && !anyAdopted && answer.author.id !== userId
 
   return (
-    <div className={answer.is_adopted ? 'relative mt-4' : undefined}>
-      {answer.is_adopted && (
-        <div
-          aria-label="질문자가 채택한 답변"
-          className="bg-primary absolute top-0 left-3 -translate-y-1/2 rounded-full px-3 py-1 text-xs font-bold text-white"
-        >
-          질문자 채택
-        </div>
-      )}
-
-      <article
-        className={[
-          'bg-bg-base rounded-lg border p-6',
-          answer.is_adopted ? 'border-primary' : 'border-border-base',
-        ].join(' ')}
-      >
-        {/* 카드 헤더: 프로필 좌측 / 채택 버튼 우측 */}
-        <div className="mb-4 flex items-start justify-between">
-          <div className="flex items-center gap-2">
-            <UserAvatar
-              profileImageUrl={answer.author.profile_image_url}
-              nickname={answer.author.nickname}
-            />
-            <div>
-              <span className="text-text-heading text-sm font-medium">
-                {answer.author.nickname}
-              </span>
-              <span className="text-text-muted ml-1 text-xs">
-                {answer.author.course_name} · {answer.author.cohort_name}
+    <article className="rounded-[20px] border border-[#CECECE] px-[38px] py-11">
+      {/* 카드 헤더: 프로필 (좌) / 채택 라벨·버튼 (우) */}
+      <div className="mb-10 flex items-center justify-between">
+        <div className="flex items-center gap-5">
+          <UserAvatar
+            size="lg"
+            profileImageUrl={answer.author.profile_image_url}
+            nickname={answer.author.nickname}
+          />
+          <div>
+            <p className="text-base leading-normal font-bold tracking-[-0.03em] text-[#4D4D4D]">
+              {answer.author.nickname}
+            </p>
+            <div className="mt-1 flex items-center gap-2 text-xs leading-normal tracking-[-0.03em] text-[#9D9D9D]">
+              <span>
+                {answer.author.course_name} &lt;{answer.author.cohort_name}&gt;
               </span>
             </div>
           </div>
-
-          <div className="flex items-center gap-3">
-            <time
-              dateTime={answer.updated_at}
-              className="text-text-muted text-xs"
-            >
-              수정일: {formatDate(answer.updated_at)}
-            </time>
-            {canShowAcceptButton && (
-              <Button
-                size="sm"
-                type="button"
-                onClick={() => onAccept(answer.id)}
-                disabled={isAcceptPending}
-                loading={isAcceptPending && confirmAcceptId === answer.id}
-              >
-                채택하기
-              </Button>
-            )}
-          </div>
         </div>
 
+        <div className="flex items-center gap-3">
+          {answer.is_adopted && (
+            <span className="text-primary text-xs font-bold tracking-[-0.03em]">
+              채택된 답변
+            </span>
+          )}
+          {canShowAcceptButton && (
+            <Button
+              size="sm"
+              type="button"
+              onClick={() => onAccept(answer.id)}
+              disabled={isAcceptPending}
+              loading={isAcceptPending && confirmAcceptId === answer.id}
+            >
+              채택하기
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* 답변 본문 */}
+      <div className="text-base leading-normal tracking-[-0.03em] text-[#121212]">
         <MarkdownViewer content={answer.content} />
+      </div>
 
-        <CommentList comments={answer.comments} />
+      {/* 하단: 시간 + 디바이더 */}
+      <div className="flex justify-end border-b border-[#CECECE] pt-8 pb-5">
+        <time
+          dateTime={answer.updated_at}
+          className="text-base leading-normal tracking-[-0.03em] text-[#9D9D9D]"
+        >
+          {getRelativeTime(answer.updated_at)}
+        </time>
+      </div>
 
-        {isAuthenticated && (
-          <CommentForm answerId={answer.id} questionId={numericQuestionId} />
-        )}
-      </article>
-    </div>
+      {/* 댓글 입력 (먼저) → 댓글 목록 (나중) — Figma 순서 */}
+      {isAuthenticated && (
+        <CommentForm answerId={answer.id} questionId={numericQuestionId} />
+      )}
+
+      <CommentList comments={answer.comments} />
+    </article>
   )
 }
