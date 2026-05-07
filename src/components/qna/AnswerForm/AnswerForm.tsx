@@ -2,6 +2,7 @@ import {
   useState,
   useEffect,
   useRef,
+  useCallback,
   forwardRef,
   useImperativeHandle,
 } from 'react'
@@ -9,9 +10,7 @@ import { Button } from '@/components/common/Button'
 import { MarkdownEditor } from '@/components/qna/MarkdownEditor'
 
 export interface AnswerFormProps {
-  questionTitle: string
   onSubmit: (content: string, imageUrls: string[]) => void
-  onCancel?: () => void
   isLoading?: boolean
   mode?: 'create' | 'edit'
   initialContent?: string
@@ -21,6 +20,7 @@ export interface AnswerFormProps {
 
 export interface AnswerFormHandle {
   focusEditor: () => void
+  submit: () => void
 }
 
 const DEBOUNCE_DELAY_MS = 500
@@ -32,21 +32,17 @@ function getDraftKey(answerId: number) {
 export const AnswerForm = forwardRef<AnswerFormHandle, AnswerFormProps>(
   function AnswerForm(
     {
-      questionTitle,
       onSubmit,
       isLoading = false,
       mode = 'create',
       initialContent = '',
+      initialImgUrls = [],
       answerId,
     },
     ref
   ) {
     const isEdit = mode === 'edit'
     const draftKey = isEdit && answerId != null ? getDraftKey(answerId) : null
-
-    useImperativeHandle(ref, () => ({
-      focusEditor: () => {},
-    }))
 
     const [showRestorePrompt, setShowRestorePrompt] = useState(() => {
       if (!isEdit || !draftKey) return false
@@ -59,6 +55,7 @@ export const AnswerForm = forwardRef<AnswerFormHandle, AnswerFormProps>(
       return saved != null && saved !== initialContent ? saved : null
     })
     const [content, setContent] = useState(initialContent)
+    const [imgUrls] = useState(initialImgUrls)
     const [error, setError] = useState(false)
 
     // debounce 자동 저장
@@ -86,14 +83,14 @@ export const AnswerForm = forwardRef<AnswerFormHandle, AnswerFormProps>(
         window.removeEventListener('beforeunload', handleBeforeUnload)
     }, [content])
 
-    const handleSubmit = () => {
+    const handleSubmit = useCallback(() => {
       if (!content.trim()) {
         setError(true)
         return
       }
       setError(false)
-      onSubmit(content, [])
-    }
+      onSubmit(content, imgUrls)
+    }, [content, imgUrls, onSubmit])
 
     const handleContentChange = (value: string) => {
       setContent(value)
@@ -112,8 +109,17 @@ export const AnswerForm = forwardRef<AnswerFormHandle, AnswerFormProps>(
       setPendingDraft(null)
     }
 
+    useImperativeHandle(
+      ref,
+      () => ({
+        focusEditor: () => {},
+        submit: handleSubmit,
+      }),
+      [handleSubmit]
+    )
+
     return (
-      <div className="overflow-hidden rounded-[20px] border border-[#cdcdcd] bg-white">
+      <>
         {/* 임시 저장 복원 안내 */}
         {showRestorePrompt && (
           <div className="bg-bg-subtle border-border-base mx-8 mt-4 flex items-center justify-between rounded-md border px-4 py-3">
@@ -140,32 +146,13 @@ export const AnswerForm = forwardRef<AnswerFormHandle, AnswerFormProps>(
           </div>
         )}
 
-        {/* 헤더: px-8 py-6, flex row */}
-        <div className="flex items-center justify-between px-8 py-6">
-          <div>
-            <p className="text-text-muted text-xs">답변 대상 질문</p>
-            <p className="text-text-heading mt-0.5 line-clamp-2 text-sm font-medium">
-              {questionTitle}
-            </p>
-          </div>
-          <Button
-            size="sm"
-            onClick={handleSubmit}
-            loading={isLoading}
-            disabled={isLoading}
-          >
-            {isEdit ? '수정하기' : '등록하기'}
-          </Button>
-        </div>
-
-        {/* 에디터: 카드 통합 (bare 모드로 자체 border 제거) */}
         <MarkdownEditor
           value={content}
           onChange={handleContentChange}
           error={error ? '답변 내용을 입력해주세요.' : undefined}
-          bare
+          wrapperClassName="bg-bg-base relative border-t border-[#cdcdcd]"
         />
-      </div>
+      </>
     )
   }
 )

@@ -45,7 +45,7 @@ export interface MarkdownEditorProps {
   onChange: (value: string) => void
   error?: string
   actions?: React.ReactNode
-  bare?: boolean
+  wrapperClassName?: string
 }
 
 export function MarkdownEditor({
@@ -53,7 +53,7 @@ export function MarkdownEditor({
   onChange,
   error,
   actions,
-  bare = false,
+  wrapperClassName,
 }: MarkdownEditorProps) {
   const [selectedFontLabel, setSelectedFontLabel] = useState('기본서체')
   const [selectedFontSize, setSelectedFontSize] = useState(16)
@@ -401,8 +401,8 @@ export function MarkdownEditor({
   return (
     <div
       className={
-        bare
-          ? `relative ${isDragOver ? 'border-primary border border-2' : ''}`
+        wrapperClassName != null
+          ? `${wrapperClassName}${isDragOver ? 'border-primary border-2' : ''}`
           : `bg-bg-base relative rounded-[20px] border ${isDragOver ? 'border-primary border-2' : 'border-[#cdcdcd]'}`
       }
       onDrop={handleDrop}
@@ -424,7 +424,7 @@ export function MarkdownEditor({
       )}
       <div
         data-color-mode="light"
-        className={`post-editor-wrap${bare ? 'border-t border-gray-200' : ''}`}
+        className="post-editor-wrap"
         ref={editorWrapRef}
       >
         <MDEditor
