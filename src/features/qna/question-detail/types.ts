@@ -16,6 +16,8 @@ export interface QuestionImage {
 export interface QuestionCategory {
   id: number
   name: string
+  depth: number
+  names: string[]
 }
 
 // swagger QuestionListDetail 기반

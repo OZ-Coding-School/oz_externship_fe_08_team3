@@ -1,57 +1,14 @@
 import { useState } from 'react'
 import rehypeSanitize from 'rehype-sanitize'
 import MDEditor from '@uiw/react-md-editor'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 import { Button } from '@/components/common/Button'
 import { Spinner } from '@/components/common/Spinner'
 import { useCreateAiFirstAnswer } from '@/features/qna/question-ai-answer'
 import { useChatbotStore } from '@/stores/chatbotStore'
 import { handleApiError } from '@/utils/handleApiError'
 import type { ToastVariant } from '@/components'
-
-// ── 아이콘 ────────────────────────────────────────────────────────────────────
-
-function RobotIcon() {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      aria-hidden="true"
-    >
-      <rect
-        x="3"
-        y="7"
-        width="18"
-        height="13"
-        rx="3"
-        stroke="currentColor"
-        strokeWidth="1.5"
-      />
-      <circle cx="9" cy="13" r="1.5" fill="currentColor" />
-      <circle cx="15" cy="13" r="1.5" fill="currentColor" />
-      <path
-        d="M9 4h6"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-      <path
-        d="M12 4v3"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-      <path
-        d="M7 20l1 2h8l1-2"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}
+import aiBotImg from '@/assets/ai-bot.png'
 
 // ── 에러 메시지 매핑 ──────────────────────────────────────────────────────────
 
@@ -79,11 +36,13 @@ export function AiFirstAnswerSection({
   const { mutate, data, isPending, status, reset } =
     useCreateAiFirstAnswer(questionId)
   const enterQna = useChatbotStore((s) => s.enterQna)
+  const [isOpen, setIsOpen] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const handleRequest = () => {
     setErrorMessage(null)
     mutate(undefined, {
+      onSuccess: () => setIsOpen(true),
       onError: (error) => {
         const { message } = handleApiError(error, AI_ANSWER_ERROR_MESSAGES)
         setErrorMessage(message)
@@ -102,61 +61,81 @@ export function AiFirstAnswerSection({
     })
   }
 
-  // ── 성공 상태: 마크다운 답변 + 추가 질문하기 ─────────────────────────────
-  if (status === 'success' && data) {
-    return (
-      <div className="bg-primary-50 border-primary-200 mt-6 rounded-lg border p-4">
-        <div className="mb-3 flex items-center gap-2">
-          <span className="text-primary">
-            <RobotIcon />
-          </span>
-          <span className="text-primary text-sm font-medium">AI 답변</span>
-        </div>
-
-        <div data-color-mode="light" className="prose max-w-none text-sm">
-          <MDEditor.Markdown
-            source={data.output}
-            rehypePlugins={[rehypeSanitize]}
-          />
-        </div>
-
-        <div className="mt-4 flex justify-end">
-          <Button variant="outline" size="sm" onClick={handleAskMore}>
-            추가 질문하기
-          </Button>
-        </div>
-      </div>
-    )
+  const toggleOpen = () => {
+    if (status !== 'success') {
+      handleRequest()
+    } else {
+      setIsOpen((v) => !v)
+    }
   }
 
-  // ── idle / pending / error 상태: 버튼 ─────────────────────────────────────
-  return (
-    <div className="bg-primary-50 border-primary-200 mt-6 rounded-lg border px-4 py-3">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="text-primary">
-            <RobotIcon />
-          </span>
-          <span className="text-primary text-sm font-medium">
-            {isPending
-              ? 'AI가 답변을 생성하고 있습니다...'
-              : 'AI 답변을 확인해보세요'}
-          </span>
-        </div>
+  const ChevronIcon = isOpen ? ChevronUp : ChevronDown
 
-        <button
-          type="button"
-          onClick={handleRequest}
-          disabled={isPending}
-          className="text-primary hover:text-primary-700 disabled:text-primary/50 flex items-center gap-1.5 text-sm font-semibold disabled:cursor-not-allowed"
-        >
-          {isPending ? (
-            <Spinner size="sm" label="AI 답변 생성 중" />
-          ) : (
-            'AI 답변보기'
-          )}
-        </button>
+  return (
+    <div className="mt-16">
+      {/* 말풍선 레이아웃: 로봇 + 버블 */}
+      <div className="flex items-start gap-4">
+        {/* 로봇 일러스트 */}
+        <img
+          src={aiBotImg}
+          alt="AI 챗봇"
+          className="h-[83px] w-[83px] shrink-0"
+        />
+
+        {/* 말풍선 */}
+        <div className="relative flex-1 rounded-2xl bg-[#F8F8F8] px-7 py-6 shadow-[0_4px_4px_rgba(0,0,0,0.25),4px_4px_4px_rgba(0,0,0,0.10)]">
+          {/* 말풍선 테일 — 좌측 상단 */}
+          <div
+            aria-hidden
+            className="absolute top-4 -left-[12px] border-y-[6px] border-r-[12px] border-y-transparent border-r-[#F8F8F8]"
+          />
+
+          {/* 질문 미리보기 텍스트 */}
+          <p className="truncate text-base leading-normal tracking-[-0.03em] text-[#707070]">
+            {questionTitle}
+          </p>
+
+          {/* 답변 보기 CTA */}
+          <button
+            type="button"
+            onClick={toggleOpen}
+            disabled={isPending}
+            className="mt-2 inline-flex flex-wrap items-center gap-1 text-lg leading-normal font-bold tracking-[-0.03em] text-[#4D4D4D] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {isPending ? (
+              <span className="inline-flex items-center gap-2">
+                <Spinner size="sm" label="AI 답변 생성 중" />
+                <span>AI가 답변을 생성하고 있습니다...</span>
+              </span>
+            ) : (
+              <>
+                <span>질문에 대한</span>
+                <img src={aiBotImg} alt="" className="mx-0.5 inline h-9 w-9" />
+                <strong className="text-black">AI 질의응답 챗봇</strong>
+                <span>답변 보기</span>
+                <ChevronIcon className="ml-1 h-4 w-4 shrink-0 text-[#4D4D4D]" />
+              </>
+            )}
+          </button>
+        </div>
       </div>
+
+      {/* 펼쳐진 AI 답변 */}
+      {isOpen && status === 'success' && data && (
+        <div className="mt-4 rounded-2xl bg-[#F8F8F8] p-7">
+          <div data-color-mode="light" className="prose max-w-none text-sm">
+            <MDEditor.Markdown
+              source={data.output}
+              rehypePlugins={[rehypeSanitize]}
+            />
+          </div>
+          <div className="mt-4 flex justify-end">
+            <Button variant="outline" size="sm" onClick={handleAskMore}>
+              추가 질문하기
+            </Button>
+          </div>
+        </div>
+      )}
 
       {errorMessage && (
         <p className="text-error mt-2 text-xs">{errorMessage}</p>
