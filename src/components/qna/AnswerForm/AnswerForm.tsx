@@ -34,7 +34,6 @@ export const AnswerForm = forwardRef<AnswerFormHandle, AnswerFormProps>(
     {
       questionTitle,
       onSubmit,
-      onCancel,
       isLoading = false,
       mode = 'create',
       initialContent = '',
@@ -114,10 +113,10 @@ export const AnswerForm = forwardRef<AnswerFormHandle, AnswerFormProps>(
     }
 
     return (
-      <div className="border-border-base bg-bg-base rounded-lg border p-6">
+      <div className="overflow-hidden rounded-[20px] border border-[#cdcdcd] bg-white">
         {/* 임시 저장 복원 안내 */}
         {showRestorePrompt && (
-          <div className="bg-bg-subtle border-border-base mb-4 flex items-center justify-between rounded-md border px-4 py-3">
+          <div className="bg-bg-subtle border-border-base mx-8 mt-4 flex items-center justify-between rounded-md border px-4 py-3">
             <p className="text-text-body text-sm">
               이전에 작성 중이던 내용이 있습니다. 복원할까요?
             </p>
@@ -141,41 +140,30 @@ export const AnswerForm = forwardRef<AnswerFormHandle, AnswerFormProps>(
           </div>
         )}
 
-        {/* 상단: 질문 제목 + 취소 버튼 */}
-        <div className="mb-4 flex items-start justify-between gap-4">
+        {/* 헤더: px-8 py-6, flex row */}
+        <div className="flex items-center justify-between px-8 py-6">
           <div>
             <p className="text-text-muted text-xs">답변 대상 질문</p>
             <p className="text-text-heading mt-0.5 line-clamp-2 text-sm font-medium">
               {questionTitle}
             </p>
           </div>
-          {onCancel && (
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={onCancel}
-              disabled={isLoading}
-            >
-              취소
-            </Button>
-          )}
+          <Button
+            size="sm"
+            onClick={handleSubmit}
+            loading={isLoading}
+            disabled={isLoading}
+          >
+            {isEdit ? '수정하기' : '등록하기'}
+          </Button>
         </div>
 
-        {/* 중단: 에디터 (하단에 등록 버튼 포함) */}
+        {/* 에디터: 카드 통합 (bare 모드로 자체 border 제거) */}
         <MarkdownEditor
           value={content}
           onChange={handleContentChange}
           error={error ? '답변 내용을 입력해주세요.' : undefined}
-          actions={
-            <Button
-              size="sm"
-              onClick={handleSubmit}
-              loading={isLoading}
-              disabled={isLoading}
-            >
-              {isEdit ? '수정하기' : '답변하기'}
-            </Button>
-          }
+          bare
         />
       </div>
     )
