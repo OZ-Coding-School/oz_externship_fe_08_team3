@@ -29,7 +29,13 @@ dist-ssr
 *.sw?
 settings.local.json
 
+# pnpm
+.pnpm-store/
+
 # Playwright
 playwright-report/
 test-results/
 superpowers/
+
+# 로컬 테스트 페이지 (커밋 제외)
+src/pages/**/*TestPage.tsx

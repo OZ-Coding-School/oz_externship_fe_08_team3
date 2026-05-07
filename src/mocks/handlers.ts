@@ -1,8 +1,33 @@
 import { http, HttpResponse } from 'msw'
+import { answersHandlers } from '@/features/qna/answers'
+import { answerAcceptHandlers } from '@/features/qna/answer-accept'
+import { answerCommentsHandlers } from '@/features/qna/answer-comments'
+import { presignedUrlHandlers } from '@/features/qna/presigned-url'
+import { categoriesHandler } from '@/features/qna/categories'
+import { questionsHandler } from '@/features/qna/questions'
+import { questionWriteHandler } from '@/features/qna/question-write'
+import { questionDetailHandler } from '@/features/qna/question-detail'
+import { questionEditHandler } from '@/features/qna/question-edit'
+import { aiAnswerHandlers } from '@/features/qna/question-ai-answer'
+import { csChatbotHandlers } from '@/features/chatbot/cs/handler'
+import { sessionsHandlers } from '@/features/chatbot/sessions/handler'
+import { qnaChatbotHandlers } from '@/features/chatbot/qna/handler'
 
 export const handlers = [
-  // 예시 핸들러 — 실제 API에 맞게 수정하세요
   http.get('/api/health', () => {
     return HttpResponse.json({ status: 'ok' })
   }),
+  ...answersHandlers,
+  ...answerAcceptHandlers,
+  ...answerCommentsHandlers,
+  ...presignedUrlHandlers,
+  ...categoriesHandler,
+  ...questionsHandler,
+  ...questionWriteHandler,
+  ...questionDetailHandler,
+  ...questionEditHandler,
+  ...aiAnswerHandlers,
+  ...csChatbotHandlers,
+  ...sessionsHandlers,
+  ...qnaChatbotHandlers,
 ]

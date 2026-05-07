@@ -68,7 +68,7 @@ src/features/
 | answer-accept/      | `/api/v1/qna/answers/{id}/accept`               | POST                   |
 | answer-comments/    | `/api/v1/qna/answers/{id}/comments`             | GET, POST              |
 | categories/         | `/api/v1/qna/categories/`                       | GET                    |
-| presigned-url/      | `/api/v1/qna/questions/presigned-url`           | GET                    |
+| presigned-url/      | `/api/v1/qna/answers/presigned-url`             | PUT                    |
 
 ### exams/ — 쪽지시험
 
