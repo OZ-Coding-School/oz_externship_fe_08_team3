@@ -12,6 +12,8 @@ export interface ModalProps {
   maxWidth?: string
   /** Hide the X close button */
   hideCloseButton?: boolean
+  /** 하단 sticky footer (액션 버튼 영역) */
+  footer?: React.ReactNode
 }
 
 export function Modal({
@@ -22,6 +24,7 @@ export function Modal({
   children,
   maxWidth = 'max-w-md',
   hideCloseButton = false,
+  footer,
 }: ModalProps) {
   const overlayRef = useRef<HTMLDivElement>(null)
   const previousFocusRef = useRef<HTMLElement | null>(null)
@@ -68,7 +71,7 @@ export function Modal({
     >
       <div
         className={[
-          'bg-bg-base relative flex w-full flex-col rounded-2xl shadow-xl',
+          'bg-bg-base relative flex max-h-[90vh] w-full flex-col rounded-2xl shadow-xl',
           maxWidth,
         ].join(' ')}
       >
@@ -103,7 +106,23 @@ export function Modal({
         )}
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto px-6 py-5">{children}</div>
+        <div
+          className={[
+            'flex-1 overflow-y-auto px-6 py-5',
+            footer ? '' : 'rounded-b-2xl',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+        >
+          {children}
+        </div>
+
+        {/* Footer */}
+        {footer && (
+          <div className="rounded-b-2xl bg-[#FAFAFA] px-12 py-5 shadow-[0_-2px_16px_rgba(160,160,160,0.25)]">
+            {footer}
+          </div>
+        )}
       </div>
     </div>,
     document.body
