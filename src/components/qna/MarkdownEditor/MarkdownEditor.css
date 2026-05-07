@@ -143,6 +143,39 @@
   color: #6b7280 !important;
 }
 
+/* ── 목록 스타일 복원 ── */
+.post-editor-wrap .wmde-markdown ul {
+  list-style-type: disc !important;
+  padding-left: 2em !important;
+  margin: 0.5em 0 !important;
+}
+.post-editor-wrap .wmde-markdown ol {
+  list-style-type: decimal !important;
+  padding-left: 2em !important;
+  margin: 0.5em 0 !important;
+}
+.post-editor-wrap .wmde-markdown li {
+  margin: 0.25em 0 !important;
+}
+.post-editor-wrap .wmde-markdown ul ul {
+  list-style-type: circle !important;
+}
+.post-editor-wrap .wmde-markdown ul ul ul {
+  list-style-type: square !important;
+}
+
+/* ── 툴바 필 버튼 아이콘 (글꼴·글자크기 드롭다운 아이콘) ── */
+.toolbar-pill-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+/* ── 글자 크기 팝업 최소 너비 ── */
+.toolbar-popup--font-size {
+  min-width: 60px;
+}
+
 /* ── 드롭다운 팝업 ── */
 .toolbar-popup {
   background: #fff;
