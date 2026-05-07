@@ -1,15 +1,19 @@
+import { useEffect } from 'react'
 import { Dropdown } from '@/components/common/Dropdown'
-import { Button } from '@/components/common/Button'
 import { useCategorySelector } from '@/hooks/useCategorySelector'
+
+export interface CategoryFilterHandle {
+  resolvedCategoryId: number | undefined
+  handleReset: () => void
+  canApply: boolean
+}
 
 export function CategoryFilter({
   initialCategoryId,
-  onApply,
-  onClose,
+  onHandle,
 }: {
   initialCategoryId?: number
-  onApply: (id: number | undefined) => void
-  onClose: () => void
+  onHandle?: (handle: CategoryFilterHandle) => void
 }) {
   const {
     largeCategoryId,
@@ -27,44 +31,35 @@ export function CategoryFilter({
     resolvedCategoryId,
   } = useCategorySelector(initialCategoryId)
 
-  const handleApply = () => {
-    onApply(resolvedCategoryId)
-    onClose()
-  }
+  const canApply = largeCategoryId !== ''
+
+  // effect로 부모에게 핸들 전달 (렌더 중 setState 방지)
+  useEffect(() => {
+    onHandle?.({ resolvedCategoryId, handleReset, canApply })
+  }, [resolvedCategoryId, canApply, handleReset, onHandle])
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex flex-col gap-3">
-        <Dropdown
-          options={largeOptions}
-          value={largeCategoryId}
-          onChange={handleLargeChange}
-          placeholder="대분류 선택"
-        />
-        <Dropdown
-          options={mediumOptions}
-          value={validMediumCategoryId}
-          onChange={handleMediumChange}
-          placeholder="중분류 선택"
-          disabled={!largeCategoryId || !hasMedium}
-        />
-        <Dropdown
-          options={smallOptions}
-          value={validSmallCategoryId}
-          onChange={handleSmallChange}
-          placeholder="소분류 선택"
-          disabled={!validMediumCategoryId || !hasSmall}
-        />
-      </div>
-
-      <div className="flex items-center justify-between gap-3 pt-1">
-        <Button variant="ghost" size="sm" onClick={handleReset}>
-          선택 초기화
-        </Button>
-        <Button variant="primary" size="sm" onClick={handleApply}>
-          필터 적용하기
-        </Button>
-      </div>
+      <Dropdown
+        options={largeOptions}
+        value={largeCategoryId}
+        onChange={handleLargeChange}
+        placeholder="대분류 선택"
+      />
+      <Dropdown
+        options={mediumOptions}
+        value={validMediumCategoryId}
+        onChange={handleMediumChange}
+        placeholder="해당되는 항목을 선택해 주세요."
+        disabled={!largeCategoryId || !hasMedium}
+      />
+      <Dropdown
+        options={smallOptions}
+        value={validSmallCategoryId}
+        onChange={handleSmallChange}
+        placeholder="해당되는 항목을 선택해 주세요."
+        disabled={!validMediumCategoryId || !hasSmall}
+      />
     </div>
   )
 }

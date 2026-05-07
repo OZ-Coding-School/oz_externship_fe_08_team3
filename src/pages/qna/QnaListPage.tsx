@@ -2,15 +2,21 @@
  * @figma 질의응답 - 질문 목록페이지 https://www.figma.com/design/4rJmEFUU2HMWVy3qUcYZRs/%EC%A0%9C%EB%AA%A9-%EC%97%86%EC%9D%8C?node-id=1-5893&m=dev
  */
 
-import { Suspense, useState, useEffect, useCallback } from 'react'
+import { Suspense, useState, useEffect, useCallback, useRef } from 'react'
 import { useSearchParams, useNavigate } from 'react-router'
+import {
+  Pencil,
+  ArrowUpDown,
+  SlidersHorizontal,
+  RotateCw,
+  X,
+} from 'lucide-react'
 import {
   Tabs,
   TabList,
   Tab,
   SearchInput,
   Modal,
-  Button,
   LoadingBox,
   Pagination,
   QuestionCard,
@@ -32,6 +38,136 @@ const SEARCH_DEBOUNCE_MS = 300
 const SORT_LABEL: Record<SortOption, string> = {
   latest: '최신순',
   oldest: '오래된순',
+}
+
+// ── 정렬 Popover ─────────────────────────────────────────────────
+
+function SortPopover({
+  sort,
+  onSelect,
+}: {
+  sort: SortOption
+  onSelect: (opt: SortOption) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  const menuRef = useRef<HTMLDivElement>(null)
+  const [focusIndex, setFocusIndex] = useState(-1)
+
+  // 외부 클릭 닫기
+  useEffect(() => {
+    if (!open) return
+    const onClick = (e: MouseEvent) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
+        setOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', onClick)
+    return () => document.removeEventListener('mousedown', onClick)
+  }, [open])
+
+  // ESC 닫기 + 키보드 네비게이션
+  useEffect(() => {
+    if (!open) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      switch (e.key) {
+        case 'Escape':
+          setOpen(false)
+          triggerRef.current?.focus()
+          break
+        case 'ArrowDown':
+          e.preventDefault()
+          setFocusIndex((prev) =>
+            prev < SORT_OPTIONS.length - 1 ? prev + 1 : 0
+          )
+          break
+        case 'ArrowUp':
+          e.preventDefault()
+          setFocusIndex((prev) =>
+            prev > 0 ? prev - 1 : SORT_OPTIONS.length - 1
+          )
+          break
+      }
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [open])
+
+  // 열릴 때 & focusIndex 변경 시 해당 버튼에 포커스
+  useEffect(() => {
+    if (!open) return
+    const buttons =
+      menuRef.current?.querySelectorAll<HTMLButtonElement>('[role="menuitem"]')
+    if (focusIndex >= 0) {
+      buttons?.[focusIndex]?.focus()
+    }
+  }, [open, focusIndex])
+
+  return (
+    <div ref={containerRef} className="relative">
+      <button
+        ref={triggerRef}
+        type="button"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        onClick={() => {
+          setOpen((p) => {
+            if (!p) {
+              const idx = SORT_OPTIONS.indexOf(sort)
+              setFocusIndex(idx >= 0 ? idx : 0)
+            }
+            return !p
+          })
+        }}
+        className="flex items-center gap-1 text-base text-[#303030]"
+      >
+        {SORT_LABEL[sort]}
+        <ArrowUpDown className="h-5 w-5" />
+      </button>
+
+      {open && (
+        <div
+          ref={menuRef}
+          role="menu"
+          className="absolute top-full right-0 z-50 mt-2 flex w-[138px] flex-col rounded-xl bg-white p-4 shadow-[0_0_16px_rgba(160,160,160,0.25)]"
+        >
+          {SORT_OPTIONS.map((opt) => (
+            <button
+              key={opt}
+              type="button"
+              role="menuitem"
+              tabIndex={-1}
+              onClick={() => {
+                onSelect(opt)
+                setOpen(false)
+                triggerRef.current?.focus()
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  onSelect(opt)
+                  setOpen(false)
+                  triggerRef.current?.focus()
+                }
+              }}
+              className={[
+                'flex h-[42px] items-center justify-center rounded px-5 text-base font-bold transition-colors',
+                sort === opt
+                  ? 'bg-[#EFE6FC] text-[#6201E0]'
+                  : 'text-[#4D4D4D] hover:bg-[#EFE6FC]',
+              ].join(' ')}
+            >
+              {SORT_LABEL[opt]}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
 }
 
 // ── QnaListPage ───────────────────────────────────────────────────
@@ -67,14 +203,20 @@ export function QnaListPage() {
 
   const [inputValue, setInputValue] = useState(searchKeyword)
   const [showCategoryModal, setShowCategoryModal] = useState(false)
-  const [showSortModal, setShowSortModal] = useState(false)
+
+  // 카테고리 필터 상태 (CategoryFilter에서 전달받음)
+  const [filterHandle, setFilterHandle] = useState<{
+    resolvedCategoryId: number | undefined
+    handleReset: () => void
+    canApply: boolean
+  }>({ resolvedCategoryId: undefined, handleReset: () => {}, canApply: false })
 
   // URL → inputValue 동기화 (뒤로가기 대응)
   useEffect(() => {
     setInputValue(searchKeyword)
   }, [searchKeyword])
 
-  // Debounce search input → URL update (inputValue가 searchKeyword와 다를 때만 동작)
+  // Debounce search input → URL update
   useEffect(() => {
     if (inputValue === searchKeyword) return
     const timer = setTimeout(() => {
@@ -170,73 +312,62 @@ export function QnaListPage() {
   const hasFilter = categoryId != null
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8">
-      <h1 className="text-text-heading mb-6 text-2xl font-bold">질의응답</h1>
+    <div className="mx-auto w-full max-w-[944px] overflow-hidden px-4 pt-[52px] pb-20">
+      {/* 페이지 타이틀 */}
+      <h1 className="mb-8 text-[32px] leading-[1.4] font-bold tracking-[-0.03em] text-[#121212]">
+        질의응답
+      </h1>
 
-      {/* 검색바 + 질문하기 버튼 — 탭 위 */}
-      <div className="mb-4 flex items-center gap-3">
+      {/* 검색바 + 질문하기 버튼 */}
+      <div className="mb-[52px] flex items-center justify-between">
         <SearchInput
           value={inputValue}
           onValueChange={setInputValue}
           placeholder="질문 검색"
-          className="flex-1"
+          className="w-[472px]"
           aria-label="질문 검색"
         />
-        <Button size="sm" onClick={() => navigate(ROUTES.QNA.WRITE)}>
+
+        <button
+          type="button"
+          onClick={() => navigate(ROUTES.QNA.WRITE)}
+          className="flex h-12 items-center gap-2 rounded-[4px] bg-[#6201E0] px-9 text-base font-bold text-white transition-colors hover:bg-[#4E01B3]"
+        >
+          <Pencil className="h-5 w-5" />
           질문하기
-        </Button>
+        </button>
       </div>
 
+      {/* 탭 + 정렬/필터를 한 줄에 배치 */}
       <Tabs value={answerStatus} onChange={handleTabChange}>
-        <TabList aria-label="답변 상태 필터">
-          <Tab value="all">전체보기</Tab>
-          <Tab value="answered">답변완료</Tab>
-          <Tab value="unanswered">답변 대기중</Tab>
-        </TabList>
+        <div className="flex items-end justify-between border-b border-[#CECECE] pb-2">
+          <TabList aria-label="답변 상태 필터" className="flex gap-10 border-0">
+            <Tab value="all">전체보기</Tab>
+            <Tab value="answered">답변완료</Tab>
+            <Tab value="unanswered">답변 대기중</Tab>
+          </TabList>
+
+          {/* 정렬 popover + 필터 */}
+          <div className="flex items-center gap-3">
+            <SortPopover
+              sort={sort}
+              onSelect={(opt) => updateParam('sort', opt)}
+            />
+            <button
+              type="button"
+              onClick={() => setShowCategoryModal(true)}
+              className={[
+                'flex items-center gap-1 text-base',
+                hasFilter ? 'font-medium text-[#6201E0]' : 'text-[#121212]',
+              ].join(' ')}
+            >
+              필터
+              <SlidersHorizontal className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
 
         <div className="mt-4">
-          {/* 총 결과수 + 정렬·카테고리 우측 배치 */}
-          <div className="mb-4 flex items-center justify-between">
-            {!isLoading && data ? (
-              <p className="text-text-muted text-sm">
-                총 {data.count.toLocaleString()}개의 질문
-              </p>
-            ) : (
-              <span />
-            )}
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowSortModal(true)}
-              >
-                {SORT_LABEL[sort]}
-                <svg
-                  width="12"
-                  height="12"
-                  viewBox="0 0 12 12"
-                  fill="none"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M3 4.5L6 7.5L9 4.5"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </Button>
-              <Button
-                variant={hasFilter ? 'outline' : 'ghost'}
-                size="sm"
-                onClick={() => setShowCategoryModal(true)}
-              >
-                {hasFilter ? '필터 적용됨' : '카테고리'}
-              </Button>
-            </div>
-          </div>
-
           {/* 질문 목록 */}
           {isLoading && (
             <LoadingBox
@@ -247,7 +378,7 @@ export function QnaListPage() {
           )}
 
           {isError && (
-            <div className="text-text-muted flex flex-col items-center justify-center py-20 text-center">
+            <div className="flex flex-col items-center justify-center py-20 text-center text-[#9D9D9D]">
               <p className="text-error mb-2 font-medium">
                 질문 목록을 불러오지 못했습니다.
               </p>
@@ -258,7 +389,7 @@ export function QnaListPage() {
           {!isLoading && !isError && data && (
             <>
               {data.results.length === 0 ? (
-                <div className="text-text-muted flex flex-col items-center justify-center py-20 text-center">
+                <div className="flex flex-col items-center justify-center py-20 text-center text-[#9D9D9D]">
                   <p className="font-medium">등록된 질문이 없습니다.</p>
                   {searchKeyword && (
                     <p className="mt-1 text-sm">
@@ -267,7 +398,7 @@ export function QnaListPage() {
                   )}
                 </div>
               ) : (
-                <ul className="space-y-3">
+                <ul className="flex flex-col">
                   {data.results.map((question) => (
                     <QuestionCard key={question.id} question={question} />
                   ))}
@@ -290,50 +421,63 @@ export function QnaListPage() {
       <Modal
         isOpen={showCategoryModal}
         onClose={() => setShowCategoryModal(false)}
-        title="카테고리 필터"
-        maxWidth="max-w-sm"
-      >
-        <Suspense
-          fallback={
-            <LoadingBox label="카테고리 불러오는 중..." className="py-8" />
-          }
-        >
-          <CategoryFilter
-            initialCategoryId={categoryId}
-            onApply={(id) =>
-              updateParam('category_id', id != null ? String(id) : null)
-            }
-            onClose={() => setShowCategoryModal(false)}
-          />
-        </Suspense>
-      </Modal>
-
-      {/* 정렬 모달 */}
-      <Modal
-        isOpen={showSortModal}
-        onClose={() => setShowSortModal(false)}
-        title="정렬"
-        maxWidth="max-w-xs"
-      >
-        <div className="space-y-1">
-          {SORT_OPTIONS.map((opt) => (
+        maxWidth="max-w-[580px]"
+        hideCloseButton
+        footer={
+          <div className="flex items-center justify-between">
             <button
               type="button"
-              key={opt}
-              onClick={() => {
-                updateParam('sort', opt)
-                setShowSortModal(false)
-              }}
-              className={[
-                'w-full rounded-md px-4 py-3 text-left text-sm transition-colors',
-                sort === opt
-                  ? 'bg-primary-100 text-primary font-medium'
-                  : 'text-text-body hover:bg-bg-muted',
-              ].join(' ')}
+              onClick={() => filterHandle.handleReset()}
+              className="flex h-[42px] w-[162px] items-center gap-2 rounded text-xl text-[#4D4D4D] transition-colors hover:bg-gray-100"
             >
-              {SORT_LABEL[opt]}
+              <RotateCw className="h-6 w-6" />
+              선택 초기화
             </button>
-          ))}
+            <button
+              type="button"
+              onClick={() => {
+                const id = filterHandle.resolvedCategoryId
+                updateParam('category_id', id != null ? String(id) : null)
+                setShowCategoryModal(false)
+              }}
+              disabled={!filterHandle.canApply}
+              className="h-[54px] w-[278px] rounded bg-[#6201E0] text-xl font-bold text-white transition-colors hover:bg-[#4E01B3] disabled:bg-[#ECECEC] disabled:text-[#BDBDBD]"
+            >
+              필터 적용하기
+            </button>
+          </div>
+        }
+      >
+        {/* 커스텀 헤더 */}
+        <div className="-mx-6 -mt-5 mb-0 flex items-center justify-between px-12 pt-11">
+          <h2 className="text-[32px] leading-[1.4] font-bold text-[#121212]">
+            필터
+          </h2>
+          <button
+            type="button"
+            onClick={() => setShowCategoryModal(false)}
+            aria-label="닫기"
+            className="rounded-lg p-1 text-[#9D9D9D] transition-colors hover:text-[#121212]"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* 본문 */}
+        <div className="-mx-6 min-h-[700px] px-12 pt-[60px] pb-10">
+          <h3 className="mb-5 text-xl font-bold text-[#4D4D4D]">
+            카테고리 선택
+          </h3>
+          <Suspense
+            fallback={
+              <LoadingBox label="카테고리 불러오는 중..." className="py-8" />
+            }
+          >
+            <CategoryFilter
+              initialCategoryId={categoryId}
+              onHandle={setFilterHandle}
+            />
+          </Suspense>
         </div>
       </Modal>
     </div>

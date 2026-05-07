@@ -1,96 +1,99 @@
 import { Link } from 'react-router'
+import { ChevronRight } from 'lucide-react'
 import type { QuestionListItem } from '@/features/qna/questions'
-import { formatDate } from '@/utils/formatDate'
+import { getRelativeTime } from '@/utils/relativeTime'
 import { ROUTES } from '@/constants/routes'
+import defaultProfile from '@/assets/default-profile.png'
 
 export function QuestionCard({ question }: { question: QuestionListItem }) {
   const detailPath = ROUTES.QNA.DETAIL.replace(
     ':questionId',
     String(question.id)
   )
-  const categoryPath = question.category.names.join(' > ')
   const isAnswered = question.answer_count > 0
+  const categories = question.category.names
 
   return (
     <li>
       <Link
         to={detailPath}
-        className="border-border-base bg-bg-base hover:border-primary block rounded-lg border p-5 transition-colors duration-150"
+        className="group block h-[211px] rounded-xl p-6 transition hover:shadow-sm"
       >
-        <div className="flex">
-          {/* 텍스트 영역 */}
-          <div className="min-w-0 flex-1 pr-4">
-            <div className="mb-2 flex items-center gap-2">
-              <span className="text-text-muted truncate text-xs">
-                {categoryPath}
-              </span>
+        <div className="flex h-full gap-10">
+          {/* 좌측 텍스트 영역 */}
+          <div className="flex min-w-0 flex-1 flex-col justify-between">
+            {/* 상단: 카테고리 + 제목 + 본문 */}
+            <div className="flex flex-col gap-5">
+              {/* 카테고리 브레드크럼 */}
+              <div className="flex items-center text-xs text-[#4D4D4D]">
+                {categories.map((name, i) => (
+                  <span key={i} className="flex items-center">
+                    <span className="group-hover:text-[#6201E0]">{name}</span>
+                    {i < categories.length - 1 && (
+                      <ChevronRight className="mx-1 h-3 w-3 text-[#707070]" />
+                    )}
+                  </span>
+                ))}
+              </div>
+
+              {/* 제목 + 본문 미리보기 */}
+              <div className="flex flex-col gap-3">
+                <h2 className="truncate text-lg leading-[1.4] font-bold tracking-[-0.03em] text-black group-hover:text-[#6201E0]">
+                  {question.title}
+                </h2>
+                <p className="line-clamp-2 text-sm leading-[1.4] tracking-[-0.03em] text-[#9D9D9D]">
+                  {question.content_preview}
+                </p>
+              </div>
             </div>
 
-            <h2 className="text-text-heading mb-1 truncate text-base font-semibold">
-              {question.title}
-            </h2>
-
-            <p className="text-text-body mb-3 line-clamp-2 text-sm">
-              {question.content_preview}
-            </p>
-
-            {/* 하단: A 마크 + 조회수 / 작성자 + 날짜 */}
-            <div className="flex items-center justify-between text-xs">
-              <div className="flex items-center gap-3">
-                <span className="flex items-center gap-1.5">
+            {/* 하단: 좌(답변/조회수) + 우(작성자/시간) */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-5">
+                {/* A 뱃지 + 답변수 */}
+                <div className="flex items-center gap-2">
                   <span
                     className={[
-                      'inline-flex h-5 w-5 items-center justify-center rounded text-[11px] font-bold',
-                      isAnswered
-                        ? 'bg-success text-white'
-                        : 'text-text-muted bg-gray-100',
+                      'flex h-6 w-6 items-center justify-center rounded-full text-sm font-bold text-white',
+                      isAnswered ? 'bg-[#04C73D]' : 'bg-gray-300',
                     ].join(' ')}
                   >
                     A
                   </span>
-                  <span
-                    className={
-                      isAnswered
-                        ? 'text-success font-medium'
-                        : 'text-text-muted'
-                    }
-                  >
-                    {question.answer_count}
+                  <span className="text-xs text-[#4D4D4D]">
+                    답변 {question.answer_count}
                   </span>
-                </span>
-                <span className="text-text-muted">
-                  조회 {question.view_count}
+                </div>
+                {/* 조회수 */}
+                <span className="text-xs text-[#9D9D9D]">
+                  조회수 {question.view_count}
                 </span>
               </div>
-              <div className="text-text-muted flex items-center gap-1.5">
-                <span>{question.author.nickname}</span>
-                {question.author.course_name && (
-                  <>
-                    <span>·</span>
-                    <span>{question.author.course_name}</span>
-                  </>
-                )}
-                <span>·</span>
+
+              <div className="flex items-center gap-2 text-xs text-[#9D9D9D]">
+                <img
+                  src={question.author.profile_img_url ?? defaultProfile}
+                  alt=""
+                  className="h-6 w-6 rounded-full object-cover"
+                />
+                <span className="text-[#4D4D4D]">
+                  {question.author.nickname}
+                </span>
                 <time dateTime={question.created_at}>
-                  {formatDate(question.created_at)}
+                  {getRelativeTime(question.created_at)}
                 </time>
               </div>
             </div>
           </div>
 
-          {/* 구분선 + 썸네일 (우측) */}
+          {/* 우측 썸네일 — 228×163 */}
           {question.thumbnail_img_url && (
-            <div className="border-border-base flex shrink-0 items-center border-l pl-4">
-              <img
-                src={question.thumbnail_img_url}
-                alt={`${question.title} 썸네일`}
-                loading="lazy"
-                decoding="async"
-                width={80}
-                height={80}
-                className="h-20 w-20 rounded-md object-cover"
-              />
-            </div>
+            <img
+              src={question.thumbnail_img_url}
+              alt=""
+              loading="lazy"
+              className="h-[163px] w-[228px] shrink-0 rounded-lg object-cover"
+            />
           )}
         </div>
       </Link>

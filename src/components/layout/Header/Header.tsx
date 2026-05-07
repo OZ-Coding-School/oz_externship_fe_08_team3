@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import logoImg from '@/assets/logo.png'
+import defaultProfile from '@/assets/default-profile.png'
 import { ROUTES } from '@/constants/routes'
-import { ProfileIcon } from './icons'
 import { ProfileDropdown } from './ProfileDropdown'
 import { useAuthStore } from '@/stores/authStore'
 
@@ -65,15 +65,11 @@ export function Header({
                 aria-expanded={dropdownOpen}
                 className="focus-visible:ring-primary overflow-hidden rounded-full outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
               >
-                {user?.profileImage ? (
-                  <img
-                    src={user.profileImage}
-                    alt=""
-                    className="h-10 w-10 rounded-full object-cover"
-                  />
-                ) : (
-                  <ProfileIcon />
-                )}
+                <img
+                  src={user?.profileImage ?? defaultProfile}
+                  alt=""
+                  className="h-10 w-10 rounded-full object-cover"
+                />
               </button>
 
               <ProfileDropdown

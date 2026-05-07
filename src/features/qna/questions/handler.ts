@@ -4,17 +4,21 @@ import type { QuestionsListResponse, QuestionListItem } from './types'
 const mockQuestions: QuestionListItem[] = [
   {
     id: 1,
-    category: { id: 11, depth: 2, names: ['Python', '기초 문법'] },
+    category: {
+      id: 111,
+      depth: 3,
+      names: ['프론트엔드', '프로그래밍 언어', 'JavaScript'],
+    },
     author: {
       id: 1,
       nickname: '코딩_초보',
       profile_img_url: null,
-      course_name: '백엔드 개발자 과정',
+      course_name: '프론트엔드 개발자 과정',
       cohort_number: 14,
     },
-    title: 'Python 리스트와 튜플의 차이점이 뭔가요?',
+    title: 'JavaScript에서 var, let, const의 차이점이 뭔가요?',
     content_preview:
-      '파이썬을 공부하다가 리스트와 튜플 모두 데이터를 담는 자료형인데 어떤 상황에서 어떤 걸 써야 하는지 모르겠어요.',
+      '변수 선언 키워드가 세 개나 있는데 각각 언제 써야 하는지, 호이스팅 차이도 궁금합니다.',
     answer_count: 3,
     view_count: 145,
     created_at: '2025-03-15 10:30:00',
@@ -22,7 +26,11 @@ const mockQuestions: QuestionListItem[] = [
   },
   {
     id: 2,
-    category: { id: 21, depth: 2, names: ['JavaScript', 'ES6+'] },
+    category: {
+      id: 111,
+      depth: 3,
+      names: ['프론트엔드', '프로그래밍 언어', 'JavaScript'],
+    },
     author: {
       id: 2,
       nickname: '자바스터디',
@@ -36,11 +44,15 @@ const mockQuestions: QuestionListItem[] = [
     answer_count: 5,
     view_count: 302,
     created_at: '2025-03-14 14:20:00',
-    thumbnail_img_url: null,
+    thumbnail_img_url: '/thumbnail-sample.png',
   },
   {
     id: 3,
-    category: { id: 31, depth: 2, names: ['React', 'Hooks'] },
+    category: {
+      id: 121,
+      depth: 3,
+      names: ['프론트엔드', '웹프레임워크', 'React'],
+    },
     author: {
       id: 3,
       nickname: '리액트_뉴비',
@@ -58,7 +70,11 @@ const mockQuestions: QuestionListItem[] = [
   },
   {
     id: 4,
-    category: { id: 41, depth: 2, names: ['Django', 'ORM'] },
+    category: {
+      id: 221,
+      depth: 3,
+      names: ['백엔드', '웹프레임워크', 'Django'],
+    },
     author: {
       id: 4,
       nickname: '장고_학습자',
@@ -76,7 +92,11 @@ const mockQuestions: QuestionListItem[] = [
   },
   {
     id: 5,
-    category: { id: 12, depth: 2, names: ['Python', '자료구조'] },
+    category: {
+      id: 211,
+      depth: 3,
+      names: ['백엔드', '프로그래밍 언어', 'Python'],
+    },
     author: {
       id: 5,
       nickname: '알고리즘_도전',
@@ -94,7 +114,7 @@ const mockQuestions: QuestionListItem[] = [
   },
   {
     id: 6,
-    category: { id: 22, depth: 2, names: ['JavaScript', 'DOM'] },
+    category: { id: 132, depth: 3, names: ['프론트엔드', 'Web', 'DOM'] },
     author: {
       id: 6,
       nickname: 'DOM_탐험가',
@@ -108,11 +128,15 @@ const mockQuestions: QuestionListItem[] = [
     answer_count: 4,
     view_count: 187,
     created_at: '2025-03-10 13:30:00',
-    thumbnail_img_url: null,
+    thumbnail_img_url: '/thumbnail-sample.png',
   },
   {
     id: 7,
-    category: { id: 32, depth: 2, names: ['React', '상태 관리'] },
+    category: {
+      id: 142,
+      depth: 3,
+      names: ['프론트엔드', '라이브러리', 'Zustand'],
+    },
     author: {
       id: 7,
       nickname: '상태관리_고민',
@@ -130,7 +154,11 @@ const mockQuestions: QuestionListItem[] = [
   },
   {
     id: 8,
-    category: { id: 42, depth: 2, names: ['Django', 'REST API'] },
+    category: {
+      id: 222,
+      depth: 3,
+      names: ['백엔드', '웹프레임워크', 'FastAPI'],
+    },
     author: {
       id: 8,
       nickname: 'API_개발자',
@@ -138,10 +166,9 @@ const mockQuestions: QuestionListItem[] = [
       course_name: '백엔드 개발자 과정',
       cohort_number: 14,
     },
-    title:
-      'DRF에서 시리얼라이저의 create와 update 메서드 언제 오버라이딩하나요?',
+    title: 'FastAPI에서 Pydantic 모델과 SQLAlchemy 모델을 어떻게 연결하나요?',
     content_preview:
-      'Django REST Framework를 사용하는데 Serializer에 create와 update 메서드를 언제, 왜 오버라이딩해야 하는지 이해가 잘 안 됩니다.',
+      'FastAPI를 사용하는데 Pydantic 스키마와 DB 모델 간 변환이 복잡합니다. 깔끔하게 구조화하는 방법이 궁금합니다.',
     answer_count: 2,
     view_count: 134,
     created_at: '2025-03-08 15:20:00',
@@ -149,7 +176,11 @@ const mockQuestions: QuestionListItem[] = [
   },
   {
     id: 9,
-    category: { id: 13, depth: 2, names: ['Python', '알고리즘'] },
+    category: {
+      id: 211,
+      depth: 3,
+      names: ['백엔드', '프로그래밍 언어', 'Python'],
+    },
     author: {
       id: 9,
       nickname: '알고_풀기',
@@ -167,35 +198,43 @@ const mockQuestions: QuestionListItem[] = [
   },
   {
     id: 10,
-    category: { id: 33, depth: 2, names: ['React', '라우팅'] },
+    category: {
+      id: 122,
+      depth: 3,
+      names: ['프론트엔드', '웹프레임워크', 'Next.js'],
+    },
     author: {
       id: 10,
-      nickname: '라우팅_혼란',
+      nickname: '넥스트_입문자',
       profile_img_url: null,
       course_name: '프론트엔드 개발자 과정',
       cohort_number: 12,
     },
-    title: 'React Router에서 중첩 라우트 구현 시 Outlet이 무엇인가요?',
+    title: 'Next.js의 SSR과 SSG 차이가 무엇인가요?',
     content_preview:
-      '중첩 라우트를 구현하다가 Outlet 컴포넌트를 써야 한다고 들었는데 어떻게 동작하는 건지 예시를 들어 설명해 주실 수 있나요?',
+      'Next.js에서 getServerSideProps와 getStaticProps의 차이를 알고 싶습니다. 어떤 상황에 각각 사용하나요?',
     answer_count: 3,
     view_count: 221,
     created_at: '2025-03-06 14:10:00',
-    thumbnail_img_url: null,
+    thumbnail_img_url: '/thumbnail-sample.png',
   },
   {
     id: 11,
-    category: { id: 23, depth: 2, names: ['JavaScript', '비동기'] },
+    category: {
+      id: 232,
+      depth: 3,
+      names: ['백엔드', 'OS', 'Nginx'],
+    },
     author: {
       id: 11,
-      nickname: '비동기_이해중',
+      nickname: '배포_도전중',
       profile_img_url: null,
-      course_name: '프론트엔드 개발자 과정',
+      course_name: '백엔드 개발자 과정',
       cohort_number: 11,
     },
-    title: 'JavaScript 이벤트 루프가 정확히 어떻게 동작하나요?',
+    title: 'Nginx 리버스 프록시 설정은 어떻게 하나요?',
     content_preview:
-      '콜 스택, 이벤트 큐, 마이크로태스크 큐에 대해 들었는데 이들이 어떤 순서로 처리되는지 헷갈립니다.',
+      'Django 앱을 배포하려는데 Nginx를 리버스 프록시로 설정하는 방법이 잘 이해가 안 됩니다.',
     answer_count: 6,
     view_count: 445,
     created_at: '2025-03-05 09:30:00',
@@ -203,25 +242,33 @@ const mockQuestions: QuestionListItem[] = [
   },
   {
     id: 12,
-    category: { id: 41, depth: 2, names: ['Django', 'ORM'] },
+    category: {
+      id: 233,
+      depth: 3,
+      names: ['백엔드', 'OS', 'Docker'],
+    },
     author: {
       id: 12,
-      nickname: 'ORM_마스터',
+      nickname: '도커_입문자',
       profile_img_url: null,
       course_name: '백엔드 개발자 과정',
       cohort_number: 13,
     },
-    title: 'Django에서 N+1 문제를 해결하는 방법은?',
+    title: 'Docker Compose로 Django + PostgreSQL 환경 구성하는 방법은?',
     content_preview:
-      'Django ORM을 사용하다 N+1 쿼리 문제를 발견했습니다. select_related와 prefetch_related 중 어떤 상황에서 각각 사용해야 하나요?',
+      'Docker Compose를 사용해서 Django 앱과 PostgreSQL을 한 번에 실행하고 싶은데 docker-compose.yml 작성법이 궁금합니다.',
     answer_count: 4,
     view_count: 389,
     created_at: '2025-03-04 16:00:00',
-    thumbnail_img_url: null,
+    thumbnail_img_url: '/thumbnail-sample.png',
   },
   {
     id: 13,
-    category: { id: 31, depth: 2, names: ['React', 'Hooks'] },
+    category: {
+      id: 121,
+      depth: 3,
+      names: ['프론트엔드', '웹프레임워크', 'React'],
+    },
     author: {
       id: 13,
       nickname: '훅스_연습생',
@@ -239,17 +286,21 @@ const mockQuestions: QuestionListItem[] = [
   },
   {
     id: 14,
-    category: { id: 11, depth: 2, names: ['Python', '기초 문법'] },
+    category: {
+      id: 112,
+      depth: 3,
+      names: ['프론트엔드', '프로그래밍 언어', 'TypeScript'],
+    },
     author: {
       id: 14,
-      nickname: '파이썬_첫걸음',
+      nickname: 'TS_첫걸음',
       profile_img_url: null,
-      course_name: '백엔드 개발자 과정',
+      course_name: '프론트엔드 개발자 과정',
       cohort_number: 16,
     },
-    title: 'Python의 *args와 **kwargs는 어떻게 사용하나요?',
+    title: 'TypeScript에서 제네릭을 왜 사용하나요?',
     content_preview:
-      '함수 정의에서 *args와 **kwargs를 자주 보는데 이게 정확히 어떤 역할을 하는지, 어떤 상황에서 사용하는지 알고 싶습니다.',
+      '타입스크립트 제네릭 문법이 복잡한데 이걸 왜 쓰는지, 실제로 어떤 상황에서 유용한지 알고 싶습니다.',
     answer_count: 2,
     view_count: 99,
     created_at: '2025-03-02 13:50:00',
@@ -257,17 +308,21 @@ const mockQuestions: QuestionListItem[] = [
   },
   {
     id: 15,
-    category: { id: 42, depth: 2, names: ['Django', 'REST API'] },
+    category: {
+      id: 241,
+      depth: 3,
+      names: ['백엔드', '데이터베이스', 'PostgreSQL'],
+    },
     author: {
       id: 15,
-      nickname: '백엔드_개발자',
+      nickname: 'DB_학습자',
       profile_img_url: null,
       course_name: '백엔드 개발자 과정',
       cohort_number: 14,
     },
-    title: 'JWT 토큰 인증에서 Access Token과 Refresh Token의 역할은?',
+    title: 'PostgreSQL에서 인덱스는 언제 만들어야 하나요?',
     content_preview:
-      'DRF에서 JWT 인증을 구현하려고 하는데 Access Token과 Refresh Token의 역할 분리와 보안상 왜 둘 다 필요한지 궁금합니다.',
+      '쿼리 성능 최적화를 위해 인덱스를 걸어야 한다고 들었는데, 어떤 컬럼에 인덱스를 만들어야 효과적인지 기준이 궁금합니다.',
     answer_count: 3,
     view_count: 278,
     created_at: '2025-03-01 10:00:00',
