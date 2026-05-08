@@ -1,5 +1,5 @@
 import React from 'react'
-import { type ICommand } from '@uiw/react-md-editor'
+import { commands as mdCommands, type ICommand } from '@uiw/react-md-editor'
 import {
   Underline,
   AlignLeft,
@@ -24,10 +24,77 @@ import {
   applyBlockFromDropdown,
   insertListPrefix,
   wrapWithStyle,
-  wrapMarkWithStyle,
+  stripStyleProp,
   wrapDivWithStyle,
   getEnclosingURange,
+  getEnclosingMarkRange,
+  safeGetState,
+  replaceInText,
+  type EditorState,
 } from './markdownEditorUtils'
+
+/**
+ * HTML 인식 Bold 토글.
+ * react-md-editor 기본 execute는 \S 기준 단어 선택으로 HTML 속성 안까지 선택될 수 있음.
+ * applyInline 사용으로 <> 경계 인식 + isCursorInsideTag 체크.
+ *
+ * 토글 규칙:
+ *   **text**   → text       (bold 제거)
+ *   *text*     → ***text*** (이미 italic → bold+italic 추가)
+ *   text       → **text**   (bold 추가)
+ */
+export const boldCommand: ICommand = {
+  ...mdCommands.bold,
+  execute: (state: EditorState, api) =>
+    applyInline(state, api, (t) => {
+      if (t.startsWith('**') && t.endsWith('**') && t.length >= 4) {
+        return t.slice(2, -2)
+      }
+      return `**${t}**`
+    }),
+}
+
+/**
+ * HTML 인식 Italic 토글.
+ * Bold 마커 **를 italic 마커 *로 잘못 인식하는 버그 수정.
+ *
+ * 토글 규칙:
+ *   ***text*** → **text**   (bold+italic → bold만 남김)
+ *   *text*     → text       (italic 제거, **로 시작하지 않을 때만)
+ *   **text**   → ***text*** (이미 bold → bold+italic 추가)
+ *   text       → *text*     (italic 추가)
+ */
+export const italicCommand: ICommand = {
+  ...mdCommands.italic,
+  execute: (state: EditorState, api) =>
+    applyInline(state, api, (t) => {
+      if (t.startsWith('***') && t.endsWith('***') && t.length >= 6) {
+        return `**${t.slice(3, -3)}**`
+      }
+      if (t.startsWith('**') && t.endsWith('**') && t.length >= 4) {
+        return `***${t.slice(2, -2)}***`
+      }
+      if (t.startsWith('*') && t.endsWith('*') && t.length >= 2) {
+        return t.slice(1, -1)
+      }
+      return `*${t}*`
+    }),
+}
+
+/**
+ * HTML 인식 Strikethrough 토글.
+ * applyInline 사용으로 HTML 속성 안까지 선택되는 문제 방지.
+ */
+export const strikethroughCommand: ICommand = {
+  ...mdCommands.strikethrough,
+  execute: (state: EditorState, api) =>
+    applyInline(state, api, (t) => {
+      if (t.startsWith('~~') && t.endsWith('~~') && t.length >= 4) {
+        return t.slice(2, -2)
+      }
+      return `~~${t}~~`
+    }),
+}
 
 /** 밑줄 토글: 커서가 <u> 안에 있거나 선택 텍스트가 <u>로 감싸져 있으면 제거, 아니면 추가 */
 export const underlineCommand: ICommand = {
@@ -104,6 +171,13 @@ export function makeColorCommand(
   }
 }
 
+/**
+ * 배경색 커맨드.
+ * 기존 <mark> 방식 대신 <span style="background-color: ...">을 사용합니다.
+ * - font-size, color 등 다른 스타일과 같은 <span>에 병합되어
+ *   폰트 크기가 클 때 배경이 텍스트를 벗어나는 CSS 문제를 방지합니다.
+ * - 레거시 <mark> 콘텐츠는 색상 변경/제거 시 <span>으로 변환합니다.
+ */
 export const bgColorCommand: ICommand = {
   name: 'bg-color',
   keyCommand: 'group',
@@ -135,20 +209,51 @@ export const bgColorCommand: ICommand = {
         className: 'bg-color-popup',
         onMouseDown: (e: React.MouseEvent) => e.preventDefault(),
       },
+      // ── 배경 제거 버튼 ──
       React.createElement(
         'button',
         {
           type: 'button',
           className: 'bg-color-remove-btn',
           onClick: () => {
-            applyInlineFromDropdown(getState, textApi, (t) =>
-              t.replace(/<mark[^>]*>([\s\S]*?)<\/mark>/g, '$1')
-            )
+            const s = safeGetState(getState)
+            if (s && textApi) {
+              // 레거시: 커서가 <mark> 안에 있으면 mark 태그 전체 제거
+              const markRange = getEnclosingMarkRange(s.text, s.selection.start)
+              if (markRange && !s.selectedText) {
+                const inner = s.text
+                  .slice(markRange.start, markRange.end)
+                  .replace(/<mark[^>]*>([\s\S]*?)<\/mark>/g, '$1')
+                if (
+                  !replaceInText(
+                    textApi,
+                    s.text,
+                    markRange.start,
+                    markRange.end,
+                    inner
+                  )
+                ) {
+                  textApi.setSelectionRange(markRange)
+                  textApi.replaceSelection(inner)
+                }
+                close()
+                return
+              }
+            }
+            // 신규: span의 background-color 속성 제거 + 레거시 mark 제거
+            applyInlineFromDropdown(getState, textApi, (t) => {
+              const withoutMark = t.replace(
+                /<mark[^>]*>([\s\S]*?)<\/mark>/g,
+                '$1'
+              )
+              return stripStyleProp(withoutMark, 'background-color')
+            })
             close()
           },
         },
         '✕ 배경 제거'
       ),
+      // ── 색상 팔레트 ──
       React.createElement(
         'div',
         { className: 'color-palette' },
@@ -165,8 +270,41 @@ export const bgColorCommand: ICommand = {
             },
             title: color === '#ffffff' ? '흰색' : color,
             onClick: () => {
+              const s = safeGetState(getState)
+              if (s && textApi) {
+                // 레거시: 커서가 <mark> 안에 있으면 mark를 span으로 변환
+                const markRange = getEnclosingMarkRange(
+                  s.text,
+                  s.selection.start
+                )
+                if (markRange && !s.selectedText) {
+                  const inner = s.text
+                    .slice(markRange.start, markRange.end)
+                    .replace(/<mark[^>]*>([\s\S]*?)<\/mark>/g, '$1')
+                  const replacement = wrapWithStyle(
+                    inner,
+                    'background-color',
+                    color
+                  )
+                  if (
+                    !replaceInText(
+                      textApi,
+                      s.text,
+                      markRange.start,
+                      markRange.end,
+                      replacement
+                    )
+                  ) {
+                    textApi.setSelectionRange(markRange)
+                    textApi.replaceSelection(replacement)
+                  }
+                  close()
+                  return
+                }
+              }
+              // 신규: background-color를 span style로 추가 (기존 span에 병합)
               applyInlineFromDropdown(getState, textApi, (t) =>
-                wrapMarkWithStyle(t, color)
+                wrapWithStyle(t, 'background-color', color)
               )
               close()
             },
