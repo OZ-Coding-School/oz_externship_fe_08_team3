@@ -26,8 +26,41 @@ export function isCursorInsideTag(text: string, cursor: number): boolean {
   return lastOpen > lastClose
 }
 
+/**
+ * 커서가 닫는 HTML 태그(</tag>) 직후에 연속으로 위치한 경우,
+ * 태그 스택 내부의 실제 콘텐츠 끝 위치로 이동합니다.
+ * 이미 콘텐츠 위치이거나 태그 내부이면 원래 cursor를 그대로 반환합니다.
+ *
+ * 예: `<mark><span>content</span></mark>|` → content 끝 위치
+ *     `<u>content</u>|`                   → content 끝 위치
+ *
+ * 이를 통해 배경색·밑줄 등 HTML 태그 기반 서식 적용 후에도
+ * 곧바로 다른 서식(글자색, 폰트 크기 등)을 연속 적용할 수 있습니다.
+ */
+export function getEffectiveCursor(text: string, cursor: number): number {
+  let pos = cursor
+  // 실제 에디터에서 중첩 깊이는 3-4단계 이하이므로 8은 충분한 안전 마진
+  const MAX_DEPTH = 8
+  for (let i = 0; i < MAX_DEPTH; i++) {
+    const before = text.slice(0, pos)
+    const m = before.match(/<\/\w+>$/)
+    if (!m) break
+    const candidate = pos - m[0].length
+    if (isCursorInsideTag(text, candidate)) break
+    // 후보 위치 바로 앞이 실제 콘텐츠 문자이면 도달
+    if (candidate > 0 && /[^\s<>]/.test(text[candidate - 1])) {
+      return candidate
+    }
+    pos = candidate
+  }
+  return cursor
+}
+
 /** 커서 위치 기준 현재 단어 범위를 반환합니다 (인라인 서식용).
- *  HTML 태그 문자(<, >)에서 단어 경계로 처리해 태그 내용 선택을 방지합니다. */
+ *  HTML 태그 문자(<, >)에서 단어 경계로 처리해 태그 내용 선택을 방지합니다.
+ *
+ *  커서가 닫는 태그 뒤에 위치한 경우 getEffectiveCursor로 실제 콘텐츠 위치를 구한 뒤 재탐색합니다.
+ *  중첩 태그(`</span></mark>|` 등)도 재귀적으로 통과합니다. */
 export function getWordRange(
   text: string,
   cursor: number
@@ -37,7 +70,17 @@ export function getWordRange(
   let end = cursor
   while (start > 0 && /[^\s<>]/.test(text[start - 1])) start--
   while (end < text.length && /[^\s<>]/.test(text[end])) end++
-  return start < end ? { start, end } : null
+  if (start < end) return { start, end }
+
+  // 단어 미발견: 닫는 태그 뒤에 커서가 있으면 실제 콘텐츠 위치로 이동 후 재탐색
+  const effective = getEffectiveCursor(text, cursor)
+  if (effective === cursor) return null
+  if (isCursorInsideTag(text, effective)) return null
+  let s = effective
+  let e = effective
+  while (s > 0 && /[^\s<>]/.test(text[s - 1])) s--
+  while (e < text.length && /[^\s<>]/.test(text[e])) e++
+  return s < e ? { start: s, end: e } : null
 }
 
 /** 커서를 감싸는 가장 가까운 <span style="...">...</span> 의 범위를 반환합니다.
@@ -199,6 +242,8 @@ export function replaceInText(
  *
  * 우선순위:
  * 1. 커서가 기존 <span> 안에 있으면 → span 전체를 교체 (선택 여부 무관, 중첩 방지)
+ *    커서가 </mark></span> 등 닫는 태그 뒤에 있을 때도 getEffectiveCursor로
+ *    실제 콘텐츠 위치를 구해 span을 탐색합니다.
  * 2. 선택 영역 있음 → 선택 텍스트에 적용
  * 3. 선택 없음 → 현재 단어 선택 후 적용
  * 4. 아무것도 없으면 → 아무것도 하지 않음 (빈 span 삽입 방지)
@@ -215,7 +260,9 @@ export function applyInlineFromDropdown(
   if (!s || !textApi) return
 
   // 1. 커서 시작 위치가 기존 <span> 안이면 span 전체를 교체 (중첩 방지)
-  const spanRange = getEnclosingSpanRange(s.text, s.selection.start)
+  //    닫는 태그 뒤에 커서가 있을 때는 effectiveCursor로 실제 콘텐츠 위치를 구해 재탐색
+  const effectiveCursor = getEffectiveCursor(s.text, s.selection.start)
+  const spanRange = getEnclosingSpanRange(s.text, effectiveCursor)
   if (spanRange) {
     const innerText = s.text.slice(spanRange.start, spanRange.end)
     const replacement = wrapFn(innerText)
@@ -251,8 +298,8 @@ export function applyInlineFromDropdown(
     return
   }
 
-  // 3. 선택 없음 → 현재 단어를 선택 후 적용
-  const wordRange = getWordRange(s.text, s.selection.start)
+  // 3. 선택 없음 → effectiveCursor 기준 단어를 선택 후 적용
+  const wordRange = getWordRange(s.text, effectiveCursor)
   if (wordRange) {
     const innerText = s.text.slice(wordRange.start, wordRange.end)
     const replacement = wrapFn(innerText)
@@ -385,6 +432,29 @@ export function wrapMarkWithStyle(selected: string, color: string): string {
 }
 
 /**
+ * span 요소의 style 속성에서 특정 CSS 프로퍼티를 제거합니다.
+ * 제거 후 style이 비어지면 span 태그 자체를 제거하고 내용만 남깁니다.
+ * 배경색 제거 시 사용합니다.
+ */
+export function stripStyleProp(html: string, property: string): string {
+  const propRe = new RegExp(`${property}\\s*:[^;]*(;\\s*)?`, 'gi')
+  // non-greedy([\s\S]*?)를 사용해 첫 번째 </span>에서 멈춥니다.
+  // 중첩 span의 경우 replacement의 `${inner}</span>` 패턴이 닫는 태그를 재구성하므로
+  // 나머지 </span>이 올바르게 남아 구조가 유지됩니다.
+  return html.replace(
+    /<span style="([^"]*)">([\s\S]*?)<\/span>/gi,
+    (_, style, inner) => {
+      const newStyle = style
+        .replace(propRe, '')
+        .replace(/;{2,}/g, ';')
+        .replace(/^;+|;+$/g, '')
+        .trim()
+      return newStyle ? `<span style="${newStyle}">${inner}</span>` : inner
+    }
+  )
+}
+
+/**
  * 선택 텍스트가 이미 <div style="..."> 이면 해당 CSS 속성만 교체/추가하고,
  * 그렇지 않으면 새 <div>로 감쌉니다.
  * 중첩 div 누적을 방지합니다.
@@ -413,6 +483,28 @@ export function wrapDivWithStyle(
     return `<div style="${newStyle}">${inner}</div>`
   }
   return `<div style="${property}: ${value}">${selected}</div>`
+}
+
+/** 커서를 감싸는 가장 가까운 <mark style="...">...</mark> 의 범위를 반환합니다.
+ *  배경색이 이미 적용된 mark에 다시 색상을 적용하거나 제거할 때 사용합니다.
+ *  커서가 </mark> 바로 뒤에 있는 경우도 포함합니다. */
+export function getEnclosingMarkRange(
+  text: string,
+  cursor: number
+): { start: number; end: number } | null {
+  const markOpenRe = /<mark\b[^>]*>/gi
+  let match: RegExpExecArray | null
+  while ((match = markOpenRe.exec(text)) !== null) {
+    const markStart = match.index
+    const openEnd = markStart + match[0].length
+    const closeIdx = text.indexOf('</mark>', openEnd)
+    if (closeIdx === -1) continue
+    const markEnd = closeIdx + '</mark>'.length
+    if (cursor >= markStart && cursor <= markEnd) {
+      return { start: markStart, end: markEnd }
+    }
+  }
+  return null
 }
 
 /** 커서를 감싸는 <u>...</u> 범위를 반환합니다. </u> 바로 뒤 커서도 포함합니다. */

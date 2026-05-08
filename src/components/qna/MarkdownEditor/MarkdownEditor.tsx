@@ -24,6 +24,9 @@ import {
   renumberFrom,
 } from './markdownEditorUtils'
 import {
+  boldCommand,
+  italicCommand,
+  strikethroughCommand,
   underlineCommand,
   bgColorCommand,
   textColorCommand,
@@ -354,22 +357,10 @@ export function MarkdownEditor({
       fontFamilyCommand,
       fontSizeCommand,
       mdCommands.divider,
-      {
-        ...mdCommands.bold,
-        buttonProps: { ...mdCommands.bold.buttonProps, ...NO_BLUR_PROPS },
-      },
-      {
-        ...mdCommands.italic,
-        buttonProps: { ...mdCommands.italic.buttonProps, ...NO_BLUR_PROPS },
-      },
+      boldCommand,
+      italicCommand,
       underlineCommand,
-      {
-        ...mdCommands.strikethrough,
-        buttonProps: {
-          ...mdCommands.strikethrough.buttonProps,
-          ...NO_BLUR_PROPS,
-        },
-      },
+      strikethroughCommand,
       bgColorCommand,
       textColorCommand,
       mdCommands.divider,
