@@ -269,13 +269,16 @@ export function QnaDetailPage() {
             )}
           </div>
         ) : (
-          <AnswerPromptCard
-            nickname={user?.nickname ?? ''}
-            profileImageUrl={user?.profileImage}
-            isEdit={isEdit}
-            disabled={anyAdopted}
-            onAction={() => setShowForm(true)}
-          />
+          // 답변 미작성 상태일 때만 AnswerPromptCard 표시
+          !isEdit && (
+            <AnswerPromptCard
+              nickname={user?.nickname ?? ''}
+              profileImageUrl={user?.profileImage}
+              isEdit={false}
+              disabled={anyAdopted}
+              onAction={() => setShowForm(true)}
+            />
+          )
         ))}
 
       {/* 답변 목록 */}
@@ -292,6 +295,8 @@ export function QnaDetailPage() {
         userId={user?.id}
         answers={answers}
         onAccept={setConfirmAcceptId}
+        showForm={showForm}
+        onEditAction={() => setShowForm(true)}
       />
 
       {/* 채택 확인 모달 */}

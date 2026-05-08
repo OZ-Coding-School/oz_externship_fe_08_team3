@@ -156,7 +156,7 @@ export function QuestionDetail({
             <button
               type="button"
               onClick={onShare}
-              className="hover:border-primary hover:text-primary inline-flex items-center gap-1.5 rounded-full border border-[#CECECE] px-4 py-2 text-sm text-[#4D4D4D] transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-full border border-[#CECECE] px-4 py-2 text-sm text-[#4D4D4D] transition-colors hover:bg-[#ECECEC]"
             >
               <LinkIcon />
               공유하기
