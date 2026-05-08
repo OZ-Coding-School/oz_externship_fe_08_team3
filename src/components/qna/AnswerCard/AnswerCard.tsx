@@ -1,6 +1,5 @@
 import type { GetAnswerItem } from '@/features/qna/answers'
 import { MarkdownViewer } from '@/components/qna/MarkdownViewer'
-import { Button } from '@/components/common/Button'
 import { UserAvatar } from '@/components/common/UserAvatar'
 import { CommentForm } from '@/components/qna/CommentForm'
 import { CommentList } from '@/components/qna/CommentList'
@@ -16,6 +15,8 @@ interface AnswerCardProps {
   isAuthenticated: boolean
   userId: number | null | undefined
   onAccept: (answerId: number) => void
+  showForm: boolean
+  onEditAction: () => void
 }
 
 export function AnswerCard({
@@ -28,9 +29,15 @@ export function AnswerCard({
   isAuthenticated,
   userId,
   onAccept,
+  showForm,
+  onEditAction,
 }: AnswerCardProps) {
   const canShowAcceptButton =
     isQuestionOwner && !anyAdopted && answer.author.id !== userId
+
+  // 본인 답변이고 폼이 닫혀 있을 때만 수정 버튼 표시
+  const canShowEditButton =
+    userId != null && answer.author.id === userId && !showForm
 
   return (
     <article className="rounded-[20px] border border-[#CECECE] px-[38px] py-11">
@@ -61,15 +68,25 @@ export function AnswerCard({
             </span>
           )}
           {canShowAcceptButton && (
-            <Button
-              size="sm"
+            <button
               type="button"
               onClick={() => onAccept(answer.id)}
               disabled={isAcceptPending}
-              loading={isAcceptPending && confirmAcceptId === answer.id}
+              className="bg-primary h-12 w-[112px] shrink-0 rounded-full text-base font-semibold text-white transition-colors hover:bg-[#3B0186] disabled:cursor-not-allowed disabled:bg-[#ECECEC] disabled:text-[#BDBDBD]"
             >
-              채택하기
-            </Button>
+              {isAcceptPending && confirmAcceptId === answer.id
+                ? '채택 중...'
+                : '채택하기'}
+            </button>
+          )}
+          {canShowEditButton && (
+            <button
+              type="button"
+              onClick={onEditAction}
+              className="h-12 w-[112px] shrink-0 rounded-full border border-[#6201E0] bg-[#EFE6FC] text-base font-semibold text-[#6201E0] transition-colors hover:bg-[#E0CFFA]"
+            >
+              답변 수정하기
+            </button>
           )}
         </div>
       </div>
