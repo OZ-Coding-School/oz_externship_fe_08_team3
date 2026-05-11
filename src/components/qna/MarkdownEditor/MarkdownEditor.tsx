@@ -4,7 +4,6 @@ import MDEditor, {
   type ICommand,
 } from '@uiw/react-md-editor'
 import { ChevronDown } from 'lucide-react'
-import remarkBreaks from 'remark-breaks'
 import rehypeRaw from 'rehype-raw'
 import rehypeSanitize from 'rehype-sanitize'
 import './MarkdownEditor.css'
@@ -425,7 +424,6 @@ export function MarkdownEditor({
           commands={editorCommands}
           extraCommands={editorExtraCommands}
           previewOptions={{
-            remarkPlugins: [[remarkBreaks]],
             remarkRehypeOptions: { allowDangerousHtml: true },
             rehypePlugins: [
               [rehypeRaw],
