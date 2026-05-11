@@ -187,13 +187,8 @@ export function MarkdownEditor({
         if (orderedEmptyMatch) {
           e.preventDefault()
           e.stopPropagation()
-          const [, indent] = orderedEmptyMatch
-          const newIndent = indent.length >= 3 ? indent.slice(3) : ''
-          const lines = text.split('\n')
-          const lineIndex = (text.slice(0, lineStart).match(/\n/g) ?? []).length
-          const num = computeNextNumber(lines, lineIndex, newIndent)
-          const nextItem = newIndent ? `${newIndent}${num}. ` : `${num}. `
-          // 빈 하위 항목 줄을 상위 항목으로 교체
+          const [, indent, numStr] = orderedEmptyMatch
+          const nextItem = `${indent}${parseInt(numStr, 10) + 1}. `
           const newText =
             text.slice(0, lineStart) + nextItem + text.slice(lineEnd)
           applyText(ta, newText, lineStart + nextItem.length)
@@ -212,17 +207,38 @@ export function MarkdownEditor({
           return
         }
 
-        // 들여쓰기된 글머리 목록 (빈 항목 → 상위 레벨로 복귀)
+        // 들여쓰기된 글머리 목록 (빈 항목 → 같은 레벨 유지)
         const bulletEmptyMatch = line.match(/^( +)([-*]) $/)
         if (bulletEmptyMatch) {
           e.preventDefault()
           e.stopPropagation()
           const [, indent, bullet] = bulletEmptyMatch
-          const newIndent = indent.length >= 2 ? indent.slice(2) : ''
-          const nextItem = newIndent ? `${newIndent}${bullet} ` : `${bullet} `
+          const nextItem = `${indent}${bullet} `
           const newText =
             text.slice(0, lineStart) + nextItem + text.slice(lineEnd)
           applyText(ta, newText, lineStart + nextItem.length)
+          return
+        }
+
+        // 인용문 (빈 항목 → 인용문 해제)
+        const blockquoteEmptyMatch = line.match(/^>+ ?$/)
+        if (blockquoteEmptyMatch) {
+          e.preventDefault()
+          e.stopPropagation()
+          const newText = text.slice(0, lineStart) + text.slice(lineEnd)
+          applyText(ta, newText, lineStart)
+          return
+        }
+
+        // 인용문 (내용 있는 항목 → 다음 줄도 인용문 유지)
+        const blockquoteMatch = line.match(/^(>+) ?/)
+        if (blockquoteMatch) {
+          e.preventDefault()
+          e.stopPropagation()
+          const [, markers] = blockquoteMatch
+          const insertion = `\n${markers} `
+          const newText = text.slice(0, cursor) + insertion + text.slice(cursor)
+          applyText(ta, newText, cursor + insertion.length)
           return
         }
       }
