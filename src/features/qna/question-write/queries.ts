@@ -8,7 +8,7 @@ export function useCreateQuestion() {
     {
       mutationFn: async (payload) => {
         const { data } = await api.post<QuestionCreateResponse>(
-          '/qna/questions/',
+          '/qna/questions',
           payload
         )
         return data
