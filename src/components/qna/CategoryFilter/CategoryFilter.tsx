@@ -9,11 +9,11 @@ export interface CategoryFilterHandle {
 }
 
 export function CategoryFilter({
-  initialCategoryId,
-  onHandle,
+  selectedId,
+  onChange,
 }: {
-  initialCategoryId?: number
-  onHandle?: (handle: CategoryFilterHandle) => void
+  selectedId?: number
+  onChange?: (id: number | undefined) => void
 }) {
   const {
     largeCategoryId,
@@ -27,16 +27,13 @@ export function CategoryFilter({
     handleLargeChange,
     handleMediumChange,
     handleSmallChange,
-    handleReset,
     resolvedCategoryId,
-  } = useCategorySelector(initialCategoryId)
-
-  const canApply = largeCategoryId !== ''
+  } = useCategorySelector(selectedId)
 
   // effect로 부모에게 핸들 전달 (렌더 중 setState 방지)
   useEffect(() => {
-    onHandle?.({ resolvedCategoryId, handleReset, canApply })
-  }, [resolvedCategoryId, canApply, handleReset, onHandle])
+    onChange?.(resolvedCategoryId)
+  }, [resolvedCategoryId, onChange])
 
   return (
     <div className="flex flex-col gap-5">
