@@ -34,7 +34,7 @@ export function ConfirmModal({
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} hideCloseButton>
+    <Modal isOpen={isOpen} onClose={onClose} hideCloseButton aria-label="확인">
       <div className="flex flex-col gap-10">
         <div className="py-3">
           <p className="text-base leading-relaxed tracking-tight whitespace-pre-line text-gray-700">

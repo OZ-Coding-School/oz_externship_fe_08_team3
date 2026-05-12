@@ -22,11 +22,11 @@ export function SuccessCard({
         .join(' ')}
     >
       <CheckCircleIcon />
-      <h2 className="text-xl font-bold tracking-tight text-gray-900">
+      <h2 className="text-text-heading text-xl font-bold tracking-tight">
         {title}
       </h2>
       {description && (
-        <p className="text-sm tracking-tight text-gray-600">{description}</p>
+        <p className="text-text-body text-sm tracking-tight">{description}</p>
       )}
     </div>
   )
