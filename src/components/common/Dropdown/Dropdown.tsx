@@ -132,6 +132,11 @@ export function Dropdown({
         aria-expanded={isOpen}
         aria-haspopup="listbox"
         aria-controls={`${baseId}-listbox`}
+        aria-activedescendant={
+          isOpen && highlightIndex >= 0
+            ? `${baseId}-option-${highlightIndex}`
+            : undefined
+        }
         aria-disabled={disabled}
         disabled={disabled}
         onClick={toggle}
@@ -180,7 +185,9 @@ export function Dropdown({
             return (
               <li
                 key={opt.value}
+                id={`${baseId}-option-${i}`}
                 role="option"
+                tabIndex={-1}
                 aria-selected={isSelected}
                 onClick={() => select(opt)}
                 onMouseEnter={() => setHighlightIndex(i)}
