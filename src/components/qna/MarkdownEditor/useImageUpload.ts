@@ -55,6 +55,9 @@ export function useImageUpload(
         objectUrlsRef.current.delete(objectUrl)
       }
     } catch {
+      // 업로드 실패 시 본문에서 깨진 blob URL 마크다운 제거
+      const blobMarkdown = `![${file.name}](${objectUrl})`
+      onChange(valueRef.current.replaceAll(blobMarkdown, ''))
       URL.revokeObjectURL(objectUrl)
       objectUrlsRef.current.delete(objectUrl)
       setImageError('이미지 업로드에 실패했습니다. 다시 시도해 주세요.')
