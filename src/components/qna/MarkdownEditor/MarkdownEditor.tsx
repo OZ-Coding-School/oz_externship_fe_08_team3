@@ -7,7 +7,7 @@ import { ChevronDown } from 'lucide-react'
 import remarkBreaks from 'remark-breaks'
 import rehypeRaw from 'rehype-raw'
 import rehypeSanitize from 'rehype-sanitize'
-import { rehypeSanitizeStyle } from '@/components/qna/MarkdownViewer/sanitizeStyle'
+import { rehypeSanitizeStyle } from '@/components/qna/markdownSanitize'
 import './MarkdownEditor.css'
 import {
   editorSanitizeSchema,

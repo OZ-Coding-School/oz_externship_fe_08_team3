@@ -5,11 +5,11 @@ import { visit } from 'unist-util-visit'
  * 에디터가 생성하는 CSS 프로퍼티 + 값만 허용하는 rehype 플러그인.
  *
  * 허용 값은 markdownEditorConstants.ts의 상수와 동기화 필요:
- * - ALLOWED_COLORS ↔ TEXT_PALETTE_COLORS / BG_PALETTE_COLORS
- * - ALLOWED_FONT_SIZES ↔ FONT_SIZES
- * - ALLOWED_FONT_FAMILIES ↔ FONT_FAMILIES
- * - ALLOWED_TEXT_ALIGNS ↔ alignLeftCommand 등 하드코딩 값
- * - ALLOWED_LINE_HEIGHTS ↔ lineHeightCmd 하드코딩 값
+ * - ALLOWED_COLORS <-> TEXT_PALETTE_COLORS / BG_PALETTE_COLORS
+ * - ALLOWED_FONT_SIZES <-> FONT_SIZES
+ * - ALLOWED_FONT_FAMILIES <-> FONT_FAMILIES
+ * - ALLOWED_TEXT_ALIGNS <-> alignLeftCommand 등 하드코딩 값
+ * - ALLOWED_LINE_HEIGHTS <-> lineHeightCmd 하드코딩 값
  */
 
 // TEXT_PALETTE_COLORS / BG_PALETTE_COLORS (markdownEditorConstants.ts)
@@ -67,7 +67,6 @@ const ALLOWED_TEXT_ALIGNS = new Set(['left', 'center', 'right', 'justify'])
 // lineHeightCmd (markdownEditorCommands.ts)
 const ALLOWED_LINE_HEIGHTS = new Set(['1', '1.5', '2', '2.5', '3'])
 
-// 프로퍼티별 값 검증
 const VALIDATORS: Record<string, (value: string) => boolean> = {
   color: (v) => ALLOWED_COLORS.has(v.trim().toLowerCase()),
   'background-color': (v) => ALLOWED_COLORS.has(v.trim().toLowerCase()),
@@ -99,14 +98,15 @@ function filterStyleValue(raw: string): string | null {
 export function rehypeSanitizeStyle() {
   return (tree: Root) => {
     visit(tree, 'element', (node: Element) => {
-      const style = node.properties?.style
+      const properties = node.properties
+      const style = properties?.style
       if (typeof style !== 'string') return
 
       const filtered = filterStyleValue(style)
       if (filtered) {
-        node.properties!.style = filtered
+        properties.style = filtered
       } else {
-        delete node.properties!.style
+        delete properties.style
       }
     })
   }

@@ -2,7 +2,7 @@ import MDEditor from '@uiw/react-md-editor'
 import rehypeRaw from 'rehype-raw'
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize'
 import remarkBreaks from 'remark-breaks'
-import { rehypeSanitizeStyle } from './sanitizeStyle'
+import { rehypeSanitizeStyle } from '@/components/qna/markdownSanitize'
 
 // style 속성 허용, blob: 이미지 src 허용, 스크립트/이벤트 핸들러는 차단
 // style 내부의 CSS 프로퍼티는 rehypeSanitizeStyle에서 allowlist로 필터링
