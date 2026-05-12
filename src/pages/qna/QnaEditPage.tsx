@@ -1,7 +1,7 @@
 /**
  * @figma 질문 수정  https://www.figma.com/design/4rJmEFUU2HMWVy3qUcYZRs/%EC%A0%9C%EB%AA%A9-%EC%97%86%EC%9D%8C?node-id=1-9246&m=dev
  */
-import { Suspense, useEffect, useMemo, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router'
 import { Button, Dropdown, AlertModal } from '@/components'
 import { MarkdownEditor } from '@/components/qna/MarkdownEditor'
@@ -59,10 +59,8 @@ function QnaEditFormInner({ questionId, question }: QnaEditFormInnerProps) {
   const { data: categories } = useQnaCategories()
   const { mutate: updateQuestion, isPending } = useUpdateQuestion(questionId)
 
-  const initialPath = useMemo(
-    () => findCategoryPath(categories, question.category.id),
-    [categories, question.category.id]
-  )
+  // React Compiler가 자동 메모이제이션 처리 (useMemo 불필요)
+  const initialPath = findCategoryPath(categories, question.category.id)
 
   const [largeCategoryId, setLargeCategoryId] = useState<string>(
     initialPath.largeId
@@ -75,9 +73,10 @@ function QnaEditFormInner({ questionId, question }: QnaEditFormInnerProps) {
   )
   const [title, setTitle] = useState(question.title)
   const [content, setContent] = useState(question.content)
+  // 알림 상태 통합: message가 있으면 열림
   const [alertMessage, setAlertMessage] = useState('')
-  const [isAlertOpen, setIsAlertOpen] = useState(false)
 
+  // 파생 상태 — 렌더 중 계산
   const largeOptions = categories.map((cat) => ({
     value: String(cat.id),
     label: cat.name,
@@ -122,10 +121,6 @@ function QnaEditFormInner({ questionId, question }: QnaEditFormInnerProps) {
     setSmallCategoryId('')
   }
 
-  const handleSmallChange = (value: string) => {
-    setSmallCategoryId(value)
-  }
-
   const currentCategoryId = hasSmall
     ? Number(validSmallCategoryId)
     : hasMedium
@@ -137,6 +132,7 @@ function QnaEditFormInner({ questionId, question }: QnaEditFormInnerProps) {
     content !== question.content ||
     currentCategoryId !== question.category.id
 
+  // 이탈 방지 (브라우저 이벤트 구독)
   useEffect(() => {
     if (!isDirty) return
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -146,6 +142,8 @@ function QnaEditFormInner({ questionId, question }: QnaEditFormInnerProps) {
     window.addEventListener('beforeunload', handleBeforeUnload)
     return () => window.removeEventListener('beforeunload', handleBeforeUnload)
   }, [isDirty])
+
+  const showAlert = (message: string) => setAlertMessage(message)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -157,26 +155,12 @@ function QnaEditFormInner({ questionId, question }: QnaEditFormInnerProps) {
     const isTitleInvalid = title.trim().length < MIN_TITLE_LENGTH
     const isContentInvalid = content.trim().length < MIN_CONTENT_LENGTH
 
-    if (isCategoryMissing) {
-      setAlertMessage('카테고리를 선택해 주세요.')
-      setIsAlertOpen(true)
-      return
-    }
-    if (!title.trim()) {
-      setAlertMessage('제목을 입력해 주세요.')
-      setIsAlertOpen(true)
-      return
-    }
-    if (isTitleInvalid) {
-      setAlertMessage(`제목을 ${MIN_TITLE_LENGTH}자 이상 입력해 주세요.`)
-      setIsAlertOpen(true)
-      return
-    }
-    if (isContentInvalid) {
-      setAlertMessage(`내용을 ${MIN_CONTENT_LENGTH}자 이상 입력해 주세요.`)
-      setIsAlertOpen(true)
-      return
-    }
+    if (isCategoryMissing) return showAlert('카테고리를 선택해 주세요.')
+    if (!title.trim()) return showAlert('제목을 입력해 주세요.')
+    if (isTitleInvalid)
+      return showAlert(`제목을 ${MIN_TITLE_LENGTH}자 이상 입력해 주세요.`)
+    if (isContentInvalid)
+      return showAlert(`내용을 ${MIN_CONTENT_LENGTH}자 이상 입력해 주세요.`)
 
     const imageUrls = [
       ...content.matchAll(/!\[.*?\]\((https?:\/\/[^)]+)\)/g),
@@ -194,8 +178,7 @@ function QnaEditFormInner({ questionId, question }: QnaEditFormInnerProps) {
           navigate(ROUTES.QNA.DETAIL.replace(':questionId', String(questionId)))
         },
         onError: () => {
-          setAlertMessage('질문 수정에 실패했습니다. 다시 시도해 주세요.')
-          setIsAlertOpen(true)
+          showAlert('질문 수정에 실패했습니다. 다시 시도해 주세요.')
         },
       }
     )
@@ -229,7 +212,7 @@ function QnaEditFormInner({ questionId, question }: QnaEditFormInnerProps) {
             <Dropdown
               options={smallOptions}
               value={validSmallCategoryId}
-              onChange={handleSmallChange}
+              onChange={setSmallCategoryId}
               placeholder="소분류 선택"
               disabled={!validMediumCategoryId || !hasSmall}
               className="flex-1"
@@ -272,8 +255,8 @@ function QnaEditFormInner({ questionId, question }: QnaEditFormInnerProps) {
       </form>
 
       <AlertModal
-        isOpen={isAlertOpen}
-        onClose={() => setIsAlertOpen(false)}
+        isOpen={alertMessage !== ''}
+        onClose={() => setAlertMessage('')}
         message={alertMessage}
       />
     </>

@@ -1,4 +1,4 @@
-import { forwardRef, useId } from 'react'
+import { useId } from 'react'
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string
@@ -9,25 +9,24 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
   isSuccess?: boolean
   leftElement?: React.ReactNode
   rightElement?: React.ReactNode
+  ref?: React.Ref<HTMLInputElement>
 }
 
-export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
-  {
-    label,
-    helperText,
-    errorMessage,
-    successMessage,
-    isError = false,
-    isSuccess = false,
-    leftElement,
-    rightElement,
-    id: idProp,
-    className = '',
-    disabled,
-    ...props
-  },
-  ref
-) {
+export function Input({
+  label,
+  helperText,
+  errorMessage,
+  successMessage,
+  isError = false,
+  isSuccess = false,
+  leftElement,
+  rightElement,
+  id: idProp,
+  className = '',
+  disabled,
+  ref,
+  ...props
+}: InputProps) {
   const generatedId = useId()
   const inputId = idProp ?? generatedId
   const descriptionId = `${inputId}-desc`
@@ -103,6 +102,4 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
       )}
     </div>
   )
-})
-
-export default Input
+}

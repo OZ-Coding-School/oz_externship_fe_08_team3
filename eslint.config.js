@@ -5,6 +5,7 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 import prettierConfig from 'eslint-config-prettier'
 import { defineConfig, globalIgnores } from 'eslint/config'
+import refactorPatch from './eslint.config.refactor-patch.js'
 
 export default defineConfig([
   globalIgnores(['dist', 'public/mockServiceWorker.js']),
@@ -22,4 +23,5 @@ export default defineConfig([
       globals: globals.browser,
     },
   },
+  ...refactorPatch,
 ])
