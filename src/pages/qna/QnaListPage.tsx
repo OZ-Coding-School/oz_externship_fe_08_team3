@@ -24,6 +24,7 @@ import {
 } from '@/components'
 import { useQnaQuestions } from '@/features/qna/questions'
 import type { QuestionsListParams } from '@/features/qna/questions'
+import { useDebounce } from '@/hooks/useDebounce'
 import { ROUTES } from '@/constants/routes'
 
 type AnswerStatus = 'all' | 'answered' | 'unanswered'
@@ -38,6 +39,14 @@ const SEARCH_DEBOUNCE_MS = 300
 const SORT_LABEL: Record<SortOption, string> = {
   latest: '최신순',
   oldest: '오래된순',
+}
+
+function isAnswerStatus(value: string): value is AnswerStatus {
+  return (ANSWER_STATUSES as readonly string[]).includes(value)
+}
+
+function isSortOption(value: string): value is SortOption {
+  return (SORT_OPTIONS as readonly string[]).includes(value)
 }
 
 // ── 정렬 Popover ─────────────────────────────────────────────────
@@ -177,10 +186,8 @@ export function QnaListPage() {
   const [searchParams, setSearchParams] = useSearchParams()
 
   const rawAnswerStatus = searchParams.get('answer_status') ?? 'all'
-  const answerStatus: AnswerStatus = (
-    ANSWER_STATUSES as readonly string[]
-  ).includes(rawAnswerStatus)
-    ? (rawAnswerStatus as AnswerStatus)
+  const answerStatus: AnswerStatus = isAnswerStatus(rawAnswerStatus)
+    ? rawAnswerStatus
     : 'all'
 
   const searchKeyword = searchParams.get('search_keyword') ?? ''
@@ -194,14 +201,13 @@ export function QnaListPage() {
       : undefined
 
   const rawSort = searchParams.get('sort') ?? 'latest'
-  const sort: SortOption = (SORT_OPTIONS as readonly string[]).includes(rawSort)
-    ? (rawSort as SortOption)
-    : 'latest'
+  const sort: SortOption = isSortOption(rawSort) ? rawSort : 'latest'
 
   const rawPage = Number(searchParams.get('page') ?? 1)
   const page = Number.isFinite(rawPage) && rawPage > 0 ? Math.floor(rawPage) : 1
 
   const [inputValue, setInputValue] = useState(searchKeyword)
+  const debouncedInput = useDebounce(inputValue, SEARCH_DEBOUNCE_MS)
   const [showCategoryModal, setShowCategoryModal] = useState(false)
 
   // 카테고리 필터 상태 (CategoryFilter에서 전달받음)
@@ -215,26 +221,23 @@ export function QnaListPage() {
     setInputValue(searchKeyword)
   }, [searchKeyword])
 
-  // Debounce search input → URL update
+  // 디바운스된 입력값 → URL 업데이트
   useEffect(() => {
-    if (inputValue === searchKeyword) return
-    const timer = setTimeout(() => {
-      setSearchParams(
-        (prev) => {
-          const next = new URLSearchParams(prev)
-          if (inputValue) {
-            next.set('search_keyword', inputValue)
-          } else {
-            next.delete('search_keyword')
-          }
-          next.delete('page')
-          return next
-        },
-        { replace: true }
-      )
-    }, SEARCH_DEBOUNCE_MS)
-    return () => clearTimeout(timer)
-  }, [inputValue, searchKeyword, setSearchParams])
+    if (debouncedInput === searchKeyword) return
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        if (debouncedInput) {
+          next.set('search_keyword', debouncedInput)
+        } else {
+          next.delete('search_keyword')
+        }
+        next.delete('page')
+        return next
+      },
+      { replace: true }
+    )
+  }, [debouncedInput, searchKeyword, setSearchParams])
 
   const { data, isLoading, isError } = useQnaQuestions({
     page,
@@ -260,50 +263,22 @@ export function QnaListPage() {
     }
   }, [page, totalPages, setSearchParams])
 
-  const updateParam = useCallback(
-    (key: string, value: string | null) => {
+  const updateParams = useCallback(
+    (
+      updates: Record<string, string | null>,
+      options: { resetPage?: boolean; scrollTop?: boolean } = {}
+    ) => {
+      const { resetPage = true, scrollTop = false } = options
       setSearchParams((prev) => {
         const next = new URLSearchParams(prev)
-        if (value != null) {
-          next.set(key, value)
-        } else {
-          next.delete(key)
+        for (const [key, value] of Object.entries(updates)) {
+          if (value != null) next.set(key, value)
+          else next.delete(key)
         }
-        next.delete('page')
+        if (resetPage) next.delete('page')
         return next
       })
-    },
-    [setSearchParams]
-  )
-
-  const handleTabChange = useCallback(
-    (value: string) => {
-      setSearchParams((prev) => {
-        const next = new URLSearchParams(prev)
-        if (value !== 'all') {
-          next.set('answer_status', value)
-        } else {
-          next.delete('answer_status')
-        }
-        next.delete('page')
-        return next
-      })
-    },
-    [setSearchParams]
-  )
-
-  const handlePageChange = useCallback(
-    (newPage: number) => {
-      setSearchParams((prev) => {
-        const next = new URLSearchParams(prev)
-        if (newPage === 1) {
-          next.delete('page')
-        } else {
-          next.set('page', String(newPage))
-        }
-        return next
-      })
-      window.scrollTo({ top: 0, behavior: 'smooth' })
+      if (scrollTop) window.scrollTo({ top: 0, behavior: 'smooth' })
     },
     [setSearchParams]
   )
@@ -338,7 +313,12 @@ export function QnaListPage() {
       </div>
 
       {/* 탭 + 정렬/필터를 한 줄에 배치 */}
-      <Tabs value={answerStatus} onChange={handleTabChange}>
+      <Tabs
+        value={answerStatus}
+        onChange={(value) =>
+          updateParams({ answer_status: value !== 'all' ? value : null })
+        }
+      >
         <div className="flex items-end justify-between border-b border-[#CECECE] pb-2">
           <TabList aria-label="답변 상태 필터" className="flex gap-10 border-0">
             <Tab value="all">전체보기</Tab>
@@ -350,7 +330,7 @@ export function QnaListPage() {
           <div className="flex items-center gap-3">
             <SortPopover
               sort={sort}
-              onSelect={(opt) => updateParam('sort', opt)}
+              onSelect={(opt) => updateParams({ sort: opt })}
             />
             <button
               type="button"
@@ -408,7 +388,12 @@ export function QnaListPage() {
                 <Pagination
                   current={page}
                   total={totalPages}
-                  onChange={handlePageChange}
+                  onChange={(newPage) =>
+                    updateParams(
+                      { page: newPage === 1 ? null : String(newPage) },
+                      { resetPage: false, scrollTop: true }
+                    )
+                  }
                 />
               )}
             </>
@@ -435,11 +420,13 @@ export function QnaListPage() {
             <button
               type="button"
               onClick={() => {
-                const id = tempCategoryId
-                updateParam('category_id', id != null ? String(id) : null)
+                updateParams({
+                  category_id:
+                    tempCategoryId != null ? String(tempCategoryId) : null,
+                })
                 setShowCategoryModal(false)
               }}
-              disabled={tempCategoryId !== categoryId}
+              disabled={tempCategoryId === categoryId}
               className="h-[54px] w-[278px] rounded bg-[#6201E0] text-xl font-bold text-white transition-colors hover:bg-[#4E01B3] disabled:bg-[#ECECEC] disabled:text-[#BDBDBD]"
             >
               필터 적용하기
