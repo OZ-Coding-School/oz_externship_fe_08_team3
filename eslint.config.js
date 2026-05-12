@@ -8,7 +8,7 @@ import { defineConfig, globalIgnores } from 'eslint/config'
 import refactorPatch from './eslint.config.refactor-patch.js'
 
 export default defineConfig([
-  globalIgnores(['dist', 'public/mockServiceWorker.js']),
+  globalIgnores(['dist', 'public/mockServiceWorker.js', 'docs/**']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
