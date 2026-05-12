@@ -6,129 +6,46 @@ import { Navigate, useNavigate, useParams } from 'react-router'
 import { Button, Dropdown, AlertModal } from '@/components'
 import { MarkdownEditor } from '@/components/qna/MarkdownEditor'
 import { useQnaCategories } from '@/features/qna/categories'
-import type { UserCategory } from '@/features/qna/categories'
 import {
   useSuspenseGetQuestionDetail,
   useUpdateQuestion,
 } from '@/features/qna/question-edit'
 import type { GetQuestionDetailResponse } from '@/features/qna/question-detail'
 import { useAuthStore } from '@/stores/authStore'
+import { useCategorySelector } from '@/hooks/useCategorySelector'
 import { ROUTES } from '@/constants/routes'
 
 const MIN_CONTENT_LENGTH = 5
 const MIN_TITLE_LENGTH = 3
 const MAX_TITLE_LENGTH = 100
 
-// 3단계 카테고리 트리에서 targetId에 해당하는 경로를 찾는 헬퍼
-function findCategoryPath(
-  categories: UserCategory[],
-  targetId: number
-): { largeId: string; mediumId: string; smallId: string } {
-  for (const lg of categories) {
-    if (lg.id === targetId)
-      return { largeId: String(lg.id), mediumId: '', smallId: '' }
-
-    for (const md of lg.children) {
-      if (md.id === targetId)
-        return { largeId: String(lg.id), mediumId: String(md.id), smallId: '' }
-
-      const sm = md.children.find((c) => c.id === targetId)
-      if (sm)
-        return {
-          largeId: String(lg.id),
-          mediumId: String(md.id),
-          smallId: String(sm.id),
-        }
-    }
-  }
-
-  return { largeId: '', mediumId: '', smallId: '' }
+function getImageUrls(content: string) {
+  return [...content.matchAll(/!\[.*?\]\((https?:\/\/[^)]+)\)/g)].map(
+    (m) => m[1]
+  )
 }
 
-interface QnaEditFormInnerProps {
-  questionId: number
-  question: GetQuestionDetailResponse
+function getValidationMessage({
+  categoryId,
+  title,
+  content,
+}: {
+  categoryId: number | undefined
+  title: string
+  content: string
+}) {
+  if (categoryId == null) return '카테고리를 선택해 주세요.'
+  if (!title.trim()) return '제목을 입력해 주세요.'
+  if (title.trim().length < MIN_TITLE_LENGTH) {
+    return `제목을 ${MIN_TITLE_LENGTH}자 이상 입력해 주세요.`
+  }
+  if (content.trim().length < MIN_CONTENT_LENGTH) {
+    return `내용을 ${MIN_CONTENT_LENGTH}자 이상 입력해 주세요.`
+  }
+  return null
 }
 
-function QnaEditFormInner({ questionId, question }: QnaEditFormInnerProps) {
-  const navigate = useNavigate()
-  const { data: categories } = useQnaCategories()
-  const { mutate: updateQuestion, isPending } = useUpdateQuestion(questionId)
-
-  // React Compiler가 자동 메모이제이션 처리 (useMemo 불필요)
-  const initialPath = findCategoryPath(categories, question.category.id)
-
-  const [largeCategoryId, setLargeCategoryId] = useState<string>(
-    initialPath.largeId
-  )
-  const [mediumCategoryId, setMediumCategoryId] = useState<string>(
-    initialPath.mediumId
-  )
-  const [smallCategoryId, setSmallCategoryId] = useState<string>(
-    initialPath.smallId
-  )
-  const [title, setTitle] = useState(question.title)
-  const [content, setContent] = useState(question.content)
-  // 알림 상태 통합: message가 있으면 열림
-  const [alertMessage, setAlertMessage] = useState('')
-
-  // 파생 상태 — 렌더 중 계산
-  const largeOptions = categories.map((cat) => ({
-    value: String(cat.id),
-    label: cat.name,
-  }))
-
-  const selectedLarge = categories.find(
-    (cat) => String(cat.id) === largeCategoryId
-  )
-
-  const mediumOptions =
-    selectedLarge?.children.map((child) => ({
-      value: String(child.id),
-      label: child.name,
-    })) ?? []
-
-  const hasMedium = mediumOptions.length > 0
-  const isMediumValid = mediumOptions.some((o) => o.value === mediumCategoryId)
-  const validMediumCategoryId = isMediumValid ? mediumCategoryId : ''
-
-  const selectedMedium = selectedLarge?.children.find(
-    (c) => String(c.id) === validMediumCategoryId
-  )
-
-  const smallOptions =
-    selectedMedium?.children.map((child) => ({
-      value: String(child.id),
-      label: child.name,
-    })) ?? []
-
-  const hasSmall = smallOptions.length > 0
-  const isSmallValid = smallOptions.some((o) => o.value === smallCategoryId)
-  const validSmallCategoryId = isSmallValid ? smallCategoryId : ''
-
-  const handleLargeChange = (value: string) => {
-    setLargeCategoryId(value)
-    setMediumCategoryId('')
-    setSmallCategoryId('')
-  }
-
-  const handleMediumChange = (value: string) => {
-    setMediumCategoryId(value)
-    setSmallCategoryId('')
-  }
-
-  const currentCategoryId = hasSmall
-    ? Number(validSmallCategoryId)
-    : hasMedium
-      ? Number(validMediumCategoryId)
-      : Number(largeCategoryId)
-
-  const isDirty =
-    title !== question.title ||
-    content !== question.content ||
-    currentCategoryId !== question.category.id
-
-  // 이탈 방지 (브라우저 이벤트 구독)
+function useBeforeUnloadDirty(isDirty: boolean) {
   useEffect(() => {
     if (!isDirty) return
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -138,36 +55,125 @@ function QnaEditFormInner({ questionId, question }: QnaEditFormInnerProps) {
     window.addEventListener('beforeunload', handleBeforeUnload)
     return () => window.removeEventListener('beforeunload', handleBeforeUnload)
   }, [isDirty])
+}
+
+function CategoryFields({
+  selector,
+}: {
+  selector: ReturnType<typeof useCategorySelector>
+}) {
+  return (
+    <div className="flex flex-col gap-3 p-4 sm:flex-row">
+      <Dropdown
+        options={selector.largeOptions}
+        value={selector.largeCategoryId}
+        onChange={selector.handleLargeChange}
+        placeholder="대분류 선택"
+        className="flex-1"
+      />
+      <Dropdown
+        options={selector.mediumOptions}
+        value={selector.validMediumCategoryId}
+        onChange={selector.handleMediumChange}
+        placeholder="중분류 선택"
+        disabled={!selector.largeCategoryId || !selector.hasMedium}
+        className="flex-1"
+      />
+      <Dropdown
+        options={selector.smallOptions}
+        value={selector.validSmallCategoryId}
+        onChange={selector.handleSmallChange}
+        placeholder="소분류 선택"
+        disabled={!selector.validMediumCategoryId || !selector.hasSmall}
+        className="flex-1"
+      />
+    </div>
+  )
+}
+
+function TitleInput({
+  title,
+  onChange,
+}: {
+  title: string
+  onChange: (value: string) => void
+}) {
+  return (
+    <input
+      type="text"
+      placeholder={`제목을 입력해 주세요. (${MIN_TITLE_LENGTH}~${MAX_TITLE_LENGTH}자)`}
+      value={title}
+      onChange={(e) => onChange(e.target.value)}
+      maxLength={MAX_TITLE_LENGTH}
+      className="placeholder:text-text-muted text-text-heading border-border-base bg-primary-50 focus:border-primary h-12 w-full rounded-sm border px-4 text-base transition-colors duration-150 outline-none"
+    />
+  )
+}
+
+function EditActions({
+  isPending,
+  onCancel,
+}: {
+  isPending: boolean
+  onCancel: () => void
+}) {
+  return (
+    <div className="flex justify-end gap-3">
+      <Button
+        type="button"
+        variant="secondary"
+        onClick={onCancel}
+        disabled={isPending}
+      >
+        취소
+      </Button>
+      <Button type="submit" variant="primary" loading={isPending}>
+        수정하기
+      </Button>
+    </div>
+  )
+}
+
+interface QnaEditFormInnerProps {
+  questionId: number
+  question: GetQuestionDetailResponse
+}
+
+function QnaEditFormInner({ questionId, question }: QnaEditFormInnerProps) {
+  const navigate = useNavigate()
+  const { mutate: updateQuestion, isPending } = useUpdateQuestion(questionId)
+  const categorySelector = useCategorySelector(question.category.id)
+  const currentCategoryId = categorySelector.resolvedCategoryId
+  const [title, setTitle] = useState(question.title)
+  const [content, setContent] = useState(question.content)
+  const [alertMessage, setAlertMessage] = useState('')
+
+  const isDirty =
+    title !== question.title ||
+    content !== question.content ||
+    currentCategoryId !== question.category.id
+
+  useBeforeUnloadDirty(isDirty)
 
   const showAlert = (message: string) => setAlertMessage(message)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
-    const isCategoryMissing =
-      !largeCategoryId ||
-      (hasMedium && !validMediumCategoryId) ||
-      (hasSmall && !validSmallCategoryId)
-    const isTitleInvalid = title.trim().length < MIN_TITLE_LENGTH
-    const isContentInvalid = content.trim().length < MIN_CONTENT_LENGTH
-
-    if (isCategoryMissing) return showAlert('카테고리를 선택해 주세요.')
-    if (!title.trim()) return showAlert('제목을 입력해 주세요.')
-    if (isTitleInvalid)
-      return showAlert(`제목을 ${MIN_TITLE_LENGTH}자 이상 입력해 주세요.`)
-    if (isContentInvalid)
-      return showAlert(`내용을 ${MIN_CONTENT_LENGTH}자 이상 입력해 주세요.`)
-
-    const imageUrls = [
-      ...content.matchAll(/!\[.*?\]\((https?:\/\/[^)]+)\)/g),
-    ].map((m) => m[1])
+    const validationMessage = getValidationMessage({
+      categoryId: currentCategoryId,
+      title,
+      content,
+    })
+    if (validationMessage) return showAlert(validationMessage)
+    if (currentCategoryId == null) return
 
     updateQuestion(
       {
         category_id: currentCategoryId,
         title: title.trim(),
         content: content.trim(),
-        image_urls: imageUrls,
+        image_urls: getImageUrls(content),
       },
       {
         onSuccess: () => {
@@ -187,67 +193,19 @@ function QnaEditFormInner({ questionId, question }: QnaEditFormInnerProps) {
   return (
     <>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        {/* 카테고리 + 제목 박스 */}
         <div className="border-border-base rounded-xl border">
-          <div className="flex gap-3 p-4">
-            <Dropdown
-              options={largeOptions}
-              value={largeCategoryId}
-              onChange={handleLargeChange}
-              placeholder="대분류 선택"
-              className="flex-1"
-            />
-            <Dropdown
-              options={mediumOptions}
-              value={validMediumCategoryId}
-              onChange={handleMediumChange}
-              placeholder="중분류 선택"
-              disabled={!largeCategoryId || !hasMedium}
-              className="flex-1"
-            />
-            <Dropdown
-              options={smallOptions}
-              value={validSmallCategoryId}
-              onChange={setSmallCategoryId}
-              placeholder="소분류 선택"
-              disabled={!validMediumCategoryId || !hasSmall}
-              className="flex-1"
-            />
-          </div>
-
+          <CategoryFields selector={categorySelector} />
           <div className="border-border-base border-t" />
-
           <div className="p-4">
-            <input
-              type="text"
-              placeholder={`제목을 입력해 주세요. (${MIN_TITLE_LENGTH}~${MAX_TITLE_LENGTH}자)`}
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              maxLength={MAX_TITLE_LENGTH}
-              className="placeholder:text-text-muted text-text-heading border-border-base bg-primary-50 focus:border-primary h-12 w-full rounded-sm border px-4 text-base transition-colors duration-150 outline-none"
-            />
+            <TitleInput title={title} onChange={setTitle} />
           </div>
         </div>
 
-        {/* 마크다운 에디터 박스 */}
         <div className="overflow-hidden rounded-xl">
           <MarkdownEditor value={content} onChange={setContent} />
         </div>
 
-        {/* 버튼 */}
-        <div className="flex justify-end gap-3">
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={handleCancel}
-            disabled={isPending}
-          >
-            취소
-          </Button>
-          <Button type="submit" variant="primary" loading={isPending}>
-            수정하기
-          </Button>
-        </div>
+        <EditActions isPending={isPending} onCancel={handleCancel} />
       </form>
 
       <AlertModal
@@ -261,6 +219,7 @@ function QnaEditFormInner({ questionId, question }: QnaEditFormInnerProps) {
 
 function QnaEditForm({ questionId }: { questionId: number }) {
   const currentUser = useAuthStore((state) => state.user)
+  useQnaCategories()
   const { data: question } = useSuspenseGetQuestionDetail(questionId)
 
   const isOwner =

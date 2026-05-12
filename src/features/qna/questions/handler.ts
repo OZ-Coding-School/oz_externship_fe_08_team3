@@ -332,7 +332,7 @@ const mockQuestions: QuestionListItem[] = [
 
 export const questionsHandler = [
   http.get(
-    `${import.meta.env.VITE_API_BASE_URL}/qna/questions/`,
+    `${import.meta.env.VITE_API_BASE_URL}/qna/questions`,
     ({ request }) => {
       const url = new URL(request.url)
       const page = Number(url.searchParams.get('page') ?? 1)

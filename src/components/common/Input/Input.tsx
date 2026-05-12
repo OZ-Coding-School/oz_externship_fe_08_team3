@@ -62,7 +62,7 @@ export function Input({
           ref={ref}
           id={inputId}
           disabled={disabled}
-          aria-invalid={hasError}
+          aria-invalid={hasError || undefined}
           aria-describedby={feedbackText ? descriptionId : undefined}
           className={[
             'bg-bg-base text-text-heading placeholder:text-text-muted h-12 w-full rounded-sm border text-base transition-colors duration-150 outline-none',

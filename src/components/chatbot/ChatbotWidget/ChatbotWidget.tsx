@@ -70,7 +70,7 @@ export function ChatbotWidget() {
         aria-labelledby="chatbot-title"
         tabIndex={-1}
         onKeyDown={handleKeyDown}
-        className="bg-bg-base fixed right-6 bottom-[120px] z-50 flex h-[608px] max-h-[calc(100vh-9rem)] w-[360px] flex-col overflow-hidden rounded-xl border border-gray-200"
+        className="bg-bg-base fixed inset-x-3 bottom-3 z-50 flex h-[min(608px,calc(100vh-1.5rem))] flex-col overflow-hidden rounded-xl border border-gray-200 sm:inset-x-auto sm:right-6 sm:bottom-[120px] sm:h-[608px] sm:max-h-[calc(100vh-9rem)] sm:w-[360px]"
         style={{ boxShadow: '0px 25px 50px -12px rgba(0,0,0,0.25)' }}
       >
         {renderView()}

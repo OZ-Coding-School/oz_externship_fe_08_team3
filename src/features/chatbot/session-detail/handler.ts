@@ -22,7 +22,7 @@ const mockSessionDetail: ChatSessionDetailResponse = {
 }
 
 export const sessionDetailHandlers = [
-  http.get('*/chatbot/sessions/:sessionId/', ({ params }) => {
+  http.get('*/chatbot/sessions/:sessionId', ({ params }) => {
     const sessionId = Number(params.sessionId)
     return HttpResponse.json({ ...mockSessionDetail, session_id: sessionId })
   }),

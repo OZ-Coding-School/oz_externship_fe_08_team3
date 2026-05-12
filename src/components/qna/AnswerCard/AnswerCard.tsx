@@ -18,6 +18,67 @@ interface AnswerCardProps {
   onAccept: (answerId: number) => void
 }
 
+function AnswerAuthor({ answer }: { answer: GetAnswerItem }) {
+  return (
+    <div className="flex min-w-0 items-center gap-5">
+      <UserAvatar
+        size="lg"
+        profileImageUrl={answer.author.profile_image_url}
+        nickname={answer.author.nickname}
+      />
+      <div className="min-w-0">
+        <p className="truncate text-base leading-normal font-bold tracking-[-0.03em] text-[#4D4D4D]">
+          {answer.author.nickname}
+        </p>
+        <div className="mt-1 flex items-center gap-2 text-xs leading-normal tracking-[-0.03em] text-[#9D9D9D]">
+          <span className="truncate">
+            {answer.author.course_name} &lt;{answer.author.cohort_name}&gt;
+          </span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function AnswerHeader({
+  answer,
+  canShowAcceptButton,
+  isAcceptPending,
+  confirmAcceptId,
+  onAccept,
+}: {
+  answer: GetAnswerItem
+  canShowAcceptButton: boolean
+  isAcceptPending: boolean
+  confirmAcceptId: number | null
+  onAccept: (answerId: number) => void
+}) {
+  return (
+    <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <AnswerAuthor answer={answer} />
+
+      <div className="flex shrink-0 items-center gap-3 self-end sm:self-auto">
+        {answer.is_adopted && (
+          <span className="text-primary text-xs font-bold tracking-[-0.03em]">
+            채택된 답변
+          </span>
+        )}
+        {canShowAcceptButton && (
+          <Button
+            size="sm"
+            type="button"
+            onClick={() => onAccept(answer.id)}
+            disabled={isAcceptPending}
+            loading={isAcceptPending && confirmAcceptId === answer.id}
+          >
+            채택하기
+          </Button>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export function AnswerCard({
   answer,
   isQuestionOwner,
@@ -33,53 +94,19 @@ export function AnswerCard({
     isQuestionOwner && !anyAdopted && answer.author.id !== userId
 
   return (
-    <article className="rounded-[20px] border border-[#CECECE] px-[38px] py-11">
-      {/* 카드 헤더: 프로필 (좌) / 채택 라벨·버튼 (우) */}
-      <div className="mb-10 flex items-center justify-between">
-        <div className="flex items-center gap-5">
-          <UserAvatar
-            size="lg"
-            profileImageUrl={answer.author.profile_image_url}
-            nickname={answer.author.nickname}
-          />
-          <div>
-            <p className="text-base leading-normal font-bold tracking-[-0.03em] text-[#4D4D4D]">
-              {answer.author.nickname}
-            </p>
-            <div className="mt-1 flex items-center gap-2 text-xs leading-normal tracking-[-0.03em] text-[#9D9D9D]">
-              <span>
-                {answer.author.course_name} &lt;{answer.author.cohort_name}&gt;
-              </span>
-            </div>
-          </div>
-        </div>
+    <article className="rounded-[20px] border border-[#CECECE] px-5 py-8 sm:px-[38px] sm:py-11">
+      <AnswerHeader
+        answer={answer}
+        canShowAcceptButton={canShowAcceptButton}
+        isAcceptPending={isAcceptPending}
+        confirmAcceptId={confirmAcceptId}
+        onAccept={onAccept}
+      />
 
-        <div className="flex items-center gap-3">
-          {answer.is_adopted && (
-            <span className="text-primary text-xs font-bold tracking-[-0.03em]">
-              채택된 답변
-            </span>
-          )}
-          {canShowAcceptButton && (
-            <Button
-              size="sm"
-              type="button"
-              onClick={() => onAccept(answer.id)}
-              disabled={isAcceptPending}
-              loading={isAcceptPending && confirmAcceptId === answer.id}
-            >
-              채택하기
-            </Button>
-          )}
-        </div>
-      </div>
-
-      {/* 답변 본문 */}
       <div className="text-base leading-normal tracking-[-0.03em] text-[#121212]">
         <MarkdownViewer content={answer.content} />
       </div>
 
-      {/* 하단: 시간 + 디바이더 */}
       <div className="flex justify-end border-b border-[#CECECE] pt-8 pb-5">
         <time
           dateTime={answer.updated_at}
@@ -89,7 +116,6 @@ export function AnswerCard({
         </time>
       </div>
 
-      {/* 댓글 입력 (먼저) → 댓글 목록 (나중) — Figma 순서 */}
       {isAuthenticated && (
         <CommentForm answerId={answer.id} questionId={numericQuestionId} />
       )}

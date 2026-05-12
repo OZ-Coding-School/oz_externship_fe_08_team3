@@ -10,7 +10,7 @@ export const sessionDetailQueryOptions = (sessionId: number) =>
     queryKey: [...SESSION_DETAIL_QUERY_KEY(sessionId)],
     queryFn: () =>
       api
-        .get<ChatSessionDetailResponse>(`/chatbot/sessions/${sessionId}/`)
+        .get<ChatSessionDetailResponse>(`/chatbot/sessions/${sessionId}`)
         .then((r) => r.data),
     staleTime: 0,
     enabled: sessionId > 0,

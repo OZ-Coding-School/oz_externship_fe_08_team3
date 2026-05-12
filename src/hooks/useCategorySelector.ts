@@ -93,14 +93,13 @@ export function useCategorySelector(initialCategoryId?: number) {
     setSmallCategoryId('')
   }
 
-  let resolvedCategoryId: number | undefined
-  if (hasSmall) {
-    resolvedCategoryId = Number(validSmallCategoryId)
-  } else if (hasMedium) {
-    resolvedCategoryId = Number(validMediumCategoryId)
-  } else if (largeCategoryId) {
-    resolvedCategoryId = Number(largeCategoryId)
-  }
+  const resolvedCategoryId = resolveCategoryId({
+    hasSmall,
+    hasMedium,
+    validSmallCategoryId,
+    validMediumCategoryId,
+    largeCategoryId,
+  })
 
   return {
     largeCategoryId,
@@ -119,4 +118,22 @@ export function useCategorySelector(initialCategoryId?: number) {
     handleReset,
     resolvedCategoryId,
   }
+}
+
+function resolveCategoryId({
+  hasSmall,
+  hasMedium,
+  validSmallCategoryId,
+  validMediumCategoryId,
+  largeCategoryId,
+}: {
+  hasSmall: boolean
+  hasMedium: boolean
+  validSmallCategoryId: string
+  validMediumCategoryId: string
+  largeCategoryId: string
+}) {
+  if (hasSmall) return Number(validSmallCategoryId)
+  if (hasMedium) return Number(validMediumCategoryId)
+  return largeCategoryId ? Number(largeCategoryId) : undefined
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useId, useRef } from 'react'
 import { ArrowUpDown } from 'lucide-react'
 import type { QuestionsListParams } from '@/features/qna/questions'
 
@@ -20,6 +20,7 @@ export function SortPopover({
   sort: SortOption
   onSelect: (opt: SortOption) => void
 }) {
+  const listboxId = useId()
   const [open, setOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
@@ -72,7 +73,7 @@ export function SortPopover({
   useEffect(() => {
     if (!open) return
     const buttons =
-      menuRef.current?.querySelectorAll<HTMLButtonElement>('[role="menuitem"]')
+      menuRef.current?.querySelectorAll<HTMLButtonElement>('[role="option"]')
     if (focusIndex >= 0) {
       buttons?.[focusIndex]?.focus()
     }
@@ -83,7 +84,8 @@ export function SortPopover({
       <button
         ref={triggerRef}
         type="button"
-        aria-haspopup="menu"
+        aria-haspopup="listbox"
+        aria-controls={open ? listboxId : undefined}
         aria-expanded={open}
         onClick={() => {
           setOpen((p) => {
@@ -97,20 +99,23 @@ export function SortPopover({
         className="flex items-center gap-1 text-base text-[#303030]"
       >
         {SORT_LABEL[sort]}
-        <ArrowUpDown className="h-5 w-5" />
+        <ArrowUpDown className="h-5 w-5" aria-hidden="true" />
       </button>
 
       {open && (
         <div
+          id={listboxId}
           ref={menuRef}
-          role="menu"
+          role="listbox"
+          aria-label="정렬 기준"
           className="absolute top-full right-0 z-50 mt-2 flex w-[138px] flex-col rounded-xl bg-white p-4 shadow-[0_0_16px_rgba(160,160,160,0.25)]"
         >
           {SORT_OPTIONS.map((opt) => (
             <button
               key={opt}
               type="button"
-              role="menuitem"
+              role="option"
+              aria-selected={sort === opt}
               tabIndex={-1}
               onClick={() => {
                 onSelect(opt)

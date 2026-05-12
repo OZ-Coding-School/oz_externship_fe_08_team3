@@ -6,7 +6,7 @@ import type {
 
 export const questionEditHandler = [
   http.put(
-    `${import.meta.env.VITE_API_BASE_URL}/qna/questions/:question_id/`,
+    `${import.meta.env.VITE_API_BASE_URL}/qna/questions/:question_id`,
     ({ params }) => {
       const response: QuestionUpdateResponse = {
         message: '질문이 성공적으로 수정되었습니다.',

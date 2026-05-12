@@ -58,10 +58,9 @@ export function SearchInput({
       {hasValue && (
         <button
           type="button"
-          tabIndex={-1}
           onClick={handleClear}
           aria-label="검색어 지우기"
-          className="shrink-0 cursor-pointer text-gray-400 transition-colors duration-150 hover:text-gray-600"
+          className="focus-visible:ring-primary shrink-0 cursor-pointer rounded-full text-gray-400 transition-colors duration-150 hover:text-gray-600 focus-visible:ring-2 focus-visible:outline-none"
         >
           <ClearIcon />
         </button>

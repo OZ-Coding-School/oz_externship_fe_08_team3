@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react'
+import { useImperativeHandle, useRef, useState, useEffect } from 'react'
 import MDEditor, {
   commands as mdCommands,
   type ICommand,
@@ -49,6 +49,11 @@ export interface MarkdownEditorProps {
   error?: string
   actions?: React.ReactNode
   wrapperClassName?: string
+  ref?: React.Ref<MarkdownEditorHandle>
+}
+
+export interface MarkdownEditorHandle {
+  focus: () => void
 }
 
 export function MarkdownEditor({
@@ -57,12 +62,23 @@ export function MarkdownEditor({
   error,
   actions,
   wrapperClassName,
+  ref,
 }: MarkdownEditorProps) {
   const [selectedFontLabel, setSelectedFontLabel] = useState('기본서체')
   const [selectedFontSize, setSelectedFontSize] = useState(16)
   const [isDragOver, setIsDragOver] = useState(false)
   const dragCounterRef = useRef(0)
   const editorWrapRef = useRef<HTMLDivElement>(null)
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      focus: () => {
+        editorWrapRef.current?.querySelector('textarea')?.focus()
+      },
+    }),
+    []
+  )
 
   const {
     valueRef,

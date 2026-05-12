@@ -1,64 +1,13 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useSSEAbort } from '@/features/chatbot/hooks/useSSEAbort'
+import { mapHistoryToMessages } from '@/features/chatbot/hooks/sseStream'
+import { sendStreamingMessage } from '@/features/chatbot/hooks/sendStreamingMessage'
 import { useGetQnaHistory, QNA_HISTORY_QUERY_KEY } from '../queries'
 import { SESSIONS_QUERY_KEY } from '@/features/chatbot/sessions/queries'
 import { useShallow } from 'zustand/react/shallow'
 import { useChatbotStore } from '@/stores/chatbotStore'
-import { useAuthStore } from '@/stores/authStore'
-import { ROUTES } from '@/constants/routes'
 import type { ChatMessage } from '@/features/chatbot/widgetTypes'
-import type { QnaSseChunk } from '../types'
-
-const ERROR_TEXT = '응답을 불러오지 못했습니다. 다시 시도해주세요.'
-const ERROR_BUFFER_TEXT = '응답이 너무 길어 중단되었습니다.'
-const SSE_MAX_BUFFER_SIZE = 100_000
-
-function mapHistoryToMessages(
-  results: {
-    role: 'user' | 'assistant'
-    message?: string
-    content?: string
-    id?: string | number
-  }[]
-): ChatMessage[] {
-  return results.map((item, index) => ({
-    id: item.id?.toString() ?? `qna-history-${index}`,
-    role: item.role,
-    message: item.message ?? item.content ?? '',
-  }))
-}
-
-// POST 401 시 기존 인증 처리 방식과 동일하게 로그인 리다이렉트
-function redirectToLogin() {
-  useAuthStore.getState().logout()
-  localStorage.removeItem('accessToken')
-  if (window.location.pathname !== ROUTES.AUTH.LOGIN) {
-    window.location.href = ROUTES.AUTH.LOGIN
-  }
-}
-
-/** SSE 이벤트 파싱 결과 */
-interface ParsedSseEvent {
-  done: boolean
-  chunk: QnaSseChunk | null
-}
-
-/** SSE 이벤트 문자열을 파싱 — [DONE]이면 done: true, 청크면 chunk 반환 */
-function parseSseEvent(event: string): ParsedSseEvent {
-  const line = event.split('\n').find((l) => l.startsWith('data:'))
-  if (!line) return { done: false, chunk: null }
-
-  const data = line.replace(/^data:\s*/, '').trim()
-  if (data === '[DONE]') return { done: true, chunk: null }
-
-  try {
-    return { done: false, chunk: JSON.parse(data) as QnaSseChunk }
-  } catch {
-    // malformed chunk 무시
-    return { done: false, chunk: null }
-  }
-}
 
 /** 1차 답변 해결 로직 — props 우선, 히스토리 첫 assistant fallback */
 function resolveInitialMessages(
@@ -83,21 +32,8 @@ function resolveInitialMessages(
   return display
 }
 
-export function useQnaChat({ questionId }: { questionId: number }) {
-  const [messages, setMessages] = useState<ChatMessage[]>([])
-  const [isStreaming, setIsStreaming] = useState(false)
-  const initializedQuestionIdRef = useRef<number | null>(null)
-
-  const { reset, abort } = useSSEAbort()
-  const queryClient = useQueryClient()
-
-  const {
-    currentPageQuestionId,
-    firstAnswerFromProps,
-    qnaLimitExceededIds,
-    markQnaLimitExceeded,
-    clearQnaLimitExceeded,
-  } = useChatbotStore(
+function useQnaChatStoreSelection() {
+  return useChatbotStore(
     useShallow((s) => ({
       currentPageQuestionId: s.currentPageQuestionId,
       firstAnswerFromProps: s.firstAnswerFromProps,
@@ -106,9 +42,19 @@ export function useQnaChat({ questionId }: { questionId: number }) {
       clearQnaLimitExceeded: s.clearQnaLimitExceeded,
     }))
   )
+}
 
-  const isReadOnly = questionId !== currentPageQuestionId
-  const isLimitExceeded = qnaLimitExceededIds.has(questionId)
+export function useQnaChat({ questionId }: { questionId: number }) {
+  const [localMessages, setLocalMessages] = useState<ChatMessage[] | null>(null)
+  const [isStreaming, setIsStreaming] = useState(false)
+
+  const { reset, abort } = useSSEAbort()
+  const queryClient = useQueryClient()
+
+  const store = useQnaChatStoreSelection()
+
+  const isReadOnly = questionId !== store.currentPageQuestionId
+  const isLimitExceeded = store.qnaLimitExceededIds.has(questionId)
 
   const {
     data: historyData,
@@ -117,185 +63,57 @@ export function useQnaChat({ questionId }: { questionId: number }) {
     refetch,
   } = useGetQnaHistory(questionId)
 
-  // 히스토리 초기화 (1차 답변 Hybrid 처리)
-  useEffect(() => {
-    if (!historyData || !questionId) return
-    if (initializedQuestionIdRef.current === questionId) return
-    initializedQuestionIdRef.current = questionId
-
+  const historyMessages = (() => {
+    if (!historyData || !questionId) return []
     const results = historyData.results ?? []
-    const mapped = mapHistoryToMessages(results)
-    setMessages(resolveInitialMessages(mapped, firstAnswerFromProps))
+    const mapped = mapHistoryToMessages(results, 'qna')
+    return resolveInitialMessages(mapped, store.firstAnswerFromProps)
+  })()
 
-    // 히스토리 비어있으면 제한 해제 (새 세션/TTL 만료)
+  useEffect(() => {
+    if (!historyData) return
+    const results = historyData?.results ?? []
     if (results.length === 0) {
-      clearQnaLimitExceeded(questionId)
+      store.clearQnaLimitExceeded(questionId)
     }
-  }, [questionId, historyData, firstAnswerFromProps, clearQnaLimitExceeded])
+  }, [questionId, historyData, store])
+
+  const messages = localMessages ?? historyMessages
 
   const sendMessage = async (text: string): Promise<void> => {
-    const trimmed = text.trim()
-    if (!trimmed) return
-    if (isStreaming || isReadOnly || isLimitExceeded || isLoading || isError)
-      return
-
-    // 사용자 메시지 낙관적 추가
-    const userMsg: ChatMessage = {
-      id: `qna-user-${crypto.randomUUID()}`,
-      role: 'user',
-      message: trimmed,
-    }
-
-    const assistantId = `qna-assistant-${crypto.randomUUID()}`
-    const assistantMsg: ChatMessage = {
-      id: assistantId,
-      role: 'assistant',
-      message: '',
-    }
-
-    setMessages((prev) => [...prev, userMsg, assistantMsg])
-    setIsStreaming(true)
-
-    let completed = false
-    let hasReceivedChunk = false
-    let bufferExceeded = false
-    let assistantText = ''
-
-    try {
-      const signal = reset()
-      const token = localStorage.getItem('accessToken')
-      const baseUrl = import.meta.env.VITE_API_BASE_URL ?? ''
-
-      const response = await fetch(
-        `${baseUrl}/qna/questions/${questionId}/chatbot`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-            Accept: 'text/event-stream',
-          },
-          body: JSON.stringify({ message: trimmed }),
-          signal,
-        }
-      )
-
-      // 401 처리
-      if (response.status === 401) {
-        redirectToLogin()
-        return
-      }
-
-      // 429 처리: 5회 초과
-      if (response.status === 429) {
-        setMessages((prev) => prev.filter((msg) => msg.id !== assistantId))
-        markQnaLimitExceeded(questionId)
-        setIsStreaming(false)
-        return
-      }
-
-      // 기타 HTTP 에러
-      if (!response.ok) throw new Error(`HTTP ${response.status}`)
-
-      const reader = response.body?.getReader()
-      if (!reader) throw new Error('ReadableStream 없음')
-
-      const decoder = new TextDecoder()
-      let buffer = ''
-
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-
-        buffer += decoder.decode(value, { stream: true })
-        const events = buffer.split('\n\n')
-        buffer = events.pop() ?? ''
-
-        for (const event of events) {
-          const parsed = parseSseEvent(event)
-
-          if (parsed.done) {
-            completed = true
-            break
-          }
-          if (!parsed.chunk) continue
-
-          hasReceivedChunk = true
-          assistantText += parsed.chunk.message
-
-          // 버퍼 초과 체크
-          if (assistantText.length > SSE_MAX_BUFFER_SIZE) {
-            bufferExceeded = true
-            abort()
-            break
-          }
-
-          const chunkMessage = parsed.chunk.message
-          setMessages((prev) =>
-            prev.map((msg) =>
-              msg.id === assistantId
-                ? { ...msg, message: msg.message + chunkMessage }
-                : msg
-            )
-          )
-        }
-
-        if (completed || bufferExceeded) break
-      }
-
-      // 버퍼 초과로 중단된 경우: 부분 응답 유지 + 에러 메시지
-      if (bufferExceeded) {
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: `qna-error-${crypto.randomUUID()}`,
-            role: 'assistant',
-            message: ERROR_BUFFER_TEXT,
-          },
-        ])
-        return
-      }
-
-      // reader가 done이고 [DONE]을 못 받았더라도 정상 종료로 간주
-      if (!completed && hasReceivedChunk) {
-        completed = true
-      }
-    } catch (error) {
-      if (error instanceof DOMException && error.name === 'AbortError') return
-
-      // 에러 처리: 부분 응답 유지 vs 빈 assistant 교체
-      if (hasReceivedChunk) {
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: `qna-error-${Date.now()}`,
-            role: 'assistant',
-            message: ERROR_TEXT,
-          },
-        ])
-      } else {
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg.id === assistantId ? { ...msg, message: ERROR_TEXT } : msg
-          )
-        )
-      }
-    } finally {
-      setIsStreaming(false)
-      if (completed) {
-        queryClient.invalidateQueries({
-          queryKey: [...QNA_HISTORY_QUERY_KEY(questionId)],
+    const baseUrl = import.meta.env.VITE_API_BASE_URL ?? ''
+    await sendStreamingMessage({
+      text,
+      endpoint: `${baseUrl}/qna/questions/${questionId}/chatbot`,
+      idPrefix: 'qna',
+      isBlocked:
+        isStreaming || isReadOnly || isLimitExceeded || isLoading || isError,
+      reset,
+      abort,
+      setMessages: (action) => {
+        setLocalMessages((prev) => {
+          const base = prev ?? historyMessages
+          return typeof action === 'function' ? action(base) : action
         })
-        queryClient.invalidateQueries({
-          queryKey: [...SESSIONS_QUERY_KEY],
+      },
+      setIsStreaming,
+      queryClient,
+      invalidateQueryKeys: [
+        [...QNA_HISTORY_QUERY_KEY(questionId)],
+        [...SESSIONS_QUERY_KEY],
+      ],
+      onRateLimit: (assistantId) => {
+        setLocalMessages((prev) => {
+          const base = prev ?? historyMessages
+          return base.filter((msg) => msg.id !== assistantId)
         })
-      }
-    }
+        store.markQnaLimitExceeded(questionId)
+      },
+    })
   }
 
-  // 다시시도 시 ref 초기화하여 히스토리 재반영
   const handleRetry = async () => {
-    initializedQuestionIdRef.current = null
+    setLocalMessages(null)
     await refetch()
   }
 

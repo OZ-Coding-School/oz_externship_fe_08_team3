@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useImperativeHandle } from 'react'
 import { Button } from '@/components/common/Button'
 import { MarkdownEditor } from '@/components/qna/MarkdownEditor'
+import type { MarkdownEditorHandle } from '@/components/qna/MarkdownEditor'
 
 export interface AnswerFormProps {
   onSubmit: (content: string, imageUrls: string[]) => void
@@ -23,6 +24,84 @@ function getDraftKey(answerId: number) {
   return `answer-draft-${answerId}`
 }
 
+function getPendingDraft(
+  isEdit: boolean,
+  draftKey: string | null,
+  initialContent: string
+) {
+  if (!isEdit || !draftKey) return null
+  const saved = localStorage.getItem(draftKey)
+  return saved != null && saved !== initialContent ? saved : null
+}
+
+function useDraftAutosave({
+  content,
+  draftKey,
+  isDirty,
+  isEdit,
+}: {
+  content: string
+  draftKey: string | null
+  isDirty: boolean
+  isEdit: boolean
+}) {
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    if (!isEdit || !draftKey || !isDirty) return
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      localStorage.setItem(draftKey, content)
+    }, DEBOUNCE_DELAY_MS)
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    }
+  }, [content, draftKey, isDirty, isEdit])
+}
+
+function useBeforeUnloadDirty(isDirty: boolean, content: string) {
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirty && content.trim()) {
+        e.preventDefault()
+      }
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [content, isDirty])
+}
+
+function RestoreDraftPrompt({
+  isLoading,
+  onReject,
+  onAccept,
+}: {
+  isLoading: boolean
+  onReject: () => void
+  onAccept: () => void
+}) {
+  return (
+    <div className="bg-bg-subtle border-border-base mx-8 mt-4 flex items-center justify-between rounded-md border px-4 py-3">
+      <p className="text-text-body text-sm">
+        이전에 작성 중이던 내용이 있습니다. 복원할까요?
+      </p>
+      <div className="flex gap-2">
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={onReject}
+          disabled={isLoading}
+        >
+          버리기
+        </Button>
+        <Button size="sm" onClick={onAccept} disabled={isLoading}>
+          복원하기
+        </Button>
+      </div>
+    </div>
+  )
+}
+
 // React 19: ref를 일반 prop으로 받음 (forwardRef 불필요)
 export function AnswerForm({
   onSubmit,
@@ -36,43 +115,20 @@ export function AnswerForm({
   const isEdit = mode === 'edit'
   const draftKey = isEdit && answerId != null ? getDraftKey(answerId) : null
 
-  const [showRestorePrompt, setShowRestorePrompt] = useState(() => {
-    if (!isEdit || !draftKey) return false
-    const saved = localStorage.getItem(draftKey)
-    return saved != null && saved !== initialContent
-  })
   const [pendingDraft, setPendingDraft] = useState<string | null>(() => {
-    if (!isEdit || !draftKey) return null
-    const saved = localStorage.getItem(draftKey)
-    return saved != null && saved !== initialContent ? saved : null
+    return getPendingDraft(isEdit, draftKey, initialContent)
   })
+  const [showRestorePrompt, setShowRestorePrompt] = useState(
+    pendingDraft != null
+  )
   const [content, setContent] = useState(initialContent)
   const [imgUrls] = useState(initialImgUrls)
   const [error, setError] = useState(false)
+  const editorRef = useRef<MarkdownEditorHandle>(null)
+  const isDirty = content !== initialContent
 
-  // 디바운스 자동 저장 (타이머 — 외부 구독)
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  useEffect(() => {
-    if (!isEdit || !draftKey) return
-    if (debounceRef.current) clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(() => {
-      localStorage.setItem(draftKey, content)
-    }, DEBOUNCE_DELAY_MS)
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current)
-    }
-  }, [content, isEdit, draftKey])
-
-  // 이탈 방지 (브라우저 이벤트 구독)
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (content.trim()) {
-        e.preventDefault()
-      }
-    }
-    window.addEventListener('beforeunload', handleBeforeUnload)
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
-  }, [content])
+  useDraftAutosave({ content, draftKey, isDirty, isEdit })
+  useBeforeUnloadDirty(isDirty, content)
 
   const handleSubmit = () => {
     if (!content.trim()) {
@@ -100,44 +156,23 @@ export function AnswerForm({
     setPendingDraft(null)
   }
 
-  useImperativeHandle(
-    ref,
-    () => ({
-      focusEditor: () => {},
-      submit: handleSubmit,
-    }),
-    [handleSubmit]
-  )
+  useImperativeHandle(ref, () => ({
+    focusEditor: () => editorRef.current?.focus(),
+    submit: () => handleSubmit(),
+  }))
 
   return (
     <>
-      {/* 임시 저장 복원 안내 */}
       {showRestorePrompt && (
-        <div className="bg-bg-subtle border-border-base mx-8 mt-4 flex items-center justify-between rounded-md border px-4 py-3">
-          <p className="text-text-body text-sm">
-            이전에 작성 중이던 내용이 있습니다. 복원할까요?
-          </p>
-          <div className="flex gap-2">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={handleRestoreReject}
-              disabled={isLoading}
-            >
-              버리기
-            </Button>
-            <Button
-              size="sm"
-              onClick={handleRestoreAccept}
-              disabled={isLoading}
-            >
-              복원하기
-            </Button>
-          </div>
-        </div>
+        <RestoreDraftPrompt
+          isLoading={isLoading}
+          onReject={handleRestoreReject}
+          onAccept={handleRestoreAccept}
+        />
       )}
 
       <MarkdownEditor
+        ref={editorRef}
         value={content}
         onChange={handleContentChange}
         error={error ? '답변 내용을 입력해주세요.' : undefined}

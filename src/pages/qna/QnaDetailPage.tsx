@@ -70,7 +70,6 @@ export function QnaDetailPage() {
     confirmAcceptId,
   })
 
-  // React Compiler가 자동 메모이제이션 처리
   const sortedAnswers = answers
     ? [...answers].sort((a, b) => {
         const byAdopted = Number(b.is_adopted) - Number(a.is_adopted)
@@ -108,12 +107,11 @@ export function QnaDetailPage() {
   }
 
   return (
-    <div className="mx-auto max-w-[944px] pt-[108px] pb-[200px]">
-      {/* 브레드크럼 -- 대분류 > 중분류 > 소분류 */}
+    <div className="mx-auto w-full max-w-[944px] px-4 pt-16 pb-24 sm:pt-[108px] sm:pb-[200px]">
       {questionDetail && (
         <nav
           aria-label="breadcrumb"
-          className="text-primary mb-10 flex items-center text-xl leading-normal font-bold tracking-[-0.03em]"
+          className="text-primary mb-10 flex flex-wrap items-center text-base leading-normal font-bold tracking-[-0.03em] sm:text-xl"
         >
           {questionDetail.category.names.map((name, i) => (
             <Fragment key={i}>
@@ -126,7 +124,6 @@ export function QnaDetailPage() {
         </nav>
       )}
 
-      {/* 질문 상세 */}
       <QuestionDetail
         questionDetail={questionDetail}
         isLoading={isQuestionLoading}
@@ -138,12 +135,11 @@ export function QnaDetailPage() {
         showToast={showToast}
       />
 
-      {/* 답변 유도 카드 / 답변 작성/수정 폼 */}
       {canAnswer &&
         !isAnswersLoading &&
         !isAnswersError &&
         (showForm ? (
-          <div className="mt-[100px] overflow-hidden rounded-[20px] border border-[#CECECE] bg-white">
+          <div className="mt-16 overflow-hidden rounded-[20px] border border-[#CECECE] bg-white sm:mt-[100px]">
             <AnswerPromptCard
               nickname={user?.nickname ?? ''}
               profileImageUrl={user?.profileImage}
@@ -182,7 +178,6 @@ export function QnaDetailPage() {
           />
         ))}
 
-      {/* 답변 목록 */}
       <AnswerSection
         sortedAnswers={sortedAnswers}
         isLoading={isAnswersLoading}
@@ -198,7 +193,6 @@ export function QnaDetailPage() {
         onAccept={setConfirmAcceptId}
       />
 
-      {/* 채택 확인 모달 */}
       <ConfirmModal
         isOpen={confirmAcceptId !== null}
         onClose={() => setConfirmAcceptId(null)}
@@ -207,7 +201,6 @@ export function QnaDetailPage() {
         onConfirm={handleConfirmAccept}
       />
 
-      {/* 토스트 알림 */}
       {toast.visible && (
         <Toast
           message={toast.message}

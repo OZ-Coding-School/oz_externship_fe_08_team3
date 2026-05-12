@@ -8,7 +8,7 @@ export function useDeleteQuestion() {
   return useMutation({
     mutationFn: (questionId: number) =>
       api
-        .delete<QuestionDeleteResponse>(`/qna/questions/${questionId}/`)
+        .delete<QuestionDeleteResponse>(`/qna/questions/${questionId}`)
         .then((res) => res.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['qna', 'questions'] })

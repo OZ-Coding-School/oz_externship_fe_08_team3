@@ -2,22 +2,22 @@
 
 ## Headline
 
-- 총 파일: **206**
-- 총 LOC: **11,432**
-- 총 `useState`: **60**
-- 총 `useEffect`: **26** ⚠️ 목표: 절반 이하
+- 총 파일: **210**
+- 총 LOC: **11,668**
+- 총 `useState`: **57**
+- 총 `useEffect`: **25** ⚠️ 목표: 절반 이하
 - 총 수동 메모이제이션 (useMemo/useCallback/React.memo): **0** ⚠️ 목표: < 10
 - 총 forwardRef: **2** ⚠️ 목표: 0
-- React 19 신규 훅 사용 (useActionState/useOptimistic/useId): **5**
+- React 19 신규 훅 사용 (useActionState/useOptimistic/useId): **6**
 
 ## By Domain
 
 | 도메인  | 파일 | LOC  | useEffect | 수동 memo | 평균 점수 |
 | ------- | ---- | ---- | --------- | --------- | --------- |
-| common  | 56   | 2606 | 8         | 0         | 5.89      |
-| qna     | 88   | 5859 | 13        | 0         | 8.56      |
-| chatbot | 43   | 1917 | 5         | 0         | 5.39      |
-| shared  | 15   | 578  | 0         | 0         | 4.85      |
+| common  | 56   | 2691 | 8         | 0         | 6.04      |
+| qna     | 90   | 5993 | 13        | 0         | 8.41      |
+| chatbot | 45   | 1917 | 4         | 0         | 5.04      |
+| shared  | 15   | 595  | 0         | 0         | 4.97      |
 | other   | 4    | 472  | 0         | 0         | 18.55     |
 
 ## Top 20 Refactor Priorities
@@ -25,25 +25,25 @@
 | #   | 파일                                                               | LOC | useState | useEffect | memos | fwdRef | 점수 |
 | --- | ------------------------------------------------------------------ | --- | -------- | --------- | ----- | ------ | ---- |
 | 1   | `src/pages/ComponentShowcase.tsx`                                  | 413 | 9        | 0         | 0     | 0      | 68.3 |
-| 2   | `src/components/qna/MarkdownEditor/MarkdownEditor.tsx`             | 441 | 3        | 1         | 0     | 0      | 58.1 |
+| 2   | `src/components/qna/MarkdownEditor/MarkdownEditor.tsx`             | 457 | 3        | 1         | 0     | 0      | 59.7 |
 | 3   | `src/components/qna/MarkdownEditor/markdownEditorCommands.ts`      | 554 | 0        | 0         | 0     | 0      | 55.4 |
-| 4   | `src/pages/qna/QnaEditPage.tsx`                                    | 304 | 6        | 1         | 0     | 0      | 53.4 |
-| 5   | `src/components/qna/MarkdownEditor/markdownEditorUtils.ts`         | 528 | 0        | 0         | 0     | 0      | 52.8 |
-| 6   | `src/pages/qna/QnaListPage.tsx`                                    | 278 | 2        | 3         | 0     | 0      | 48.8 |
+| 4   | `src/components/qna/MarkdownEditor/markdownEditorUtils.ts`         | 528 | 0        | 0         | 0     | 0      | 52.8 |
+| 5   | `src/pages/qna/QnaListPage.tsx`                                    | 268 | 2        | 3         | 0     | 0      | 47.8 |
+| 6   | `src/components/qna/AnswerForm/AnswerForm.tsx`                     | 189 | 5        | 2         | 0     | 0      | 43.9 |
 | 7   | `src/components/common/Dropdown/Dropdown.tsx`                      | 242 | 3        | 2         | 0     | 0      | 43.2 |
-| 8   | `src/features/chatbot/qna/hooks/useQnaChat.ts`                     | 314 | 2        | 1         | 0     | 0      | 42.4 |
-| 9   | `src/components/qna/AnswerForm/AnswerForm.tsx`                     | 149 | 5        | 2         | 0     | 0      | 39.9 |
-| 10  | `src/features/qna/questions/handler.ts`                            | 387 | 0        | 0         | 0     | 0      | 38.7 |
-| 11  | `src/components/qna/QuestionForm/QuestionForm.tsx`                 | 184 | 4        | 1         | 0     | 0      | 35.4 |
-| 12  | `src/features/chatbot/cs/hooks/useCsChat.ts`                       | 242 | 2        | 1         | 0     | 0      | 35.2 |
-| 13  | `src/components/qna/SortPopover/SortPopover.tsx`                   | 143 | 2        | 2         | 0     | 0      | 30.3 |
-| 14  | `src/components/layout/Header/ProfileDropdown.tsx`                 | 149 | 0        | 3         | 0     | 0      | 29.9 |
-| 15  | `src/pages/qna/QnaDetailPage.tsx`                                  | 221 | 2        | 0         | 0     | 0      | 28.1 |
-| 16  | `src/components/common/Modal/Modal.tsx`                            | 131 | 0        | 2         | 0     | 0      | 23.1 |
-| 17  | `src/components/qna/MarkdownEditor/useImageUpload.ts`              | 104 | 2        | 1         | 0     | 0      | 21.4 |
-| 18  | `src/hooks/useCategorySelector.ts`                                 | 123 | 3        | 0         | 0     | 0      | 21.3 |
-| 19  | `src/components/qna/AiFirstAnswerSection/AiFirstAnswerSection.tsx` | 146 | 2        | 0         | 0     | 0      | 20.6 |
-| 20  | `src/components/qna/MarkdownEditor/useMarkdownHistory.ts`          | 86  | 2        | 1         | 0     | 0      | 19.6 |
+| 8   | `src/pages/qna/QnaEditPage.tsx`                                    | 263 | 3        | 1         | 0     | 0      | 40.3 |
+| 9   | `src/features/qna/questions/handler.ts`                            | 387 | 0        | 0         | 0     | 0      | 38.7 |
+| 10  | `src/components/qna/QuestionForm/QuestionForm.tsx`                 | 184 | 4        | 1         | 0     | 0      | 35.4 |
+| 11  | `src/components/qna/SortPopover/SortPopover.tsx`                   | 148 | 2        | 2         | 0     | 0      | 30.8 |
+| 12  | `src/components/layout/Header/ProfileDropdown.tsx`                 | 149 | 0        | 3         | 0     | 0      | 29.9 |
+| 13  | `src/pages/qna/QnaDetailPage.tsx`                                  | 214 | 2        | 0         | 0     | 0      | 27.4 |
+| 14  | `src/features/chatbot/qna/hooks/useQnaChat.ts`                     | 131 | 2        | 1         | 0     | 0      | 24.1 |
+| 15  | `src/components/common/Modal/Modal.tsx`                            | 131 | 0        | 2         | 0     | 0      | 23.1 |
+| 16  | `src/hooks/useCategorySelector.ts`                                 | 140 | 3        | 0         | 0     | 0      | 23   |
+| 17  | `src/components/layout/Header/Header.tsx`                          | 191 | 1        | 0         | 0     | 0      | 22.1 |
+| 18  | `src/components/qna/MarkdownEditor/useImageUpload.ts`              | 104 | 2        | 1         | 0     | 0      | 21.4 |
+| 19  | `src/components/qna/QuestionDetail/QuestionDetail.tsx`             | 213 | 0        | 0         | 0     | 0      | 21.3 |
+| 20  | `src/components/qna/AiFirstAnswerSection/AiFirstAnswerSection.tsx` | 146 | 2        | 0         | 0     | 0      | 20.6 |
 
 ## Notes
 

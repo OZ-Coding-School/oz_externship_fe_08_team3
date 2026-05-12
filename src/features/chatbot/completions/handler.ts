@@ -1,7 +1,7 @@
 import { http, HttpResponse } from 'msw'
 
 export const completionsHandlers = [
-  http.post('*/chatbot/sessions/:sessionId/completions/', () => {
+  http.post('*/chatbot/sessions/:sessionId/completions', () => {
     // SSE 스트리밍 mock — cs/handler.ts에 실제 SSE mock이 구현되어 있음
     const stream = new ReadableStream({
       start(controller) {
