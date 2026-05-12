@@ -1,41 +1,41 @@
 {
-  "generatedAt": "2026-05-12T06:13:07.374Z",
+  "generatedAt": "2026-05-12T08:58:45.756Z",
   "summary": {
-    "totalFiles": 201,
-    "totalLOC": 11188,
-    "totalUseState": 60,
-    "totalUseEffect": 27,
-    "totalManualMemo": 1,
-    "totalForwardRef": 5,
-    "totalReact19Hooks": 5,
+    "totalFiles": 210,
+    "totalLOC": 11670,
+    "totalUseState": 57,
+    "totalUseEffect": 25,
+    "totalManualMemo": 0,
+    "totalForwardRef": 2,
+    "totalReact19Hooks": 6,
     "byDomain": {
       "common": {
         "files": 56,
-        "loc": 2643,
+        "loc": 2691,
         "useEffect": 8,
-        "manualMemo": 1,
-        "avgScore": 6.2
+        "manualMemo": 0,
+        "avgScore": 6.04
       },
       "qna": {
-        "files": 83,
-        "loc": 5735,
-        "useEffect": 14,
+        "files": 90,
+        "loc": 5986,
+        "useEffect": 13,
         "manualMemo": 0,
-        "avgScore": 8.98
+        "avgScore": 8.41
       },
       "chatbot": {
-        "files": 43,
-        "loc": 1765,
-        "useEffect": 5,
+        "files": 45,
+        "loc": 1926,
+        "useEffect": 4,
         "manualMemo": 0,
-        "avgScore": 5.03
+        "avgScore": 5.06
       },
       "shared": {
         "files": 15,
-        "loc": 573,
+        "loc": 595,
         "useEffect": 0,
         "manualMemo": 0,
-        "avgScore": 4.82
+        "avgScore": 4.97
       },
       "other": {
         "files": 4,
@@ -47,27 +47,6 @@
     }
   },
   "rows": [
-    {
-      "path": "src/pages/qna/QnaListPage.tsx",
-      "loc": 478,
-      "useState": 5,
-      "useEffect": 6,
-      "useMemo": 0,
-      "useCallback": 0,
-      "reactMemo": 0,
-      "forwardRef": 0,
-      "useId": 0,
-      "useSyncExternalStore": 0,
-      "useActionState": 0,
-      "useOptimistic": 0,
-      "score": 92.8,
-      "flags": {
-        "usesForwardRef": false,
-        "usesReactMemo": false,
-        "hasManualMemo": false,
-        "hasEffect": true
-      }
-    },
     {
       "path": "src/pages/ComponentShowcase.tsx",
       "loc": 413,
@@ -91,7 +70,7 @@
     },
     {
       "path": "src/components/qna/MarkdownEditor/MarkdownEditor.tsx",
-      "loc": 441,
+      "loc": 457,
       "useState": 3,
       "useEffect": 1,
       "useMemo": 0,
@@ -102,7 +81,7 @@
       "useSyncExternalStore": 0,
       "useActionState": 0,
       "useOptimistic": 0,
-      "score": 58.1,
+      "score": 59.7,
       "flags": {
         "usesForwardRef": false,
         "usesReactMemo": false,
@@ -132,27 +111,6 @@
       }
     },
     {
-      "path": "src/pages/qna/QnaEditPage.tsx",
-      "loc": 308,
-      "useState": 6,
-      "useEffect": 1,
-      "useMemo": 0,
-      "useCallback": 0,
-      "reactMemo": 0,
-      "forwardRef": 0,
-      "useId": 0,
-      "useSyncExternalStore": 0,
-      "useActionState": 0,
-      "useOptimistic": 0,
-      "score": 53.8,
-      "flags": {
-        "usesForwardRef": false,
-        "usesReactMemo": false,
-        "hasManualMemo": false,
-        "hasEffect": true
-      }
-    },
-    {
       "path": "src/components/qna/MarkdownEditor/markdownEditorUtils.ts",
       "loc": 528,
       "useState": 0,
@@ -171,6 +129,48 @@
         "usesReactMemo": false,
         "hasManualMemo": false,
         "hasEffect": false
+      }
+    },
+    {
+      "path": "src/pages/qna/QnaListPage.tsx",
+      "loc": 266,
+      "useState": 2,
+      "useEffect": 3,
+      "useMemo": 0,
+      "useCallback": 0,
+      "reactMemo": 0,
+      "forwardRef": 0,
+      "useId": 0,
+      "useSyncExternalStore": 0,
+      "useActionState": 0,
+      "useOptimistic": 0,
+      "score": 47.6,
+      "flags": {
+        "usesForwardRef": false,
+        "usesReactMemo": false,
+        "hasManualMemo": false,
+        "hasEffect": true
+      }
+    },
+    {
+      "path": "src/components/qna/AnswerForm/AnswerForm.tsx",
+      "loc": 184,
+      "useState": 5,
+      "useEffect": 2,
+      "useMemo": 0,
+      "useCallback": 0,
+      "reactMemo": 0,
+      "forwardRef": 0,
+      "useId": 0,
+      "useSyncExternalStore": 0,
+      "useActionState": 0,
+      "useOptimistic": 0,
+      "score": 43.4,
+      "flags": {
+        "usesForwardRef": false,
+        "usesReactMemo": false,
+        "hasManualMemo": false,
+        "hasEffect": true
       }
     },
     {
@@ -195,9 +195,9 @@
       }
     },
     {
-      "path": "src/features/chatbot/qna/hooks/useQnaChat.ts",
-      "loc": 315,
-      "useState": 2,
+      "path": "src/pages/qna/QnaEditPage.tsx",
+      "loc": 263,
+      "useState": 3,
       "useEffect": 1,
       "useMemo": 0,
       "useCallback": 0,
@@ -207,28 +207,7 @@
       "useSyncExternalStore": 0,
       "useActionState": 0,
       "useOptimistic": 0,
-      "score": 42.5,
-      "flags": {
-        "usesForwardRef": false,
-        "usesReactMemo": false,
-        "hasManualMemo": false,
-        "hasEffect": true
-      }
-    },
-    {
-      "path": "src/components/qna/AnswerForm/AnswerForm.tsx",
-      "loc": 150,
-      "useState": 5,
-      "useEffect": 2,
-      "useMemo": 0,
-      "useCallback": 0,
-      "reactMemo": 0,
-      "forwardRef": 0,
-      "useId": 0,
-      "useSyncExternalStore": 0,
-      "useActionState": 0,
-      "useOptimistic": 0,
-      "score": 40,
+      "score": 40.3,
       "flags": {
         "usesForwardRef": false,
         "usesReactMemo": false,
@@ -258,27 +237,6 @@
       }
     },
     {
-      "path": "src/pages/qna/QnaDetailPage.tsx",
-      "loc": 313,
-      "useState": 2,
-      "useEffect": 0,
-      "useMemo": 0,
-      "useCallback": 0,
-      "reactMemo": 0,
-      "forwardRef": 0,
-      "useId": 0,
-      "useSyncExternalStore": 0,
-      "useActionState": 0,
-      "useOptimistic": 0,
-      "score": 37.3,
-      "flags": {
-        "usesForwardRef": false,
-        "usesReactMemo": false,
-        "hasManualMemo": false,
-        "hasEffect": false
-      }
-    },
-    {
       "path": "src/components/qna/QuestionForm/QuestionForm.tsx",
       "loc": 184,
       "useState": 4,
@@ -300,19 +258,19 @@
       }
     },
     {
-      "path": "src/features/chatbot/cs/hooks/useCsChat.ts",
-      "loc": 242,
+      "path": "src/components/qna/SortPopover/SortPopover.tsx",
+      "loc": 148,
       "useState": 2,
-      "useEffect": 1,
+      "useEffect": 2,
       "useMemo": 0,
       "useCallback": 0,
       "reactMemo": 0,
       "forwardRef": 0,
-      "useId": 0,
+      "useId": 1,
       "useSyncExternalStore": 0,
       "useActionState": 0,
       "useOptimistic": 0,
-      "score": 35.2,
+      "score": 30.8,
       "flags": {
         "usesForwardRef": false,
         "usesReactMemo": false,
@@ -342,8 +300,50 @@
       }
     },
     {
+      "path": "src/pages/qna/QnaDetailPage.tsx",
+      "loc": 214,
+      "useState": 2,
+      "useEffect": 0,
+      "useMemo": 0,
+      "useCallback": 0,
+      "reactMemo": 0,
+      "forwardRef": 0,
+      "useId": 0,
+      "useSyncExternalStore": 0,
+      "useActionState": 0,
+      "useOptimistic": 0,
+      "score": 27.4,
+      "flags": {
+        "usesForwardRef": false,
+        "usesReactMemo": false,
+        "hasManualMemo": false,
+        "hasEffect": false
+      }
+    },
+    {
+      "path": "src/features/chatbot/qna/hooks/useQnaChat.ts",
+      "loc": 132,
+      "useState": 2,
+      "useEffect": 1,
+      "useMemo": 0,
+      "useCallback": 0,
+      "reactMemo": 0,
+      "forwardRef": 0,
+      "useId": 0,
+      "useSyncExternalStore": 0,
+      "useActionState": 0,
+      "useOptimistic": 0,
+      "score": 24.2,
+      "flags": {
+        "usesForwardRef": false,
+        "usesReactMemo": false,
+        "hasManualMemo": false,
+        "hasEffect": true
+      }
+    },
+    {
       "path": "src/components/common/Modal/Modal.tsx",
-      "loc": 133,
+      "loc": 131,
       "useState": 0,
       "useEffect": 2,
       "useMemo": 0,
@@ -354,12 +354,54 @@
       "useSyncExternalStore": 0,
       "useActionState": 0,
       "useOptimistic": 0,
-      "score": 23.3,
+      "score": 23.1,
       "flags": {
         "usesForwardRef": false,
         "usesReactMemo": false,
         "hasManualMemo": false,
         "hasEffect": true
+      }
+    },
+    {
+      "path": "src/hooks/useCategorySelector.ts",
+      "loc": 140,
+      "useState": 3,
+      "useEffect": 0,
+      "useMemo": 0,
+      "useCallback": 0,
+      "reactMemo": 0,
+      "forwardRef": 0,
+      "useId": 0,
+      "useSyncExternalStore": 0,
+      "useActionState": 0,
+      "useOptimistic": 0,
+      "score": 23,
+      "flags": {
+        "usesForwardRef": false,
+        "usesReactMemo": false,
+        "hasManualMemo": false,
+        "hasEffect": false
+      }
+    },
+    {
+      "path": "src/components/layout/Header/Header.tsx",
+      "loc": 191,
+      "useState": 1,
+      "useEffect": 0,
+      "useMemo": 0,
+      "useCallback": 0,
+      "reactMemo": 0,
+      "forwardRef": 0,
+      "useId": 0,
+      "useSyncExternalStore": 0,
+      "useActionState": 0,
+      "useOptimistic": 0,
+      "score": 22.1,
+      "flags": {
+        "usesForwardRef": false,
+        "usesReactMemo": false,
+        "hasManualMemo": false,
+        "hasEffect": false
       }
     },
     {
@@ -384,9 +426,9 @@
       }
     },
     {
-      "path": "src/hooks/useCategorySelector.ts",
-      "loc": 118,
-      "useState": 3,
+      "path": "src/components/qna/QuestionDetail/QuestionDetail.tsx",
+      "loc": 213,
+      "useState": 0,
       "useEffect": 0,
       "useMemo": 0,
       "useCallback": 0,
@@ -396,7 +438,7 @@
       "useSyncExternalStore": 0,
       "useActionState": 0,
       "useOptimistic": 0,
-      "score": 20.8,
+      "score": 21.3,
       "flags": {
         "usesForwardRef": false,
         "usesReactMemo": false,
@@ -447,8 +489,8 @@
       }
     },
     {
-      "path": "src/components/qna/QuestionDetail/QuestionDetail.tsx",
-      "loc": 178,
+      "path": "src/features/chatbot/hooks/sseStream.ts",
+      "loc": 190,
       "useState": 0,
       "useEffect": 0,
       "useMemo": 0,
@@ -459,7 +501,7 @@
       "useSyncExternalStore": 0,
       "useActionState": 0,
       "useOptimistic": 0,
-      "score": 17.8,
+      "score": 19,
       "flags": {
         "usesForwardRef": false,
         "usesReactMemo": false,
@@ -492,6 +534,27 @@
       "path": "src/components/qna/CommentList/CommentList.tsx",
       "loc": 114,
       "useState": 2,
+      "useEffect": 0,
+      "useMemo": 0,
+      "useCallback": 0,
+      "reactMemo": 0,
+      "forwardRef": 0,
+      "useId": 0,
+      "useSyncExternalStore": 0,
+      "useActionState": 0,
+      "useOptimistic": 0,
+      "score": 17.4,
+      "flags": {
+        "usesForwardRef": false,
+        "usesReactMemo": false,
+        "hasManualMemo": false,
+        "hasEffect": false
+      }
+    },
+    {
+      "path": "src/features/chatbot/hooks/sendStreamingMessage.ts",
+      "loc": 174,
+      "useState": 0,
       "useEffect": 0,
       "useMemo": 0,
       "useCallback": 0,
@@ -552,9 +615,9 @@
       }
     },
     {
-      "path": "src/components/layout/Header/Header.tsx",
-      "loc": 128,
-      "useState": 1,
+      "path": "src/pages/qna/hooks/useAnswerActions.ts",
+      "loc": 150,
+      "useState": 0,
       "useEffect": 0,
       "useMemo": 0,
       "useCallback": 0,
@@ -564,72 +627,9 @@
       "useSyncExternalStore": 0,
       "useActionState": 0,
       "useOptimistic": 0,
-      "score": 15.8,
+      "score": 15,
       "flags": {
         "usesForwardRef": false,
-        "usesReactMemo": false,
-        "hasManualMemo": false,
-        "hasEffect": false
-      }
-    },
-    {
-      "path": "src/components/common/Toast/Toast.tsx",
-      "loc": 86,
-      "useState": 0,
-      "useEffect": 1,
-      "useMemo": 0,
-      "useCallback": 1,
-      "reactMemo": 0,
-      "forwardRef": 0,
-      "useId": 0,
-      "useSyncExternalStore": 0,
-      "useActionState": 0,
-      "useOptimistic": 0,
-      "score": 15.6,
-      "flags": {
-        "usesForwardRef": false,
-        "usesReactMemo": false,
-        "hasManualMemo": true,
-        "hasEffect": true
-      }
-    },
-    {
-      "path": "src/components/common/Input/Input.tsx",
-      "loc": 109,
-      "useState": 0,
-      "useEffect": 0,
-      "useMemo": 0,
-      "useCallback": 0,
-      "reactMemo": 0,
-      "forwardRef": 1,
-      "useId": 1,
-      "useSyncExternalStore": 0,
-      "useActionState": 0,
-      "useOptimistic": 0,
-      "score": 14.9,
-      "flags": {
-        "usesForwardRef": true,
-        "usesReactMemo": false,
-        "hasManualMemo": false,
-        "hasEffect": false
-      }
-    },
-    {
-      "path": "src/components/common/SearchInput/SearchInput.tsx",
-      "loc": 75,
-      "useState": 1,
-      "useEffect": 0,
-      "useMemo": 0,
-      "useCallback": 0,
-      "reactMemo": 0,
-      "forwardRef": 1,
-      "useId": 0,
-      "useSyncExternalStore": 0,
-      "useActionState": 0,
-      "useOptimistic": 0,
-      "score": 14.5,
-      "flags": {
-        "usesForwardRef": true,
         "usesReactMemo": false,
         "hasManualMemo": false,
         "hasEffect": false
@@ -657,6 +657,27 @@
       }
     },
     {
+      "path": "src/components/common/Toast/Toast.tsx",
+      "loc": 86,
+      "useState": 0,
+      "useEffect": 1,
+      "useMemo": 0,
+      "useCallback": 0,
+      "reactMemo": 0,
+      "forwardRef": 0,
+      "useId": 0,
+      "useSyncExternalStore": 0,
+      "useActionState": 0,
+      "useOptimistic": 0,
+      "score": 13.6,
+      "flags": {
+        "usesForwardRef": false,
+        "usesReactMemo": false,
+        "hasManualMemo": false,
+        "hasEffect": true
+      }
+    },
+    {
       "path": "src/components/chatbot/ChatInput/ChatInput.tsx",
       "loc": 101,
       "useState": 1,
@@ -678,21 +699,63 @@
       }
     },
     {
-      "path": "src/components/common/Button/Button.tsx",
-      "loc": 84,
+      "path": "src/components/qna/AnswerCard/AnswerCard.tsx",
+      "loc": 127,
       "useState": 0,
       "useEffect": 0,
       "useMemo": 0,
       "useCallback": 0,
       "reactMemo": 0,
-      "forwardRef": 1,
+      "forwardRef": 0,
       "useId": 0,
       "useSyncExternalStore": 0,
       "useActionState": 0,
       "useOptimistic": 0,
-      "score": 12.4,
+      "score": 12.7,
       "flags": {
-        "usesForwardRef": true,
+        "usesForwardRef": false,
+        "usesReactMemo": false,
+        "hasManualMemo": false,
+        "hasEffect": false
+      }
+    },
+    {
+      "path": "src/features/chatbot/cs/hooks/useCsChat.ts",
+      "loc": 67,
+      "useState": 2,
+      "useEffect": 0,
+      "useMemo": 0,
+      "useCallback": 0,
+      "reactMemo": 0,
+      "forwardRef": 0,
+      "useId": 0,
+      "useSyncExternalStore": 0,
+      "useActionState": 0,
+      "useOptimistic": 0,
+      "score": 12.7,
+      "flags": {
+        "usesForwardRef": false,
+        "usesReactMemo": false,
+        "hasManualMemo": false,
+        "hasEffect": false
+      }
+    },
+    {
+      "path": "src/components/qna/QuestionCard/QuestionCard.tsx",
+      "loc": 121,
+      "useState": 0,
+      "useEffect": 0,
+      "useMemo": 0,
+      "useCallback": 0,
+      "reactMemo": 0,
+      "forwardRef": 0,
+      "useId": 0,
+      "useSyncExternalStore": 0,
+      "useActionState": 0,
+      "useOptimistic": 0,
+      "score": 12.1,
+      "flags": {
+        "usesForwardRef": false,
         "usesReactMemo": false,
         "hasManualMemo": false,
         "hasEffect": false
@@ -720,6 +783,27 @@
       }
     },
     {
+      "path": "src/components/qna/CategoryFilterModal/CategoryFilterModal.tsx",
+      "loc": 88,
+      "useState": 1,
+      "useEffect": 0,
+      "useMemo": 0,
+      "useCallback": 0,
+      "reactMemo": 0,
+      "forwardRef": 0,
+      "useId": 0,
+      "useSyncExternalStore": 0,
+      "useActionState": 0,
+      "useOptimistic": 0,
+      "score": 11.8,
+      "flags": {
+        "usesForwardRef": false,
+        "usesReactMemo": false,
+        "hasManualMemo": false,
+        "hasEffect": false
+      }
+    },
+    {
       "path": "src/components/qna/CategoryFilter/CategoryFilter.tsx",
       "loc": 66,
       "useState": 0,
@@ -738,6 +822,27 @@
         "usesReactMemo": false,
         "hasManualMemo": false,
         "hasEffect": true
+      }
+    },
+    {
+      "path": "src/components/layout/Footer/Footer.tsx",
+      "loc": 115,
+      "useState": 0,
+      "useEffect": 0,
+      "useMemo": 0,
+      "useCallback": 0,
+      "reactMemo": 0,
+      "forwardRef": 0,
+      "useId": 0,
+      "useSyncExternalStore": 0,
+      "useActionState": 0,
+      "useOptimistic": 0,
+      "score": 11.5,
+      "flags": {
+        "usesForwardRef": false,
+        "usesReactMemo": false,
+        "hasManualMemo": false,
+        "hasEffect": false
       }
     },
     {
@@ -796,6 +901,27 @@
       "useActionState": 0,
       "useOptimistic": 0,
       "score": 10.9,
+      "flags": {
+        "usesForwardRef": false,
+        "usesReactMemo": false,
+        "hasManualMemo": false,
+        "hasEffect": false
+      }
+    },
+    {
+      "path": "src/components/common/Input/Input.tsx",
+      "loc": 106,
+      "useState": 0,
+      "useEffect": 0,
+      "useMemo": 0,
+      "useCallback": 0,
+      "reactMemo": 0,
+      "forwardRef": 0,
+      "useId": 1,
+      "useSyncExternalStore": 0,
+      "useActionState": 0,
+      "useOptimistic": 0,
+      "score": 10.6,
       "flags": {
         "usesForwardRef": false,
         "usesReactMemo": false,
@@ -888,30 +1014,9 @@
       }
     },
     {
-      "path": "src/components/qna/QuestionCard/QuestionCard.tsx",
-      "loc": 103,
-      "useState": 0,
-      "useEffect": 0,
-      "useMemo": 0,
-      "useCallback": 0,
-      "reactMemo": 0,
-      "forwardRef": 0,
-      "useId": 0,
-      "useSyncExternalStore": 0,
-      "useActionState": 0,
-      "useOptimistic": 0,
-      "score": 10.3,
-      "flags": {
-        "usesForwardRef": false,
-        "usesReactMemo": false,
-        "hasManualMemo": false,
-        "hasEffect": false
-      }
-    },
-    {
-      "path": "src/components/qna/AnswerCard/AnswerCard.tsx",
-      "loc": 101,
-      "useState": 0,
+      "path": "src/components/common/SearchInput/SearchInput.tsx",
+      "loc": 71,
+      "useState": 1,
       "useEffect": 0,
       "useMemo": 0,
       "useCallback": 0,
@@ -943,27 +1048,6 @@
       "useActionState": 0,
       "useOptimistic": 0,
       "score": 9.9,
-      "flags": {
-        "usesForwardRef": false,
-        "usesReactMemo": false,
-        "hasManualMemo": false,
-        "hasEffect": false
-      }
-    },
-    {
-      "path": "src/components/layout/Footer/Footer.tsx",
-      "loc": 95,
-      "useState": 0,
-      "useEffect": 0,
-      "useMemo": 0,
-      "useCallback": 0,
-      "reactMemo": 0,
-      "forwardRef": 0,
-      "useId": 0,
-      "useSyncExternalStore": 0,
-      "useActionState": 0,
-      "useOptimistic": 0,
-      "score": 9.5,
       "flags": {
         "usesForwardRef": false,
         "usesReactMemo": false,
@@ -1098,6 +1182,27 @@
       }
     },
     {
+      "path": "src/components/chatbot/ChatbotWidget/ChatbotWidget.tsx",
+      "loc": 81,
+      "useState": 0,
+      "useEffect": 0,
+      "useMemo": 0,
+      "useCallback": 0,
+      "reactMemo": 0,
+      "forwardRef": 0,
+      "useId": 0,
+      "useSyncExternalStore": 0,
+      "useActionState": 0,
+      "useOptimistic": 0,
+      "score": 8.1,
+      "flags": {
+        "usesForwardRef": false,
+        "usesReactMemo": false,
+        "hasManualMemo": false,
+        "hasEffect": false
+      }
+    },
+    {
       "path": "src/components/qna/CommentForm/CommentForm.tsx",
       "loc": 51,
       "useState": 1,
@@ -1140,8 +1245,8 @@
       }
     },
     {
-      "path": "src/components/chatbot/ChatbotWidget/ChatbotWidget.tsx",
-      "loc": 79,
+      "path": "src/components/common/Button/Button.tsx",
+      "loc": 77,
       "useState": 0,
       "useEffect": 0,
       "useMemo": 0,
@@ -1152,7 +1257,7 @@
       "useSyncExternalStore": 0,
       "useActionState": 0,
       "useOptimistic": 0,
-      "score": 7.9,
+      "score": 7.7,
       "flags": {
         "usesForwardRef": false,
         "usesReactMemo": false,
@@ -1174,27 +1279,6 @@
       "useActionState": 0,
       "useOptimistic": 0,
       "score": 7.5,
-      "flags": {
-        "usesForwardRef": false,
-        "usesReactMemo": false,
-        "hasManualMemo": false,
-        "hasEffect": false
-      }
-    },
-    {
-      "path": "src/components/common/Avatar/Avatar.tsx",
-      "loc": 74,
-      "useState": 0,
-      "useEffect": 0,
-      "useMemo": 0,
-      "useCallback": 0,
-      "reactMemo": 0,
-      "forwardRef": 0,
-      "useId": 0,
-      "useSyncExternalStore": 0,
-      "useActionState": 0,
-      "useOptimistic": 0,
-      "score": 7.4,
       "flags": {
         "usesForwardRef": false,
         "usesReactMemo": false,
@@ -1300,6 +1384,27 @@
       "useActionState": 0,
       "useOptimistic": 0,
       "score": 6.4,
+      "flags": {
+        "usesForwardRef": false,
+        "usesReactMemo": false,
+        "hasManualMemo": false,
+        "hasEffect": false
+      }
+    },
+    {
+      "path": "src/components/common/Avatar/Avatar.tsx",
+      "loc": 63,
+      "useState": 0,
+      "useEffect": 0,
+      "useMemo": 0,
+      "useCallback": 0,
+      "reactMemo": 0,
+      "forwardRef": 0,
+      "useId": 0,
+      "useSyncExternalStore": 0,
+      "useActionState": 0,
+      "useOptimistic": 0,
+      "score": 6.3,
       "flags": {
         "usesForwardRef": false,
         "usesReactMemo": false,
@@ -1518,6 +1623,27 @@
       }
     },
     {
+      "path": "src/components/qna/AnswerStatusFilter/AnswerStatusFilter.tsx",
+      "loc": 49,
+      "useState": 0,
+      "useEffect": 0,
+      "useMemo": 0,
+      "useCallback": 0,
+      "reactMemo": 0,
+      "forwardRef": 0,
+      "useId": 0,
+      "useSyncExternalStore": 0,
+      "useActionState": 0,
+      "useOptimistic": 0,
+      "score": 4.9,
+      "flags": {
+        "usesForwardRef": false,
+        "usesReactMemo": false,
+        "hasManualMemo": false,
+        "hasEffect": false
+      }
+    },
+    {
       "path": "src/main.tsx",
       "loc": 46,
       "useState": 0,
@@ -1666,27 +1792,6 @@
     },
     {
       "path": "src/components/common/SearchInput/icons.tsx",
-      "loc": 40,
-      "useState": 0,
-      "useEffect": 0,
-      "useMemo": 0,
-      "useCallback": 0,
-      "reactMemo": 0,
-      "forwardRef": 0,
-      "useId": 0,
-      "useSyncExternalStore": 0,
-      "useActionState": 0,
-      "useOptimistic": 0,
-      "score": 4,
-      "flags": {
-        "usesForwardRef": false,
-        "usesReactMemo": false,
-        "hasManualMemo": false,
-        "hasEffect": false
-      }
-    },
-    {
-      "path": "src/components/common/UserAvatar/UserAvatar.tsx",
       "loc": 40,
       "useState": 0,
       "useEffect": 0,
@@ -1875,6 +1980,27 @@
       }
     },
     {
+      "path": "src/features/chatbot/completions/handler.ts",
+      "loc": 33,
+      "useState": 0,
+      "useEffect": 0,
+      "useMemo": 0,
+      "useCallback": 0,
+      "reactMemo": 0,
+      "forwardRef": 0,
+      "useId": 0,
+      "useSyncExternalStore": 0,
+      "useActionState": 0,
+      "useOptimistic": 0,
+      "score": 3.3,
+      "flags": {
+        "usesForwardRef": false,
+        "usesReactMemo": false,
+        "hasManualMemo": false,
+        "hasEffect": false
+      }
+    },
+    {
       "path": "src/features/chatbot/sessions/handler.ts",
       "loc": 33,
       "useState": 0,
@@ -1888,6 +2014,27 @@
       "useActionState": 0,
       "useOptimistic": 0,
       "score": 3.3,
+      "flags": {
+        "usesForwardRef": false,
+        "usesReactMemo": false,
+        "hasManualMemo": false,
+        "hasEffect": false
+      }
+    },
+    {
+      "path": "src/components/common/UserAvatar/UserAvatar.tsx",
+      "loc": 32,
+      "useState": 0,
+      "useEffect": 0,
+      "useMemo": 0,
+      "useCallback": 0,
+      "reactMemo": 0,
+      "forwardRef": 0,
+      "useId": 0,
+      "useSyncExternalStore": 0,
+      "useActionState": 0,
+      "useOptimistic": 0,
+      "score": 3.2,
       "flags": {
         "usesForwardRef": false,
         "usesReactMemo": false,
@@ -1918,6 +2065,27 @@
     },
     {
       "path": "src/components/common/SocialLoginButton/icons.tsx",
+      "loc": 30,
+      "useState": 0,
+      "useEffect": 0,
+      "useMemo": 0,
+      "useCallback": 0,
+      "reactMemo": 0,
+      "forwardRef": 0,
+      "useId": 0,
+      "useSyncExternalStore": 0,
+      "useActionState": 0,
+      "useOptimistic": 0,
+      "score": 3,
+      "flags": {
+        "usesForwardRef": false,
+        "usesReactMemo": false,
+        "hasManualMemo": false,
+        "hasEffect": false
+      }
+    },
+    {
+      "path": "src/features/chatbot/session-detail/handler.ts",
       "loc": 30,
       "useState": 0,
       "useEffect": 0,
@@ -2086,6 +2254,27 @@
     },
     {
       "path": "src/features/chatbot/qna/queries.ts",
+      "loc": 22,
+      "useState": 0,
+      "useEffect": 0,
+      "useMemo": 0,
+      "useCallback": 0,
+      "reactMemo": 0,
+      "forwardRef": 0,
+      "useId": 0,
+      "useSyncExternalStore": 0,
+      "useActionState": 0,
+      "useOptimistic": 0,
+      "score": 2.2,
+      "flags": {
+        "usesForwardRef": false,
+        "usesReactMemo": false,
+        "hasManualMemo": false,
+        "hasEffect": false
+      }
+    },
+    {
+      "path": "src/features/chatbot/session-detail/queries.ts",
       "loc": 22,
       "useState": 0,
       "useEffect": 0,
@@ -2337,6 +2526,69 @@
       }
     },
     {
+      "path": "src/features/qna/question-delete/queries.ts",
+      "loc": 18,
+      "useState": 0,
+      "useEffect": 0,
+      "useMemo": 0,
+      "useCallback": 0,
+      "reactMemo": 0,
+      "forwardRef": 0,
+      "useId": 0,
+      "useSyncExternalStore": 0,
+      "useActionState": 0,
+      "useOptimistic": 0,
+      "score": 1.8,
+      "flags": {
+        "usesForwardRef": false,
+        "usesReactMemo": false,
+        "hasManualMemo": false,
+        "hasEffect": false
+      }
+    },
+    {
+      "path": "src/components/qna/index.ts",
+      "loc": 17,
+      "useState": 0,
+      "useEffect": 0,
+      "useMemo": 0,
+      "useCallback": 0,
+      "reactMemo": 0,
+      "forwardRef": 0,
+      "useId": 0,
+      "useSyncExternalStore": 0,
+      "useActionState": 0,
+      "useOptimistic": 0,
+      "score": 1.7,
+      "flags": {
+        "usesForwardRef": false,
+        "usesReactMemo": false,
+        "hasManualMemo": false,
+        "hasEffect": false
+      }
+    },
+    {
+      "path": "src/features/chatbot/session-detail/types.ts",
+      "loc": 17,
+      "useState": 0,
+      "useEffect": 0,
+      "useMemo": 0,
+      "useCallback": 0,
+      "reactMemo": 0,
+      "forwardRef": 0,
+      "useId": 0,
+      "useSyncExternalStore": 0,
+      "useActionState": 0,
+      "useOptimistic": 0,
+      "score": 1.7,
+      "flags": {
+        "usesForwardRef": false,
+        "usesReactMemo": false,
+        "hasManualMemo": false,
+        "hasEffect": false
+      }
+    },
+    {
       "path": "src/features/qna/question-ai-answer/queries.ts",
       "loc": 17,
       "useState": 0,
@@ -2463,7 +2715,7 @@
       }
     },
     {
-      "path": "src/components/qna/index.ts",
+      "path": "src/features/chatbot/support/handler.ts",
       "loc": 14,
       "useState": 0,
       "useEffect": 0,
@@ -2485,6 +2737,27 @@
     },
     {
       "path": "src/components/qna/QaBadge/QaBadge.tsx",
+      "loc": 13,
+      "useState": 0,
+      "useEffect": 0,
+      "useMemo": 0,
+      "useCallback": 0,
+      "reactMemo": 0,
+      "forwardRef": 0,
+      "useId": 0,
+      "useSyncExternalStore": 0,
+      "useActionState": 0,
+      "useOptimistic": 0,
+      "score": 1.3,
+      "flags": {
+        "usesForwardRef": false,
+        "usesReactMemo": false,
+        "hasManualMemo": false,
+        "hasEffect": false
+      }
+    },
+    {
+      "path": "src/features/chatbot/support/queries.ts",
       "loc": 13,
       "useState": 0,
       "useEffect": 0,
@@ -2589,7 +2862,49 @@
       }
     },
     {
+      "path": "src/features/chatbot/support/types.ts",
+      "loc": 12,
+      "useState": 0,
+      "useEffect": 0,
+      "useMemo": 0,
+      "useCallback": 0,
+      "reactMemo": 0,
+      "forwardRef": 0,
+      "useId": 0,
+      "useSyncExternalStore": 0,
+      "useActionState": 0,
+      "useOptimistic": 0,
+      "score": 1.2,
+      "flags": {
+        "usesForwardRef": false,
+        "usesReactMemo": false,
+        "hasManualMemo": false,
+        "hasEffect": false
+      }
+    },
+    {
       "path": "src/constants/roles.ts",
+      "loc": 11,
+      "useState": 0,
+      "useEffect": 0,
+      "useMemo": 0,
+      "useCallback": 0,
+      "reactMemo": 0,
+      "forwardRef": 0,
+      "useId": 0,
+      "useSyncExternalStore": 0,
+      "useActionState": 0,
+      "useOptimistic": 0,
+      "score": 1.1,
+      "flags": {
+        "usesForwardRef": false,
+        "usesReactMemo": false,
+        "hasManualMemo": false,
+        "hasEffect": false
+      }
+    },
+    {
+      "path": "src/features/qna/question-delete/handler.ts",
       "loc": 11,
       "useState": 0,
       "useEffect": 0,
@@ -2632,6 +2947,27 @@
     },
     {
       "path": "src/utils/formatDate.ts",
+      "loc": 10,
+      "useState": 0,
+      "useEffect": 0,
+      "useMemo": 0,
+      "useCallback": 0,
+      "reactMemo": 0,
+      "forwardRef": 0,
+      "useId": 0,
+      "useSyncExternalStore": 0,
+      "useActionState": 0,
+      "useOptimistic": 0,
+      "score": 1,
+      "flags": {
+        "usesForwardRef": false,
+        "usesReactMemo": false,
+        "hasManualMemo": false,
+        "hasEffect": false
+      }
+    },
+    {
+      "path": "src/features/chatbot/completions/types.ts",
       "loc": 10,
       "useState": 0,
       "useEffect": 0,
@@ -2884,6 +3220,48 @@
     },
     {
       "path": "src/pages/qna/index.ts",
+      "loc": 5,
+      "useState": 0,
+      "useEffect": 0,
+      "useMemo": 0,
+      "useCallback": 0,
+      "reactMemo": 0,
+      "forwardRef": 0,
+      "useId": 0,
+      "useSyncExternalStore": 0,
+      "useActionState": 0,
+      "useOptimistic": 0,
+      "score": 0.5,
+      "flags": {
+        "usesForwardRef": false,
+        "usesReactMemo": false,
+        "hasManualMemo": false,
+        "hasEffect": false
+      }
+    },
+    {
+      "path": "src/features/chatbot/completions/queries.ts",
+      "loc": 5,
+      "useState": 0,
+      "useEffect": 0,
+      "useMemo": 0,
+      "useCallback": 0,
+      "reactMemo": 0,
+      "forwardRef": 0,
+      "useId": 0,
+      "useSyncExternalStore": 0,
+      "useActionState": 0,
+      "useOptimistic": 0,
+      "score": 0.5,
+      "flags": {
+        "usesForwardRef": false,
+        "usesReactMemo": false,
+        "hasManualMemo": false,
+        "hasEffect": false
+      }
+    },
+    {
+      "path": "src/features/qna/question-delete/types.ts",
       "loc": 5,
       "useState": 0,
       "useEffect": 0,
@@ -3429,6 +3807,48 @@
       }
     },
     {
+      "path": "src/components/qna/AnswerStatusFilter/index.ts",
+      "loc": 3,
+      "useState": 0,
+      "useEffect": 0,
+      "useMemo": 0,
+      "useCallback": 0,
+      "reactMemo": 0,
+      "forwardRef": 0,
+      "useId": 0,
+      "useSyncExternalStore": 0,
+      "useActionState": 0,
+      "useOptimistic": 0,
+      "score": 0.3,
+      "flags": {
+        "usesForwardRef": false,
+        "usesReactMemo": false,
+        "hasManualMemo": false,
+        "hasEffect": false
+      }
+    },
+    {
+      "path": "src/features/chatbot/completions/index.ts",
+      "loc": 3,
+      "useState": 0,
+      "useEffect": 0,
+      "useMemo": 0,
+      "useCallback": 0,
+      "reactMemo": 0,
+      "forwardRef": 0,
+      "useId": 0,
+      "useSyncExternalStore": 0,
+      "useActionState": 0,
+      "useOptimistic": 0,
+      "score": 0.3,
+      "flags": {
+        "usesForwardRef": false,
+        "usesReactMemo": false,
+        "hasManualMemo": false,
+        "hasEffect": false
+      }
+    },
+    {
       "path": "src/features/chatbot/qna/index.ts",
       "loc": 3,
       "useState": 0,
@@ -3450,7 +3870,70 @@
       }
     },
     {
+      "path": "src/features/chatbot/session-detail/index.ts",
+      "loc": 3,
+      "useState": 0,
+      "useEffect": 0,
+      "useMemo": 0,
+      "useCallback": 0,
+      "reactMemo": 0,
+      "forwardRef": 0,
+      "useId": 0,
+      "useSyncExternalStore": 0,
+      "useActionState": 0,
+      "useOptimistic": 0,
+      "score": 0.3,
+      "flags": {
+        "usesForwardRef": false,
+        "usesReactMemo": false,
+        "hasManualMemo": false,
+        "hasEffect": false
+      }
+    },
+    {
       "path": "src/features/chatbot/sessions/index.ts",
+      "loc": 3,
+      "useState": 0,
+      "useEffect": 0,
+      "useMemo": 0,
+      "useCallback": 0,
+      "reactMemo": 0,
+      "forwardRef": 0,
+      "useId": 0,
+      "useSyncExternalStore": 0,
+      "useActionState": 0,
+      "useOptimistic": 0,
+      "score": 0.3,
+      "flags": {
+        "usesForwardRef": false,
+        "usesReactMemo": false,
+        "hasManualMemo": false,
+        "hasEffect": false
+      }
+    },
+    {
+      "path": "src/features/chatbot/support/index.ts",
+      "loc": 3,
+      "useState": 0,
+      "useEffect": 0,
+      "useMemo": 0,
+      "useCallback": 0,
+      "reactMemo": 0,
+      "forwardRef": 0,
+      "useId": 0,
+      "useSyncExternalStore": 0,
+      "useActionState": 0,
+      "useOptimistic": 0,
+      "score": 0.3,
+      "flags": {
+        "usesForwardRef": false,
+        "usesReactMemo": false,
+        "hasManualMemo": false,
+        "hasEffect": false
+      }
+    },
+    {
+      "path": "src/features/qna/question-delete/index.ts",
       "loc": 3,
       "useState": 0,
       "useEffect": 0,
@@ -3744,6 +4227,27 @@
       }
     },
     {
+      "path": "src/components/qna/CategoryFilterModal/index.ts",
+      "loc": 2,
+      "useState": 0,
+      "useEffect": 0,
+      "useMemo": 0,
+      "useCallback": 0,
+      "reactMemo": 0,
+      "forwardRef": 0,
+      "useId": 0,
+      "useSyncExternalStore": 0,
+      "useActionState": 0,
+      "useOptimistic": 0,
+      "score": 0.2,
+      "flags": {
+        "usesForwardRef": false,
+        "usesReactMemo": false,
+        "hasManualMemo": false,
+        "hasEffect": false
+      }
+    },
+    {
       "path": "src/components/qna/CommentForm/index.ts",
       "loc": 2,
       "useState": 0,
@@ -3912,7 +4416,7 @@
       }
     },
     {
-      "path": "src/features/chatbot/hub/index.ts",
+      "path": "src/components/qna/SortPopover/index.ts",
       "loc": 2,
       "useState": 0,
       "useEffect": 0,
@@ -3933,8 +4437,8 @@
       }
     },
     {
-      "path": "src/features/chatbot/completions/handler.ts",
-      "loc": 1,
+      "path": "src/features/chatbot/hub/index.ts",
+      "loc": 2,
       "useState": 0,
       "useEffect": 0,
       "useMemo": 0,
@@ -3945,322 +4449,7 @@
       "useSyncExternalStore": 0,
       "useActionState": 0,
       "useOptimistic": 0,
-      "score": 0.1,
-      "flags": {
-        "usesForwardRef": false,
-        "usesReactMemo": false,
-        "hasManualMemo": false,
-        "hasEffect": false
-      }
-    },
-    {
-      "path": "src/features/chatbot/completions/index.ts",
-      "loc": 1,
-      "useState": 0,
-      "useEffect": 0,
-      "useMemo": 0,
-      "useCallback": 0,
-      "reactMemo": 0,
-      "forwardRef": 0,
-      "useId": 0,
-      "useSyncExternalStore": 0,
-      "useActionState": 0,
-      "useOptimistic": 0,
-      "score": 0.1,
-      "flags": {
-        "usesForwardRef": false,
-        "usesReactMemo": false,
-        "hasManualMemo": false,
-        "hasEffect": false
-      }
-    },
-    {
-      "path": "src/features/chatbot/completions/queries.ts",
-      "loc": 1,
-      "useState": 0,
-      "useEffect": 0,
-      "useMemo": 0,
-      "useCallback": 0,
-      "reactMemo": 0,
-      "forwardRef": 0,
-      "useId": 0,
-      "useSyncExternalStore": 0,
-      "useActionState": 0,
-      "useOptimistic": 0,
-      "score": 0.1,
-      "flags": {
-        "usesForwardRef": false,
-        "usesReactMemo": false,
-        "hasManualMemo": false,
-        "hasEffect": false
-      }
-    },
-    {
-      "path": "src/features/chatbot/completions/types.ts",
-      "loc": 1,
-      "useState": 0,
-      "useEffect": 0,
-      "useMemo": 0,
-      "useCallback": 0,
-      "reactMemo": 0,
-      "forwardRef": 0,
-      "useId": 0,
-      "useSyncExternalStore": 0,
-      "useActionState": 0,
-      "useOptimistic": 0,
-      "score": 0.1,
-      "flags": {
-        "usesForwardRef": false,
-        "usesReactMemo": false,
-        "hasManualMemo": false,
-        "hasEffect": false
-      }
-    },
-    {
-      "path": "src/features/chatbot/session-detail/handler.ts",
-      "loc": 1,
-      "useState": 0,
-      "useEffect": 0,
-      "useMemo": 0,
-      "useCallback": 0,
-      "reactMemo": 0,
-      "forwardRef": 0,
-      "useId": 0,
-      "useSyncExternalStore": 0,
-      "useActionState": 0,
-      "useOptimistic": 0,
-      "score": 0.1,
-      "flags": {
-        "usesForwardRef": false,
-        "usesReactMemo": false,
-        "hasManualMemo": false,
-        "hasEffect": false
-      }
-    },
-    {
-      "path": "src/features/chatbot/session-detail/index.ts",
-      "loc": 1,
-      "useState": 0,
-      "useEffect": 0,
-      "useMemo": 0,
-      "useCallback": 0,
-      "reactMemo": 0,
-      "forwardRef": 0,
-      "useId": 0,
-      "useSyncExternalStore": 0,
-      "useActionState": 0,
-      "useOptimistic": 0,
-      "score": 0.1,
-      "flags": {
-        "usesForwardRef": false,
-        "usesReactMemo": false,
-        "hasManualMemo": false,
-        "hasEffect": false
-      }
-    },
-    {
-      "path": "src/features/chatbot/session-detail/queries.ts",
-      "loc": 1,
-      "useState": 0,
-      "useEffect": 0,
-      "useMemo": 0,
-      "useCallback": 0,
-      "reactMemo": 0,
-      "forwardRef": 0,
-      "useId": 0,
-      "useSyncExternalStore": 0,
-      "useActionState": 0,
-      "useOptimistic": 0,
-      "score": 0.1,
-      "flags": {
-        "usesForwardRef": false,
-        "usesReactMemo": false,
-        "hasManualMemo": false,
-        "hasEffect": false
-      }
-    },
-    {
-      "path": "src/features/chatbot/session-detail/types.ts",
-      "loc": 1,
-      "useState": 0,
-      "useEffect": 0,
-      "useMemo": 0,
-      "useCallback": 0,
-      "reactMemo": 0,
-      "forwardRef": 0,
-      "useId": 0,
-      "useSyncExternalStore": 0,
-      "useActionState": 0,
-      "useOptimistic": 0,
-      "score": 0.1,
-      "flags": {
-        "usesForwardRef": false,
-        "usesReactMemo": false,
-        "hasManualMemo": false,
-        "hasEffect": false
-      }
-    },
-    {
-      "path": "src/features/chatbot/support/handler.ts",
-      "loc": 1,
-      "useState": 0,
-      "useEffect": 0,
-      "useMemo": 0,
-      "useCallback": 0,
-      "reactMemo": 0,
-      "forwardRef": 0,
-      "useId": 0,
-      "useSyncExternalStore": 0,
-      "useActionState": 0,
-      "useOptimistic": 0,
-      "score": 0.1,
-      "flags": {
-        "usesForwardRef": false,
-        "usesReactMemo": false,
-        "hasManualMemo": false,
-        "hasEffect": false
-      }
-    },
-    {
-      "path": "src/features/chatbot/support/index.ts",
-      "loc": 1,
-      "useState": 0,
-      "useEffect": 0,
-      "useMemo": 0,
-      "useCallback": 0,
-      "reactMemo": 0,
-      "forwardRef": 0,
-      "useId": 0,
-      "useSyncExternalStore": 0,
-      "useActionState": 0,
-      "useOptimistic": 0,
-      "score": 0.1,
-      "flags": {
-        "usesForwardRef": false,
-        "usesReactMemo": false,
-        "hasManualMemo": false,
-        "hasEffect": false
-      }
-    },
-    {
-      "path": "src/features/chatbot/support/queries.ts",
-      "loc": 1,
-      "useState": 0,
-      "useEffect": 0,
-      "useMemo": 0,
-      "useCallback": 0,
-      "reactMemo": 0,
-      "forwardRef": 0,
-      "useId": 0,
-      "useSyncExternalStore": 0,
-      "useActionState": 0,
-      "useOptimistic": 0,
-      "score": 0.1,
-      "flags": {
-        "usesForwardRef": false,
-        "usesReactMemo": false,
-        "hasManualMemo": false,
-        "hasEffect": false
-      }
-    },
-    {
-      "path": "src/features/chatbot/support/types.ts",
-      "loc": 1,
-      "useState": 0,
-      "useEffect": 0,
-      "useMemo": 0,
-      "useCallback": 0,
-      "reactMemo": 0,
-      "forwardRef": 0,
-      "useId": 0,
-      "useSyncExternalStore": 0,
-      "useActionState": 0,
-      "useOptimistic": 0,
-      "score": 0.1,
-      "flags": {
-        "usesForwardRef": false,
-        "usesReactMemo": false,
-        "hasManualMemo": false,
-        "hasEffect": false
-      }
-    },
-    {
-      "path": "src/features/qna/question-delete/handler.ts",
-      "loc": 1,
-      "useState": 0,
-      "useEffect": 0,
-      "useMemo": 0,
-      "useCallback": 0,
-      "reactMemo": 0,
-      "forwardRef": 0,
-      "useId": 0,
-      "useSyncExternalStore": 0,
-      "useActionState": 0,
-      "useOptimistic": 0,
-      "score": 0.1,
-      "flags": {
-        "usesForwardRef": false,
-        "usesReactMemo": false,
-        "hasManualMemo": false,
-        "hasEffect": false
-      }
-    },
-    {
-      "path": "src/features/qna/question-delete/index.ts",
-      "loc": 1,
-      "useState": 0,
-      "useEffect": 0,
-      "useMemo": 0,
-      "useCallback": 0,
-      "reactMemo": 0,
-      "forwardRef": 0,
-      "useId": 0,
-      "useSyncExternalStore": 0,
-      "useActionState": 0,
-      "useOptimistic": 0,
-      "score": 0.1,
-      "flags": {
-        "usesForwardRef": false,
-        "usesReactMemo": false,
-        "hasManualMemo": false,
-        "hasEffect": false
-      }
-    },
-    {
-      "path": "src/features/qna/question-delete/queries.ts",
-      "loc": 1,
-      "useState": 0,
-      "useEffect": 0,
-      "useMemo": 0,
-      "useCallback": 0,
-      "reactMemo": 0,
-      "forwardRef": 0,
-      "useId": 0,
-      "useSyncExternalStore": 0,
-      "useActionState": 0,
-      "useOptimistic": 0,
-      "score": 0.1,
-      "flags": {
-        "usesForwardRef": false,
-        "usesReactMemo": false,
-        "hasManualMemo": false,
-        "hasEffect": false
-      }
-    },
-    {
-      "path": "src/features/qna/question-delete/types.ts",
-      "loc": 1,
-      "useState": 0,
-      "useEffect": 0,
-      "useMemo": 0,
-      "useCallback": 0,
-      "reactMemo": 0,
-      "forwardRef": 0,
-      "useId": 0,
-      "useSyncExternalStore": 0,
-      "useActionState": 0,
-      "useOptimistic": 0,
-      "score": 0.1,
+      "score": 0.2,
       "flags": {
         "usesForwardRef": false,
         "usesReactMemo": false,
