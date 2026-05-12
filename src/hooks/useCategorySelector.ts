@@ -2,28 +2,33 @@ import { useState } from 'react'
 import { useQnaCategories } from '@/features/qna/categories'
 import type { UserCategory } from '@/features/qna/categories'
 
+// 3단계 카테고리 트리에서 targetId에 해당하는 경로를 찾는 헬퍼
 function findCategoryPath(
   categories: UserCategory[],
   targetId: number | undefined
 ): { large: string; medium: string; small: string } {
-  if (!targetId) return { large: '', medium: '', small: '' }
-  for (const large of categories) {
-    if (large.id === targetId)
-      return { large: String(large.id), medium: '', small: '' }
-    for (const medium of large.children) {
-      if (medium.id === targetId)
-        return { large: String(large.id), medium: String(medium.id), small: '' }
-      for (const small of medium.children) {
-        if (small.id === targetId)
-          return {
-            large: String(large.id),
-            medium: String(medium.id),
-            small: String(small.id),
-          }
-      }
+  const empty = { large: '', medium: '', small: '' }
+  if (!targetId) return empty
+
+  for (const lg of categories) {
+    if (lg.id === targetId)
+      return { large: String(lg.id), medium: '', small: '' }
+
+    for (const md of lg.children) {
+      if (md.id === targetId)
+        return { large: String(lg.id), medium: String(md.id), small: '' }
+
+      const sm = md.children.find((c) => c.id === targetId)
+      if (sm)
+        return {
+          large: String(lg.id),
+          medium: String(md.id),
+          small: String(sm.id),
+        }
     }
   }
-  return { large: '', medium: '', small: '' }
+
+  return empty
 }
 
 export function useCategorySelector(initialCategoryId?: number) {

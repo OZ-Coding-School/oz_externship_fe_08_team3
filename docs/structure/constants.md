@@ -15,17 +15,19 @@ src/constants/
 답변 작성/수정이 허용되는 역할 목록을 정의한다.
 
 ```ts
-export const ANSWER_ALLOWED_ROLES: UserRole[] = [
+export const ANSWER_ALLOWED_ROLES: ReadonlySet<UserRole> = new Set<UserRole>([
   'STUDENT',
   'TA',
   'OM',
   'LC',
   'ADMIN',
-]
+])
 ```
 
+- `ReadonlySet`으로 정의 — `.has()`로 멤버십 체크 (O(1))
 - `UserRole` 타입은 `authStore.ts`에서 import
 - `USER` 역할은 답변 권한 없음
+- 사용처: `ANSWER_ALLOWED_ROLES.has(user.role)` (`.includes()` 아님)
 
 ## routes.ts
 

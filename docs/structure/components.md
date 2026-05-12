@@ -57,22 +57,24 @@ layout/
 
 ## qna/ — Q&A 도메인 컴포넌트
 
-| 컴포넌트             | 설명                                           |
-| -------------------- | ---------------------------------------------- |
-| QuestionCard         | 질문 목록 카드                                 |
-| QuestionDetail       | 질문 상세 표시                                 |
-| QuestionForm         | 질문 작성/수정 폼                              |
-| AnswerCard           | 답변 카드                                      |
-| AnswerForm           | 답변 작성/수정 폼                              |
-| AnswerSection        | 답변 목록 영역                                 |
-| AnswerPromptCard     | 답변 유도 카드                                 |
-| AiFirstAnswerSection | AI 첫 답변 표시 영역                           |
-| CommentForm          | 댓글 작성 폼                                   |
-| CommentList          | 댓글 목록                                      |
-| CategoryFilter       | 카테고리 필터 (대/중/소 3단계)                 |
-| QaBadge              | Q&A 전용 뱃지 (채택, AI 등)                    |
-| MarkdownEditor       | 마크다운 에디터 (이미지 업로드, 히스토리 지원) |
-| MarkdownViewer       | 마크다운 렌더러                                |
+| 컴포넌트             | 설명                                                |
+| -------------------- | --------------------------------------------------- |
+| QuestionCard         | 질문 목록 카드                                      |
+| QuestionDetail       | 질문 상세 표시                                      |
+| QuestionForm         | 질문 작성/수정 폼                                   |
+| AnswerCard           | 답변 카드                                           |
+| AnswerForm           | 답변 작성/수정 폼                                   |
+| AnswerSection        | 답변 목록 영역                                      |
+| AnswerPromptCard     | 답변 유도 카드                                      |
+| AiFirstAnswerSection | AI 첫 답변 표시 영역                                |
+| CommentForm          | 댓글 작성 폼                                        |
+| CommentList          | 댓글 목록                                           |
+| CategoryFilter       | 카테고리 필터 (대/중/소 3단계)                      |
+| QaBadge              | Q&A 전용 뱃지 (채택, AI 등)                         |
+| MarkdownEditor       | 마크다운 에디터 (이미지 업로드, 히스토리 지원)      |
+| MarkdownViewer       | 마크다운 렌더러                                     |
+| SortPopover          | 정렬 팝오버 (최신순/오래된순, QnaListPage에서 분리) |
+| CategoryFilterModal  | 카테고리 필터 모달 (QnaListPage에서 분리)           |
 
 ### MarkdownEditor 내부 구조
 
@@ -96,6 +98,14 @@ MarkdownEditor/
 | ChatbotHeader | 챗봇 헤더 (뷰 전환 탭) |
 | ChatInput     | 채팅 메시지 입력       |
 | MessageList   | 채팅 메시지 목록       |
+
+## React 19 현대화 규칙
+
+- **forwardRef 사용 금지** — React 19에서는 `ref`를 일반 prop으로 받음. `ref?: React.Ref<HTMLElement>`를 Props 인터페이스에 추가
+- **수동 메모이제이션 금지** — `useMemo`, `useCallback`, `React.memo` 사용하지 않음. React Compiler가 자동 처리
+- **default export 금지** — 모든 컴포넌트는 named export만 사용
+- **CLS 방지** — `<img>` 태그에 `width`, `height` 속성 명시. 고정 크기 이미지에 `aspect-ratio` 추가
+- **디자인 토큰 사용** — hex 임의값(`[#6201E0]`) 대신 Tailwind 토큰(`text-primary`) 사용. App.css `@theme`에 정의된 토큰 참조
 
 ## 파일 구조 규칙
 

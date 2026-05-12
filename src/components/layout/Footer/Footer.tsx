@@ -18,6 +18,8 @@ export function Footer({ className = '' }: FooterProps) {
             <img
               src={logoImg}
               alt="OzCodingSchool"
+              width={120}
+              height={20}
               className="h-5 w-30 brightness-0 invert"
             />
             <nav className="flex flex-col gap-6 text-sm tracking-tight text-gray-300">

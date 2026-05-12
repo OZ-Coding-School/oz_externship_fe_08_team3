@@ -50,7 +50,7 @@ export function Avatar({
           src={src}
           alt=""
           aria-hidden="true"
-          className="h-full w-full object-cover"
+          className="aspect-square h-full w-full object-cover"
         />
       ) : (
         <span aria-hidden="true">{letters}</span>

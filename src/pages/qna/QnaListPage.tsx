@@ -162,7 +162,7 @@ export function QnaListPage() {
   return (
     <div className="mx-auto w-full max-w-[944px] overflow-hidden px-4 pt-[52px] pb-20">
       {/* 페이지 타이틀 */}
-      <h1 className="mb-8 text-[32px] leading-[1.4] font-bold tracking-[-0.03em] text-[#121212]">
+      <h1 className="mb-8 text-[32px] leading-[1.4] font-bold tracking-[-0.03em] text-gray-900">
         질의응답
       </h1>
 
@@ -179,7 +179,7 @@ export function QnaListPage() {
         <button
           type="button"
           onClick={() => navigate(ROUTES.QNA.WRITE)}
-          className="flex h-12 items-center gap-2 rounded-[4px] bg-[#6201E0] px-9 text-base font-bold text-white transition-colors hover:bg-[#4E01B3]"
+          className="bg-primary hover:bg-primary-800 flex h-12 items-center gap-2 rounded-sm px-9 text-base font-bold text-white transition-colors"
         >
           <Pencil className="h-5 w-5" />
           질문하기
@@ -188,7 +188,7 @@ export function QnaListPage() {
 
       {/* 탭 + 정렬/필터를 한 줄에 배치 */}
       <Tabs value={answerStatus} onChange={handleTabChange}>
-        <div className="flex items-end justify-between border-b border-[#CECECE] pb-2">
+        <div className="flex items-end justify-between border-b border-gray-300 pb-2">
           <TabList aria-label="답변 상태 필터" className="flex gap-10 border-0">
             <Tab value="all">전체보기</Tab>
             <Tab value="answered">답변완료</Tab>
@@ -206,7 +206,7 @@ export function QnaListPage() {
               onClick={() => setShowCategoryModal(true)}
               className={[
                 'flex items-center gap-1 text-base',
-                hasFilter ? 'font-medium text-[#6201E0]' : 'text-[#121212]',
+                hasFilter ? 'text-primary font-medium' : 'text-gray-900',
               ].join(' ')}
             >
               필터

@@ -19,33 +19,29 @@ const MIN_CONTENT_LENGTH = 5
 const MIN_TITLE_LENGTH = 3
 const MAX_TITLE_LENGTH = 100
 
+// 3단계 카테고리 트리에서 targetId에 해당하는 경로를 찾는 헬퍼
 function findCategoryPath(
   categories: UserCategory[],
   targetId: number
 ): { largeId: string; mediumId: string; smallId: string } {
-  for (const large of categories) {
-    if (large.id === targetId) {
-      return { largeId: String(large.id), mediumId: '', smallId: '' }
-    }
-    for (const medium of large.children) {
-      if (medium.id === targetId) {
+  for (const lg of categories) {
+    if (lg.id === targetId)
+      return { largeId: String(lg.id), mediumId: '', smallId: '' }
+
+    for (const md of lg.children) {
+      if (md.id === targetId)
+        return { largeId: String(lg.id), mediumId: String(md.id), smallId: '' }
+
+      const sm = md.children.find((c) => c.id === targetId)
+      if (sm)
         return {
-          largeId: String(large.id),
-          mediumId: String(medium.id),
-          smallId: '',
+          largeId: String(lg.id),
+          mediumId: String(md.id),
+          smallId: String(sm.id),
         }
-      }
-      for (const small of medium.children) {
-        if (small.id === targetId) {
-          return {
-            largeId: String(large.id),
-            mediumId: String(medium.id),
-            smallId: String(small.id),
-          }
-        }
-      }
     }
   }
+
   return { largeId: '', mediumId: '', smallId: '' }
 }
 

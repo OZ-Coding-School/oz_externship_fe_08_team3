@@ -7,13 +7,21 @@
 ```
 src/pages/
 ├── qna/
-│   ├── QnaListPage.tsx       # /qna — 질문 목록 (필터, 검색, 페이지네이션)
-│   ├── QnaDetailPage.tsx     # /qna/:questionId — 질문 상세 + 답변 + 댓글
-│   ├── QnaWritePage.tsx      # /qna/write — 질문 작성
-│   ├── QnaEditPage.tsx       # /qna/:questionId/edit — 질문 수정
-│   └── index.ts              # barrel export
-└── ComponentShowcase.tsx     # /showcase — UI 컴포넌트 데모 (개발용)
+│   ├── hooks/
+│   │   └── useAnswerActions.ts  # 답변 등록/수정/채택 mutation 훅 (QnaDetailPage에서 추출)
+│   ├── QnaListPage.tsx          # /qna — 질문 목록 (SortPopover, CategoryFilterModal 분리됨)
+│   ├── QnaDetailPage.tsx        # /qna/:questionId — 질문 상세 + 답변 + 댓글
+│   ├── QnaWritePage.tsx         # /qna/write — 질문 작성
+│   ├── QnaEditPage.tsx          # /qna/:questionId/edit — 질문 수정
+│   └── index.ts                 # barrel export
+└── ComponentShowcase.tsx        # /showcase — UI 컴포넌트 데모 (개발용)
 ```
+
+## 페이지 레벨 훅
+
+| 훅               | 위치               | 설명                                                                                     |
+| ---------------- | ------------------ | ---------------------------------------------------------------------------------------- |
+| useAnswerActions | `pages/qna/hooks/` | 답변 등록(postAnswer), 수정(putAnswer), 채택(acceptAnswer) mutation + 에러 핸들링 캡슐화 |
 
 ## 현재 구현된 라우트
 

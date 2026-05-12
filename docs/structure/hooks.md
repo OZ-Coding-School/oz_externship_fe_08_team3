@@ -43,13 +43,14 @@ showToast('저장되었습니다', 'success')
 
 ## 도메인 특화 훅 위치 (참고)
 
-| 훅                 | 위치                             | 설명                 |
-| ------------------ | -------------------------------- | -------------------- |
-| useImageUpload     | `components/qna/MarkdownEditor/` | 에디터 이미지 업로드 |
-| useMarkdownHistory | `components/qna/MarkdownEditor/` | 에디터 undo/redo     |
-| useCsChat          | `features/chatbot/cs/`           | CS 챗봇 채팅 로직    |
-| useQnaChat         | `features/chatbot/qna/`          | Q&A 챗봇 채팅 로직   |
-| useSSEAbort        | `features/chatbot/hooks/`        | SSE 연결 중단 관리   |
+| 훅                 | 위치                             | 설명                         |
+| ------------------ | -------------------------------- | ---------------------------- |
+| useImageUpload     | `components/qna/MarkdownEditor/` | 에디터 이미지 업로드         |
+| useMarkdownHistory | `components/qna/MarkdownEditor/` | 에디터 undo/redo             |
+| useCsChat          | `features/chatbot/cs/`           | CS 챗봇 채팅 로직            |
+| useQnaChat         | `features/chatbot/qna/`          | Q&A 챗봇 채팅 로직           |
+| useSSEAbort        | `features/chatbot/hooks/`        | SSE 연결 중단 관리           |
+| useAnswerActions   | `pages/qna/hooks/`               | 답변 등록/수정/채택 mutation |
 
 ## 추가 규칙
 
