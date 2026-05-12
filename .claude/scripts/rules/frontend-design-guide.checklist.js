@@ -21,9 +21,9 @@ const checklist = [
     category: "Readability",
     name: "매직 넘버 명명",
     description: "의미 있는 숫자 리터럴이 명명된 상수로 추출되어 있는가?",
-    // AnswerCard: left-6, mt-4 는 Tailwind spacing 토큰. px-3/py-1/text-xs 는 Figma 디자인 스펙.
-    // QnaDetailPage: 신규 숫자 리터럴 없음.
-    status: "O",
+    // 신규 숫자: cursor 위치 계산(indent.length+1+bullet.length+1 등)으로
+    // 문자 길이(newline=1, space=1)를 더하는 구조적 산술 — 매직 넘버 아님
+    status: "N/A",
     violations: [],
   },
   {
@@ -31,7 +31,7 @@ const checklist = [
     category: "Readability",
     name: "구현 세부사항 추상화 (인증/권한)",
     description: "인증 체크, 권한 검사 등 공통 로직이 래퍼/가드 컴포넌트로 분리되어 있는가?",
-    // !isQuestionOwner 는 기존 canAnswer 패턴과 동일한 인라인 조건 — 신규 인증 래퍼 불필요
+    // 인증/권한 로직 변경 없음
     status: "N/A",
     violations: [],
   },
@@ -40,7 +40,7 @@ const checklist = [
     category: "Readability",
     name: "구현 세부사항 추상화 (인터랙션)",
     description: "다이얼로그/오버레이 등 복잡한 인터랙션이 전용 컴포넌트로 추출되어 있는가?",
-    // 신규 다이얼로그/오버레이 없음
+    // 신규 인터랙션 컴포넌트 없음
     status: "N/A",
     violations: [],
   },
@@ -49,9 +49,8 @@ const checklist = [
     category: "Readability",
     name: "조건부 렌더링 분리",
     description: "역할/상태에 따라 크게 다른 UI/로직이 별도 컴포넌트로 분리되어 있는가?",
-    // AnswerCard: is_adopted 여부에 따른 래퍼 div + article 분기 — 구조적 변경이므로 별도 컴포넌트화 불필요
-    // QnaDetailPage: canAnswer && !isQuestionOwner 조건 추가 — 단순 조건 변경
-    status: "O",
+    // 신규 조건부 렌더링 없음
+    status: "N/A",
     violations: [],
   },
   {
@@ -59,9 +58,7 @@ const checklist = [
     category: "Readability",
     name: "복잡한 삼항 연산자 단순화",
     description: "중첩 삼항 연산자가 if/else 또는 IIFE로 대체되어 있는가?",
-    // AnswerCard: answer.is_adopted ? 'relative mt-4' : undefined — 단일 삼항, 중첩 없음
-    // AnswerCard: answer.is_adopted ? 'border-primary' : 'border-[#CECECE]' — 단일 삼항, 중첩 없음
-    // QnaDetailPage: canShowAnswerPrompt && (...) — 논리 AND, 삼항 아님
+    // 추가된 삼항: 모두 단순 2분기 (중첩 없음) — needsExtraNewline ? '\n' : '' 등
     status: "O",
     violations: [],
   },
@@ -70,8 +67,7 @@ const checklist = [
     category: "Readability",
     name: "시선 이동 감소 (Colocation)",
     description: "단일 사용처에서만 쓰이는 단순 로직이 사용 위치 근처에 배치되어 있는가?",
-    // canShowAnswerPrompt: anyAdopted/isQuestionOwner 정의 직후 배치, 렌더 섹션과 근접
-    // canShowEditButton, canShowAcceptButton: return 직전 정의
+    // 키다운 핸들러 내 인라인 처리 — 사용처와 로직이 동일 위치에 있음
     status: "O",
     violations: [],
   },
@@ -80,8 +76,8 @@ const checklist = [
     category: "Readability",
     name: "복잡한 조건에 이름 붙이기",
     description: "2개 이상 조합된 boolean 표현식이 의미 있는 변수명으로 추출되어 있는가?",
-    // QnaDetailPage: !isEdit && !justPosted → canShowAnswerPrompt 로 추출 완료
-    // AnswerCard: canShowAcceptButton(3조건), canShowEditButton(3조건) 모두 명명됨
+    // needsExtraNewline = !textAfter.startsWith('\n') 으로 명명됨
+    // prevLine === indent (단순 비교) — 추출 불필요
     status: "O",
     violations: [],
   },
@@ -92,7 +88,7 @@ const checklist = [
     category: "Predictability",
     name: "API 훅 반환 타입 표준화",
     description: "유사한 API 훅들이 일관된 반환 타입(UseQueryResult 등)을 사용하는가?",
-    // API 훅 신규/변경 없음
+    // API 훅 변경 없음
     status: "N/A",
     violations: [],
   },
@@ -110,8 +106,8 @@ const checklist = [
     category: "Predictability",
     name: "숨겨진 사이드 이펙트 제거",
     description: "함수가 이름에 드러나지 않은 사이드 이펙트(로깅, 분석 등)를 수행하지 않는가?",
-    // setJustPosted(true): postAnswer onSuccess 콜백 내 state 업데이트 — 이름에 드러난 동작만 수행
-    status: "O",
+    // 신규 함수 없음 — keydown 핸들러 내 텍스트 조작만 수행
+    status: "N/A",
     violations: [],
   },
   {
@@ -139,7 +135,7 @@ const checklist = [
     category: "Cohesion",
     name: "도메인별 디렉토리 구조",
     description: "기능/도메인 관련 코드가 도메인 폴더에 묶여 있는가?",
-    // 변경 파일 모두 src/components/qna/, src/pages/qna/ 내 — 도메인 구조 준수
+    // MarkdownEditor: src/components/qna/ 내 — 도메인 구조 준수
     status: "O",
     violations: [],
   },
@@ -148,8 +144,8 @@ const checklist = [
     category: "Cohesion",
     name: "상수와 로직의 근접성",
     description: "상수가 사용 로직과 가까운 위치에 정의되어 있거나 이름으로 용도가 명확한가?",
-    // canShowAnswerPrompt, canShowEditButton, canShowAcceptButton — 각 사용처 근접 정의
-    status: "O",
+    // 신규 상수 없음
+    status: "N/A",
     violations: [],
   },
 
@@ -159,8 +155,8 @@ const checklist = [
     category: "Coupling",
     name: "성급한 추상화 지양",
     description: "단순히 비슷하다는 이유로 섣불리 공통 훅/함수로 추출되지 않았는가?",
-    // 인라인 스타일 조건 — 불필요한 공통 컴포넌트 추출 없음
-    status: "O",
+    // 불필요한 추상화 없음 — 기존 onKeyDown 핸들러 내 분기 추가
+    status: "N/A",
     violations: [],
   },
   {
@@ -168,8 +164,8 @@ const checklist = [
     category: "Coupling",
     name: "상태 관리 범위 축소",
     description: "여러 관심사가 하나의 훅/컨텍스트에 묶이지 않고 분리되어 있는가?",
-    // justPosted: QnaDetailPage 로컬 상태, 단일 관심사(제출 후 AnswerPromptCard 숨김)만 담당
-    status: "O",
+    // 상태 변경 없음
+    status: "N/A",
     violations: [],
   },
   {
@@ -177,8 +173,8 @@ const checklist = [
     category: "Coupling",
     name: "Props Drilling 제거",
     description: "3단계 이상 props 전달이 컴포지션(children)으로 대체되어 있는가?",
-    // showForm, onEditAction: QnaDetailPage → AnswerSection → AnswerCard (2단계) — 3단계 미만, 허용
-    status: "O",
+    // 신규 props 없음
+    status: "N/A",
     violations: [],
   },
 ];
