@@ -19,7 +19,7 @@
     "baseline:check": "node scripts/baseline.mjs --strict",
     "baseline:quick": "node scripts/baseline.mjs --skip-build",
     "check:types": "tsc --noEmit",
-    "check:lint": "eslint 'src/**/*.{ts,tsx}' --max-warnings 0",
+    "check:lint": "eslint \"src/**/*.{ts,tsx}\" --max-warnings 0",
     "check:a11y": "playwright test --grep @a11y"
   },
   "dependencies": {

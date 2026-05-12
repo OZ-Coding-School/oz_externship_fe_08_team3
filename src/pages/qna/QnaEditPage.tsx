@@ -14,16 +14,11 @@ import type { GetQuestionDetailResponse } from '@/features/qna/question-detail'
 import { useAuthStore } from '@/stores/authStore'
 import { useCategorySelector } from '@/hooks/useCategorySelector'
 import { ROUTES } from '@/constants/routes'
+import { extractImageUrls } from '@/utils/extractImageUrls'
 
 const MIN_CONTENT_LENGTH = 5
 const MIN_TITLE_LENGTH = 3
 const MAX_TITLE_LENGTH = 100
-
-function getImageUrls(content: string) {
-  return [...content.matchAll(/!\[.*?\]\((https?:\/\/[^)]+)\)/g)].map(
-    (m) => m[1]
-  )
-}
 
 function getValidationMessage({
   categoryId,
@@ -173,7 +168,7 @@ function QnaEditFormInner({ questionId, question }: QnaEditFormInnerProps) {
         category_id: currentCategoryId,
         title: title.trim(),
         content: content.trim(),
-        image_urls: getImageUrls(content),
+        image_urls: extractImageUrls(content),
       },
       {
         onSuccess: () => {
