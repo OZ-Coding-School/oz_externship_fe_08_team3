@@ -5,6 +5,7 @@ import defaultProfile from '@/assets/default-profile.png'
 import { ROUTES } from '@/constants/routes'
 import { ProfileDropdown } from './ProfileDropdown'
 import { useAuthStore } from '@/stores/authStore'
+import { redirectToLogin } from '@/utils/loginRedirect'
 
 export interface HeaderProps {
   bannerText?: string
@@ -179,7 +180,7 @@ export function Header({
             />
           ) : (
             <AuthLinks
-              onLogin={() => navigate(ROUTES.AUTH.LOGIN)}
+              onLogin={redirectToLogin}
               onSignup={() => navigate(ROUTES.SIGNUP.SELECT)}
             />
           )}
