@@ -17,6 +17,8 @@ interface AnswerSectionProps {
   userId: number | null | undefined
   answers: GetAnswerItem[] | undefined
   onAccept: (answerId: number) => void
+  showForm: boolean
+  onEditAction: () => void
 }
 
 export function AnswerSection({
@@ -32,6 +34,8 @@ export function AnswerSection({
   userId,
   answers,
   onAccept,
+  showForm,
+  onEditAction,
 }: AnswerSectionProps) {
   return (
     <section aria-labelledby="answers-heading" className="mt-[100px]">
@@ -77,6 +81,8 @@ export function AnswerSection({
                   isAuthenticated={isAuthenticated}
                   userId={userId}
                   onAccept={onAccept}
+                  showForm={showForm}
+                  onEditAction={onEditAction}
                 />
               ))}
             </div>

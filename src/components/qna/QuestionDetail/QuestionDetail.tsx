@@ -56,6 +56,8 @@ function LinkIcon() {
   )
 }
 
+// ── QuestionDetail ─────────────────────────────────────────────────────────────
+
 interface QuestionDetailProps {
   questionDetail: GetQuestionDetailResponse | undefined
   isLoading: boolean
@@ -65,99 +67,6 @@ interface QuestionDetailProps {
   onShare: () => void
   onEdit: () => void
   showToast: (message: string, variant: ToastVariant) => void
-}
-
-function QuestionHeader({
-  questionDetail,
-}: {
-  questionDetail: GetQuestionDetailResponse
-}) {
-  return (
-    <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between sm:gap-[60px]">
-      <div className="flex min-w-0 flex-1 items-start gap-4">
-        <QBadgeIcon className="text-primary mt-1 w-10 shrink-0 sm:w-12" />
-        <h1 className="text-2xl leading-normal font-bold tracking-[-0.03em] text-[#121212] sm:text-[32px]">
-          {questionDetail.title}
-        </h1>
-      </div>
-
-      <div className="flex shrink-0 items-center gap-3">
-        <UserAvatar
-          size="lg"
-          profileImageUrl={questionDetail.author.profile_image_url}
-          nickname={questionDetail.author.nickname}
-        />
-        <span className="text-base leading-normal font-bold tracking-[-0.03em] text-[#4D4D4D]">
-          {questionDetail.author.nickname}
-        </span>
-      </div>
-    </div>
-  )
-}
-
-function QuestionMeta({
-  viewCount,
-  createdAt,
-}: {
-  viewCount: number
-  createdAt: string
-}) {
-  return (
-    <div className="mt-5 flex items-center gap-[19px] text-base leading-normal tracking-[-0.03em] text-[#9D9D9D]">
-      <span>조회수 {viewCount.toLocaleString()}</span>
-      <span className="text-[#CECECE]" aria-hidden="true">
-        ·
-      </span>
-      <time dateTime={createdAt}>{getRelativeTime(createdAt)}</time>
-    </div>
-  )
-}
-
-function AttachedImages({
-  images,
-}: {
-  images: GetQuestionDetailResponse['images']
-}) {
-  if (images.length === 0) return null
-
-  return (
-    <div className="mt-20 flex flex-wrap gap-2">
-      {images.map((img, idx) => (
-        <img
-          key={img.id}
-          src={img.img_url}
-          alt={`첨부 이미지 ${idx + 1}`}
-          loading="lazy"
-          decoding="async"
-          className="max-h-64 max-w-full rounded-md object-contain"
-        />
-      ))}
-    </div>
-  )
-}
-
-function QuestionActions({
-  isQuestionOwner,
-  onShare,
-  onEdit,
-}: Pick<QuestionDetailProps, 'isQuestionOwner' | 'onShare' | 'onEdit'>) {
-  return (
-    <div className="mt-6 flex items-center justify-end gap-2">
-      <button
-        type="button"
-        onClick={onShare}
-        className="hover:border-primary hover:text-primary inline-flex items-center gap-1.5 rounded-full border border-[#CECECE] px-4 py-2 text-sm text-[#4D4D4D] transition-colors"
-      >
-        <LinkIcon />
-        공유하기
-      </button>
-      {isQuestionOwner && (
-        <Button variant="ghost" size="sm" onClick={onEdit}>
-          수정
-        </Button>
-      )}
-    </div>
-  )
 }
 
 export function QuestionDetail({
@@ -180,16 +89,60 @@ export function QuestionDetail({
       )}
       {questionDetail && (
         <>
-          <QuestionHeader questionDetail={questionDetail} />
-          <QuestionMeta
-            viewCount={questionDetail.view_count}
-            createdAt={questionDetail.created_at}
-          />
+          {/* 제목 행: Q뱃지 + 제목 (좌) / 작성자 (우) */}
+          <div className="flex items-start justify-between gap-[60px]">
+            <div className="flex min-w-0 flex-1 items-start gap-4">
+              <QBadgeIcon className="text-primary mt-1 shrink-0" />
+              <h1 className="text-[32px] leading-normal font-bold tracking-[-0.03em] text-[#121212]">
+                {questionDetail.title}
+              </h1>
+            </div>
 
+            {/* 작성자 프로필 — 우측 */}
+            <div className="flex shrink-0 items-center gap-3">
+              <UserAvatar
+                size="lg"
+                profileImageUrl={questionDetail.author.profile_image_url}
+                nickname={questionDetail.author.nickname}
+              />
+              <span className="text-base leading-normal font-bold tracking-[-0.03em] text-[#4D4D4D]">
+                {questionDetail.author.nickname}
+              </span>
+            </div>
+          </div>
+
+          {/* 메타 정보: 조회수 | 시간 */}
+          <div className="mt-5 flex items-center gap-[19px] text-base leading-normal tracking-[-0.03em] text-[#9D9D9D]">
+            <span>조회수 {questionDetail.view_count.toLocaleString()}</span>
+            <span className="text-[#CECECE]">·</span>
+            <time dateTime={questionDetail.created_at}>
+              {getRelativeTime(questionDetail.created_at)}
+            </time>
+          </div>
+
+          {/* 디바이더 */}
           <hr className="mt-5 mb-10 h-px border-0 bg-[#CECECE]" />
-          <MarkdownViewer content={questionDetail.content} />
-          <AttachedImages images={questionDetail.images} />
 
+          {/* 본문 — 마크다운 렌더링 */}
+          <MarkdownViewer content={questionDetail.content} />
+
+          {/* 첨부 이미지 */}
+          {questionDetail.images.length > 0 && (
+            <div className="mt-20 flex flex-wrap gap-2">
+              {questionDetail.images.map((img, idx) => (
+                <img
+                  key={img.id}
+                  src={img.img_url}
+                  alt={`첨부 이미지 ${idx + 1}`}
+                  loading="lazy"
+                  decoding="async"
+                  className="max-h-64 rounded-md object-contain"
+                />
+              ))}
+            </div>
+          )}
+
+          {/* AI 1차 답변 */}
           {isAuthenticated && (
             <AiFirstAnswerSection
               questionId={questionDetail.id}
@@ -198,12 +151,24 @@ export function QuestionDetail({
             />
           )}
 
-          <QuestionActions
-            isQuestionOwner={isQuestionOwner}
-            onShare={onShare}
-            onEdit={onEdit}
-          />
+          {/* 공유하기 pill 버튼 + 수정 버튼 */}
+          <div className="mt-6 flex items-center justify-end gap-2">
+            <button
+              type="button"
+              onClick={onShare}
+              className="inline-flex items-center gap-1.5 rounded-full border border-[#CECECE] px-4 py-2 text-sm text-[#4D4D4D] transition-colors hover:bg-[#ECECEC]"
+            >
+              <LinkIcon />
+              공유하기
+            </button>
+            {isQuestionOwner && (
+              <Button variant="ghost" size="sm" onClick={onEdit}>
+                수정
+              </Button>
+            )}
+          </div>
 
+          {/* 하단 디바이더 */}
           <hr className="mt-6 h-px border-0 bg-[#CECECE]" />
         </>
       )}

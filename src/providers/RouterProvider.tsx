@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router'
+import { Navigate, Routes, Route } from 'react-router'
 import { DefaultLayout } from '@/components'
 import {
   QnaListPage,
@@ -12,6 +12,8 @@ import { ComponentShowcase } from '@/pages/ComponentShowcase'
 export function RouterProvider() {
   return (
     <Routes>
+      <Route path="/" element={<Navigate to="/qna" replace />} />
+
       {/* Header + Footer */}
       <Route element={<DefaultLayout />}>
         <Route path="qna">

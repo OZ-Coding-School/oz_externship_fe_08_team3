@@ -23,7 +23,7 @@ function QnaWriteForm() {
         category_id: data.categoryId,
         title: data.title,
         content: data.content,
-        image_urls: extractImageUrls(data.content),
+        img_urls: extractImageUrls(data.content),
       },
       {
         onSuccess: (res) => {

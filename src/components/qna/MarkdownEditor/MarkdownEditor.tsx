@@ -4,7 +4,6 @@ import MDEditor, {
   type ICommand,
 } from '@uiw/react-md-editor'
 import { ChevronDown } from 'lucide-react'
-import remarkBreaks from 'remark-breaks'
 import rehypeRaw from 'rehype-raw'
 import rehypeSanitize from 'rehype-sanitize'
 import { rehypeSanitizeStyle } from '@/components/qna/markdownSanitize'
@@ -227,17 +226,119 @@ export function MarkdownEditor({
           return
         }
 
-        // 들여쓰기된 글머리 목록 (빈 항목 → 상위 레벨로 복귀)
+        // 들여쓰기된 글머리 목록 (빈 항목)
         const bulletEmptyMatch = line.match(/^( +)([-*]) $/)
         if (bulletEmptyMatch) {
           e.preventDefault()
           e.stopPropagation()
           const [, indent, bullet] = bulletEmptyMatch
-          const newIndent = indent.length >= 2 ? indent.slice(2) : ''
-          const nextItem = newIndent ? `${newIndent}${bullet} ` : `${bullet} `
-          const newText =
-            text.slice(0, lineStart) + nextItem + text.slice(lineEnd)
-          applyText(ta, newText, lineStart + nextItem.length)
+
+          // 이전 줄이 같은 들여쓰기만 있는 줄인지 확인 → 3번째 엔터 감지
+          const prevLineEnd = lineStart - 1
+          const prevLineStart =
+            lineStart > 0 ? text.lastIndexOf('\n', prevLineEnd - 1) + 1 : 0
+          const prevLine =
+            lineStart > 0 ? text.slice(prevLineStart, prevLineEnd) : ''
+
+          if (prevLine === indent) {
+            // 3번째 엔터: 이전 '    ' 줄은 유지, 현재 줄을 부모 레벨 bullet으로 교체
+            const lines = text.split('\n')
+            const lineIndex = (text.slice(0, lineStart).match(/\n/g) ?? [])
+              .length
+            let parentIndent = ''
+            for (let i = lineIndex - 1; i >= 0; i--) {
+              const prevBulletMatch = lines[i].match(/^(\s*)([-*]) /)
+              if (
+                prevBulletMatch &&
+                prevBulletMatch[1].length < indent.length
+              ) {
+                parentIndent = prevBulletMatch[1]
+                break
+              }
+            }
+            const newLine = `${parentIndent}${bullet} `
+            const newText =
+              text.slice(0, lineStart) + newLine + text.slice(lineEnd)
+            applyText(ta, newText, lineStart + newLine.length)
+          } else {
+            // 2번째 엔터: 현재 줄에서 '-' 제거(들여쓰기 유지), 새 하위 bullet 줄 추가
+            const newText =
+              text.slice(0, lineStart) +
+              indent +
+              `\n${indent}${bullet} ` +
+              text.slice(lineEnd)
+            applyText(
+              ta,
+              newText,
+              lineStart + indent.length + 1 + indent.length + bullet.length + 1
+            )
+          }
+          return
+        }
+
+        // 인용문 (빈 항목, '> ' 공백 있음)
+        const blockquoteEmptyWithSpaceMatch = line.match(/^(>+) $/)
+        if (blockquoteEmptyWithSpaceMatch) {
+          e.preventDefault()
+          e.stopPropagation()
+          const [, markers] = blockquoteEmptyWithSpaceMatch
+          // 바로 위 줄이 '>' 구분선이면 → 구분선 + 현재 줄 제거 (인용문 해제)
+          const prevLineEnd = lineStart - 1 // lineStart 앞의 '\n'
+          const prevLineStart = text.lastIndexOf('\n', prevLineEnd - 1) + 1
+          const prevLine = text.slice(prevLineStart, prevLineEnd)
+          if (prevLine === markers) {
+            const textBefore = text.slice(0, prevLineStart)
+            const textAfter = text.slice(lineEnd)
+            // 인용문 뒤에 반드시 빈 줄이 있어야 CommonMark lazy continuation 방지
+            const needsExtraNewline = !textAfter.startsWith('\n')
+            const newText =
+              textBefore + (needsExtraNewline ? '\n' : '') + textAfter
+            const cursorPos = prevLineStart + (needsExtraNewline ? 1 : 0)
+            applyText(ta, newText, cursorPos)
+          } else {
+            // 위 줄이 구분선이 아니면 → '>' + '\n' + '> ' 삽입 (문단 구분)
+            const newText =
+              text.slice(0, lineStart) +
+              markers +
+              '\n' +
+              markers +
+              ' ' +
+              text.slice(lineEnd)
+            applyText(ta, newText, lineStart + markers.length * 2 + 2)
+          }
+          return
+        }
+
+        // 인용문 (빈 항목, '>' 공백 없음 → 인용문 해제)
+        const blockquoteEmptyMatch = line.match(/^(>+)$/)
+        if (blockquoteEmptyMatch) {
+          e.preventDefault()
+          e.stopPropagation()
+          const newText = text.slice(0, lineStart) + text.slice(lineEnd)
+          applyText(ta, newText, lineStart)
+          return
+        }
+
+        // 인용문 (공백 없이 '>' 바로 텍스트 → 라이브러리 자동 계속 방지, 일반 줄바꿈)
+        const blockquoteNoSpaceMatch = line.match(/^>+[^ \n]/)
+        if (blockquoteNoSpaceMatch) {
+          e.preventDefault()
+          e.stopPropagation()
+          const insertion = '\n'
+          const newText = text.slice(0, cursor) + insertion + text.slice(cursor)
+          applyText(ta, newText, cursor + insertion.length)
+          return
+        }
+
+        // 인용문 (내용 있는 항목 → 다음 줄도 인용문 유지, 공백 필수 '> text')
+        const blockquoteMatch = line.match(/^(>+) /)
+        if (blockquoteMatch) {
+          e.preventDefault()
+          e.stopPropagation()
+          const [, markers] = blockquoteMatch
+          const insertion = `\n${markers} `
+          const newText = text.slice(0, cursor) + insertion + text.slice(cursor)
+          applyText(ta, newText, cursor + insertion.length)
           return
         }
       }
@@ -427,7 +528,6 @@ export function MarkdownEditor({
           commands={editorCommands}
           extraCommands={editorExtraCommands}
           previewOptions={{
-            remarkPlugins: [[remarkBreaks]],
             remarkRehypeOptions: { allowDangerousHtml: true },
             rehypePlugins: [
               [rehypeRaw],
