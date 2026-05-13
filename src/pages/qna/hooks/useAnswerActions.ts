@@ -7,6 +7,7 @@ import { usePostAnswer, usePutAnswer } from '@/features/qna/answers'
 import { useAcceptAnswer } from '@/features/qna/answer-accept'
 import { handleApiError } from '@/utils/handleApiError'
 import { ROUTES } from '@/constants/routes'
+import { redirectToLogin } from '@/utils/loginRedirect'
 
 interface UseAnswerActionsParams {
   questionId: number
@@ -63,7 +64,7 @@ export function useAnswerActions({
             },
             {
               400: () => answerFormRef.current?.focusEditor(),
-              401: () => navigate(ROUTES.AUTH.LOGIN),
+              401: redirectToLogin,
               404: () => navigate(ROUTES.QNA.LIST),
             }
           )
@@ -96,7 +97,7 @@ export function useAnswerActions({
             },
             {
               400: () => answerFormRef.current?.focusEditor(),
-              401: () => navigate(ROUTES.AUTH.LOGIN),
+              401: redirectToLogin,
               403: () => navigate(-1),
               404: () => navigate(ROUTES.QNA.LIST),
             }
@@ -127,7 +128,7 @@ export function useAnswerActions({
             409: '이미 채택된 답변이 존재합니다.',
           },
           {
-            401: () => navigate(ROUTES.AUTH.LOGIN),
+            401: redirectToLogin,
             404: () => navigate(ROUTES.QNA.LIST),
           }
         )

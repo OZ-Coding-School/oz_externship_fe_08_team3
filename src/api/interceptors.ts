@@ -4,20 +4,17 @@ import type {
   InternalAxiosRequestConfig,
   AxiosError,
 } from 'axios'
-import { ROUTES } from '@/constants/routes'
 import { useAuthStore } from '@/stores/authStore'
+import { redirectToLogin } from '@/utils/loginRedirect'
 
 interface RetryConfig extends InternalAxiosRequestConfig {
   _retry?: boolean
 }
 
-const redirectToLogin = () => {
+const clearAuthAndRedirectToLogin = () => {
   useAuthStore.getState().logout()
   localStorage.removeItem('accessToken')
-
-  if (window.location.pathname !== ROUTES.AUTH.LOGIN) {
-    window.location.href = ROUTES.AUTH.LOGIN
-  }
+  redirectToLogin()
 }
 
 export function setupInterceptors(instance: AxiosInstance): void {
@@ -41,6 +38,15 @@ export function setupInterceptors(instance: AxiosInstance): void {
         return Promise.reject(error)
       }
 
+      const hasAuthToken =
+        Boolean(localStorage.getItem('accessToken')) ||
+        Boolean(originalConfig.headers?.Authorization)
+
+      if (error.response.status === 401 && !hasAuthToken) {
+        clearAuthAndRedirectToLogin()
+        return Promise.reject(error)
+      }
+
       if (error.response.status === 401 && !originalConfig._retry) {
         originalConfig._retry = true
 
@@ -57,7 +63,7 @@ export function setupInterceptors(instance: AxiosInstance): void {
           originalConfig.headers.Authorization = `Bearer ${newToken}`
           return instance(originalConfig)
         } catch (refreshError) {
-          redirectToLogin()
+          clearAuthAndRedirectToLogin()
           return Promise.reject(refreshError)
         }
       }

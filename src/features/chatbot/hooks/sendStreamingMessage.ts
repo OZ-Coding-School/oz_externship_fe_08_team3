@@ -1,18 +1,16 @@
 import type { QueryClient, QueryKey } from '@tanstack/react-query'
 import type { ChatMessage } from '@/features/chatbot/widgetTypes'
 import { useAuthStore } from '@/stores/authStore'
-import { ROUTES } from '@/constants/routes'
+import { redirectToLogin } from '@/utils/loginRedirect'
 import { readSseMessageStream } from './sseStream'
 
 const ERROR_TEXT = '응답을 불러오지 못했습니다. 다시 시도해주세요.'
 const ERROR_BUFFER_TEXT = '응답이 너무 길어 중단되었습니다.'
 
-function redirectToLogin() {
+function clearAuthAndRedirectToLogin() {
   useAuthStore.getState().logout()
   localStorage.removeItem('accessToken')
-  if (window.location.pathname !== ROUTES.AUTH.LOGIN) {
-    window.location.href = ROUTES.AUTH.LOGIN
-  }
+  redirectToLogin()
 }
 
 function createChatMessage(
@@ -70,7 +68,7 @@ function handleHttpStatus({
   onRateLimit?: (assistantId: string) => void
 }) {
   if (response.status === 401) {
-    redirectToLogin()
+    clearAuthAndRedirectToLogin()
     return true
   }
   if (response.status === 429 && onRateLimit) {
