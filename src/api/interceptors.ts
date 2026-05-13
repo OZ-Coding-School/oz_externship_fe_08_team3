@@ -41,7 +41,15 @@ export function setupInterceptors(instance: AxiosInstance): void {
         return Promise.reject(error)
       }
 
-      if (error.response.status === 401 && !originalConfig._retry) {
+      const hasAuthToken =
+        Boolean(localStorage.getItem('accessToken')) ||
+        Boolean(originalConfig.headers?.Authorization)
+
+      if (
+        error.response.status === 401 &&
+        hasAuthToken &&
+        !originalConfig._retry
+      ) {
         originalConfig._retry = true
 
         try {
