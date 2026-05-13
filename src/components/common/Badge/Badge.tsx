@@ -19,7 +19,7 @@ const variantClasses: Record<BadgeVariant, string> = {
   default: 'bg-bg-muted text-text-body border border-border-base',
   primary: 'bg-primary-100 text-primary-700 border border-primary-200',
   success: 'bg-success-bg text-success-dark border border-success',
-  warning: 'bg-warning-bg text-yellow-700 border border-warning',
+  warning: 'bg-warning-bg text-warning border border-warning',
   error: 'bg-error-bg text-error-dark border border-error',
   info: 'bg-info-bg text-info border border-info',
 }

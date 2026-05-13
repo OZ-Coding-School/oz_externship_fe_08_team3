@@ -32,9 +32,7 @@ export function QnaDetailPage() {
   const { toast, showToast, hideToast } = useToast()
 
   const canAnswer =
-    isAuthenticated &&
-    user?.role != null &&
-    ANSWER_ALLOWED_ROLES.includes(user.role)
+    isAuthenticated && user?.role != null && ANSWER_ALLOWED_ROLES.has(user.role)
 
   const [showForm, setShowForm] = useState(false)
   const [justPosted, setJustPosted] = useState(false)

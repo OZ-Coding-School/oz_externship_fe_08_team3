@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState, useEffect } from 'react'
+import { useImperativeHandle, useRef, useState, useEffect } from 'react'
 import MDEditor, {
   commands as mdCommands,
   type ICommand,
@@ -6,6 +6,7 @@ import MDEditor, {
 import { ChevronDown } from 'lucide-react'
 import rehypeRaw from 'rehype-raw'
 import rehypeSanitize from 'rehype-sanitize'
+import { rehypeSanitizeStyle } from '@/components/qna/markdownSanitize'
 import './MarkdownEditor.css'
 import {
   editorSanitizeSchema,
@@ -48,6 +49,11 @@ export interface MarkdownEditorProps {
   error?: string
   actions?: React.ReactNode
   wrapperClassName?: string
+  ref?: React.Ref<MarkdownEditorHandle>
+}
+
+export interface MarkdownEditorHandle {
+  focus: () => void
 }
 
 export function MarkdownEditor({
@@ -56,12 +62,23 @@ export function MarkdownEditor({
   error,
   actions,
   wrapperClassName,
+  ref,
 }: MarkdownEditorProps) {
   const [selectedFontLabel, setSelectedFontLabel] = useState('기본서체')
   const [selectedFontSize, setSelectedFontSize] = useState(16)
   const [isDragOver, setIsDragOver] = useState(false)
   const dragCounterRef = useRef(0)
   const editorWrapRef = useRef<HTMLDivElement>(null)
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      focus: () => {
+        editorWrapRef.current?.querySelector('textarea')?.focus()
+      },
+    }),
+    []
+  )
 
   const {
     valueRef,
@@ -162,8 +179,6 @@ export function MarkdownEditor({
       }
 
       // ── Enter: 들여쓰기된 목록 항목 연속 생성 ──
-      // 라이브러리는 indent 있는 항목을 인식 못함 → 여기서 처리
-      // isComposing=true: 한글 IME 조합 중 Enter → 글자 확정만 하고 줄바꿈은 다음 이벤트에서 처리
       if (
         e.key === 'Enter' &&
         !e.shiftKey &&
@@ -187,8 +202,12 @@ export function MarkdownEditor({
         if (orderedEmptyMatch) {
           e.preventDefault()
           e.stopPropagation()
-          const [, indent, numStr] = orderedEmptyMatch
-          const nextItem = `${indent}${parseInt(numStr, 10) + 1}. `
+          const [, indent] = orderedEmptyMatch
+          const newIndent = indent.length >= 3 ? indent.slice(3) : ''
+          const lines = text.split('\n')
+          const lineIndex = (text.slice(0, lineStart).match(/\n/g) ?? []).length
+          const num = computeNextNumber(lines, lineIndex, newIndent)
+          const nextItem = newIndent ? `${newIndent}${num}. ` : `${num}. `
           const newText =
             text.slice(0, lineStart) + nextItem + text.slice(lineEnd)
           applyText(ta, newText, lineStart + nextItem.length)
@@ -329,161 +348,149 @@ export function MarkdownEditor({
     return () => wrap.removeEventListener('keydown', onKeyDown, true)
   }, [])
 
-  const handleDrop = useCallback(
-    async (e: React.DragEvent<HTMLDivElement>) => {
-      e.preventDefault()
-      dragCounterRef.current = 0
-      setIsDragOver(false)
-      const files = Array.from(e.dataTransfer.files)
-      const imageFiles = files.filter((f) =>
-        ACCEPTED_IMAGE_TYPES.includes(f.type)
-      )
-      if (imageFiles.length === 0) {
-        // 이미지가 아닌 파일 → uploadImageFile 내부의 타입 체크에서 에러 메시지 설정
-        if (files.length > 0) await uploadImageFile(files[0], () => {})
-        return
-      }
-      for (const file of imageFiles) {
-        await uploadImageFile(file, (md) => {
-          const current = valueRef.current
-          const sep = current.length > 0 && !current.endsWith('\n') ? '\n' : ''
-          setUndoStack((prev) => {
-            const next = [...prev, current]
-            return next.length > UNDO_LIMIT ? next.slice(-UNDO_LIMIT) : next
-          })
-          setRedoStack([])
-          onChange(current + sep + md)
+  // React Compiler가 자동 메모이제이션 처리
+  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    dragCounterRef.current = 0
+    setIsDragOver(false)
+    const files = Array.from(e.dataTransfer.files)
+    const imageFiles = files.filter((f) =>
+      ACCEPTED_IMAGE_TYPES.includes(f.type)
+    )
+    if (imageFiles.length === 0) {
+      // 이미지가 아닌 파일 → uploadImageFile 내부의 타입 체크에서 에러 메시지 설정
+      if (files.length > 0) await uploadImageFile(files[0], () => {})
+      return
+    }
+    for (const file of imageFiles) {
+      await uploadImageFile(file, (md) => {
+        const current = valueRef.current
+        const sep = current.length > 0 && !current.endsWith('\n') ? '\n' : ''
+        setUndoStack((prev) => {
+          const next = [...prev, current]
+          return next.length > UNDO_LIMIT ? next.slice(-UNDO_LIMIT) : next
         })
-      }
+        setRedoStack([])
+        onChange(current + sep + md)
+      })
+    }
+  }
+
+  const fontFamilyCommand: ICommand = {
+    name: 'font-family',
+    keyCommand: 'group',
+    groupName: 'font-family',
+    buttonProps: {
+      'aria-label': '글꼴',
+      title: '글꼴',
+      style: PILL,
+      onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) =>
+        e.preventDefault(),
     },
-    [uploadImageFile, onChange, valueRef, setUndoStack, setRedoStack]
-  )
+    icon: (
+      <span className="toolbar-pill-icon">
+        {selectedFontLabel} <ChevronDown size={10} />
+      </span>
+    ),
+    children: ({ close, getState, textApi }) => (
+      <div className="toolbar-popup" onMouseDown={(e) => e.preventDefault()}>
+        {FONT_FAMILIES.map(({ label, value: fontValue }) => (
+          <button
+            key={fontValue}
+            type="button"
+            style={{
+              fontFamily: fontValue === 'inherit' ? undefined : fontValue,
+            }}
+            onClick={() => {
+              applyInlineFromDropdown(getState, textApi, (t) =>
+                wrapWithStyle(t, 'font-family', fontValue)
+              )
+              close()
+              setTimeout(() => setSelectedFontLabel(label), 0)
+            }}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+    ),
+    execute: () => {},
+  }
 
-  const fontFamilyCommand = useMemo<ICommand>(
-    () => ({
-      name: 'font-family',
-      keyCommand: 'group',
-      groupName: 'font-family',
-      buttonProps: {
-        'aria-label': '글꼴',
-        title: '글꼴',
-        style: PILL,
-        onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) =>
-          e.preventDefault(),
-      },
-      icon: (
-        <span className="toolbar-pill-icon">
-          {selectedFontLabel} <ChevronDown size={10} />
-        </span>
-      ),
-      children: ({ close, getState, textApi }) => (
-        <div className="toolbar-popup" onMouseDown={(e) => e.preventDefault()}>
-          {FONT_FAMILIES.map(({ label, value }) => (
-            <button
-              key={value}
-              type="button"
-              style={{ fontFamily: value === 'inherit' ? undefined : value }}
-              onClick={() => {
-                applyInlineFromDropdown(getState, textApi, (t) =>
-                  wrapWithStyle(t, 'font-family', value)
-                )
-                close()
-                setTimeout(() => setSelectedFontLabel(label), 0)
-              }}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      ),
-      execute: () => {},
-    }),
-    [selectedFontLabel]
-  )
+  const fontSizeCommand: ICommand = {
+    name: 'font-size',
+    keyCommand: 'group',
+    groupName: 'font-size',
+    buttonProps: {
+      'aria-label': '글자 크기',
+      title: '글자 크기',
+      style: PILL,
+      onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) =>
+        e.preventDefault(),
+    },
+    icon: (
+      <span className="toolbar-pill-icon">
+        {selectedFontSize} <ChevronDown size={10} />
+      </span>
+    ),
+    children: ({ close, getState, textApi }) => (
+      <div
+        className="toolbar-popup toolbar-popup--font-size"
+        onMouseDown={(e) => e.preventDefault()}
+      >
+        {FONT_SIZES.map((size) => (
+          <button
+            key={size}
+            type="button"
+            onClick={() => {
+              applyInlineFromDropdown(getState, textApi, (t) =>
+                wrapWithStyle(t, 'font-size', `${size}px`)
+              )
+              close()
+              setTimeout(() => setSelectedFontSize(size), 0)
+            }}
+          >
+            {size}
+          </button>
+        ))}
+      </div>
+    ),
+    execute: () => {},
+  }
 
-  const fontSizeCommand = useMemo<ICommand>(
-    () => ({
-      name: 'font-size',
-      keyCommand: 'group',
-      groupName: 'font-size',
-      buttonProps: {
-        'aria-label': '글자 크기',
-        title: '글자 크기',
-        style: PILL,
-        onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) =>
-          e.preventDefault(),
-      },
-      icon: (
-        <span className="toolbar-pill-icon">
-          {selectedFontSize} <ChevronDown size={10} />
-        </span>
-      ),
-      children: ({ close, getState, textApi }) => (
-        <div
-          className="toolbar-popup toolbar-popup--font-size"
-          onMouseDown={(e) => e.preventDefault()}
-        >
-          {FONT_SIZES.map((size) => (
-            <button
-              key={size}
-              type="button"
-              onClick={() => {
-                applyInlineFromDropdown(getState, textApi, (t) =>
-                  wrapWithStyle(t, 'font-size', `${size}px`)
-                )
-                close()
-                setTimeout(() => setSelectedFontSize(size), 0)
-              }}
-            >
-              {size}
-            </button>
-          ))}
-        </div>
-      ),
-      execute: () => {},
-    }),
-    [selectedFontSize]
-  )
+  const editorCommands: ICommand[] = [
+    undoCommand,
+    redoCommand,
+    mdCommands.divider,
+    fontFamilyCommand,
+    fontSizeCommand,
+    mdCommands.divider,
+    boldCommand,
+    italicCommand,
+    underlineCommand,
+    strikethroughCommand,
+    bgColorCommand,
+    textColorCommand,
+    mdCommands.divider,
+    {
+      ...mdCommands.link,
+      buttonProps: { ...mdCommands.link.buttonProps, ...NO_BLUR_PROPS },
+    },
+    imageCommand,
+  ]
 
-  const editorCommands: ICommand[] = useMemo(
-    () => [
-      undoCommand,
-      redoCommand,
-      mdCommands.divider,
-      fontFamilyCommand,
-      fontSizeCommand,
-      mdCommands.divider,
-      boldCommand,
-      italicCommand,
-      underlineCommand,
-      strikethroughCommand,
-      bgColorCommand,
-      textColorCommand,
-      mdCommands.divider,
-      {
-        ...mdCommands.link,
-        buttonProps: { ...mdCommands.link.buttonProps, ...NO_BLUR_PROPS },
-      },
-      imageCommand,
-    ],
-    [imageCommand, undoCommand, redoCommand, fontFamilyCommand, fontSizeCommand]
-  )
-
-  const editorExtraCommands: ICommand[] = useMemo(
-    () => [
-      listDropdownCmd,
-      mdCommands.divider,
-      alignLeftCommand,
-      alignCenterCommand,
-      alignRightCommand,
-      alignJustifyCommand,
-      lineHeightCmd,
-      outdentCmd,
-      indentCmd,
-      clearFormatCmd,
-    ],
-    []
-  )
+  const editorExtraCommands: ICommand[] = [
+    listDropdownCmd,
+    mdCommands.divider,
+    alignLeftCommand,
+    alignCenterCommand,
+    alignRightCommand,
+    alignJustifyCommand,
+    lineHeightCmd,
+    outdentCmd,
+    indentCmd,
+    clearFormatCmd,
+  ]
 
   return (
     <div
@@ -525,6 +532,7 @@ export function MarkdownEditor({
             rehypePlugins: [
               [rehypeRaw],
               [rehypeSanitize, editorSanitizeSchema],
+              [rehypeSanitizeStyle],
             ],
           }}
         />

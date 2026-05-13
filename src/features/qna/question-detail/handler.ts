@@ -3,7 +3,7 @@ import type { GetQuestionDetailResponse } from './types'
 
 export const questionDetailHandler = [
   http.get(
-    `${import.meta.env.VITE_API_BASE_URL}/qna/questions/:question_id/`,
+    `${import.meta.env.VITE_API_BASE_URL}/qna/questions/:question_id`,
     ({ params }) => {
       const response: GetQuestionDetailResponse = {
         id: Number(params.question_id),

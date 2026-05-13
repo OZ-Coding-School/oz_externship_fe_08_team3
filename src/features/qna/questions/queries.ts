@@ -10,7 +10,7 @@ function questionsQueryOptions(params: QuestionsListParams = {}) {
   return queryOptions({
     queryKey: ['qna', 'questions', 'list', normalized],
     queryFn: async () => {
-      const { data } = await api.get<QuestionsListResponse>('/qna/questions/', {
+      const { data } = await api.get<QuestionsListResponse>('/qna/questions', {
         params: normalized,
       })
       return data

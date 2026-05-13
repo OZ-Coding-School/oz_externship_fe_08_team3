@@ -1,4 +1,5 @@
 import { ChatbotHeader } from '@/components/chatbot/ChatbotHeader'
+import { useShallow } from 'zustand/react/shallow'
 import { useChatbotStore } from '@/stores/chatbotStore'
 import { useGetSessions } from '@/features/chatbot/sessions'
 import type { ChatSession } from '@/features/chatbot/sessions'
@@ -6,7 +7,13 @@ import { getRelativeTime } from '@/utils/relativeTime'
 import chatbotRobot from '@/assets/chatbot-robot.png'
 
 export function HubView() {
-  const { setView, enterQna, close } = useChatbotStore()
+  const { setView, enterQna, close } = useChatbotStore(
+    useShallow((s) => ({
+      setView: s.setView,
+      enterQna: s.enterQna,
+      close: s.close,
+    }))
+  )
   const { data, isLoading, isError, refetch } = useGetSessions()
 
   const handleCsClick = () => {

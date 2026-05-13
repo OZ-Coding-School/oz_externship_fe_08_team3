@@ -23,7 +23,9 @@ export function UserAvatar({
     <img
       src={profileImageUrl ?? defaultProfile}
       alt={nickname}
-      className={`${sizeClass} rounded-full object-cover`}
+      width={size === 'lg' ? 48 : size === 'md' ? 32 : 24}
+      height={size === 'lg' ? 48 : size === 'md' ? 32 : 24}
+      className={`${sizeClass} aspect-square rounded-full object-cover`}
     />
   )
 }

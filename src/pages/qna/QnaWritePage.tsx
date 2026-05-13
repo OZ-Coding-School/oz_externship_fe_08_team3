@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router'
 import { QuestionForm } from '@/components'
 import { useCreateQuestion } from '@/features/qna/question-write'
 import { ROUTES } from '@/constants/routes'
+import { extractImageUrls } from '@/utils/extractImageUrls'
 
 function QnaWriteForm() {
   const navigate = useNavigate()
@@ -22,6 +23,7 @@ function QnaWriteForm() {
         category_id: data.categoryId,
         title: data.title,
         content: data.content,
+        img_urls: extractImageUrls(data.content),
       },
       {
         onSuccess: (res) => {

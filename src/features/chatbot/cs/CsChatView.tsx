@@ -1,6 +1,7 @@
 import { ChatbotHeader } from '@/components/chatbot/ChatbotHeader'
 import { MessageList } from '@/components/chatbot/MessageList'
 import { ChatInput } from '@/components/chatbot/ChatInput'
+import { useShallow } from 'zustand/react/shallow'
 import { useChatbotStore } from '@/stores/chatbotStore'
 import { useCsChat } from './hooks/useCsChat'
 
@@ -14,7 +15,9 @@ export function CsChatView() {
     sendMessage,
     abort,
   } = useCsChat()
-  const { setView, close } = useChatbotStore()
+  const { setView, close } = useChatbotStore(
+    useShallow((s) => ({ setView: s.setView, close: s.close }))
+  )
 
   const handleBack = () => {
     abort()

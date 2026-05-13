@@ -1,26 +1,25 @@
 export const ROUTES = {
-  /* Todo: 도메인 지정 후 추가 필요  */
-  HOME: '',
+  HOME: '/',
 
   AUTH: {
-    LOGIN: '',
+    LOGIN: '/login',
   },
 
   SIGNUP: {
-    SELECT: '',
-    FORM: '',
+    SELECT: '/signup',
+    FORM: '/signup/general',
   },
 
   MYPAGE: {
-    HOME: '',
-    EDIT: '',
-    CHANGE_PASSWORD: '',
-    QUIZ: '',
+    HOME: '/mypage',
+    EDIT: '/mypage/edit',
+    CHANGE_PASSWORD: '/mypage/change-password',
+    QUIZ: '/mypage/quiz',
   },
 
   QUIZ: {
-    EXAM: '',
-    RESULT: '',
+    EXAM: '/quiz/:quizId',
+    RESULT: '/quiz/:quizId/result',
   },
 
   QNA: {
@@ -35,9 +34,9 @@ export const ROUTES = {
   },
 
   COMMUNITY: {
-    LIST: '',
-    WRITE: '',
-    DETAIL: '',
-    EDIT: '',
+    LIST: '/community',
+    WRITE: '/community/write',
+    DETAIL: '/community/:postId',
+    EDIT: '/community/:postId/edit',
   },
 } as const

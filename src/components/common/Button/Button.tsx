@@ -1,5 +1,3 @@
-import { forwardRef } from 'react'
-
 export type ButtonVariant =
   | 'primary'
   | 'secondary'
@@ -14,6 +12,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   loading?: boolean
   fullWidth?: boolean
   children: React.ReactNode
+  ref?: React.Ref<HTMLButtonElement>
 }
 
 const variantClasses: Record<ButtonVariant, string> = {
@@ -35,49 +34,43 @@ const sizeClasses: Record<ButtonSize, string> = {
   lg: 'h-14 px-6 text-lg font-semibold rounded-full gap-2',
 }
 
-export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  function Button(
-    {
-      variant = 'primary',
-      size = 'md',
-      loading = false,
-      fullWidth = false,
-      disabled,
-      className = '',
-      children,
-      ...props
-    },
-    ref
-  ) {
-    const isDisabled = disabled || loading
+export function Button({
+  variant = 'primary',
+  size = 'md',
+  loading = false,
+  fullWidth = false,
+  disabled,
+  className = '',
+  children,
+  ref,
+  ...props
+}: ButtonProps) {
+  const isDisabled = disabled || loading
 
-    return (
-      <button
-        ref={ref}
-        disabled={isDisabled}
-        aria-disabled={isDisabled}
-        aria-busy={loading}
-        className={[
-          'inline-flex items-center justify-center transition-colors duration-150 outline-none',
-          variantClasses[variant],
-          sizeClasses[size],
-          fullWidth ? 'w-full' : '',
-          className,
-        ]
-          .filter(Boolean)
-          .join(' ')}
-        {...props}
-      >
-        {loading && (
-          <span
-            className="inline-block h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-current border-t-transparent"
-            aria-hidden="true"
-          />
-        )}
-        {children}
-      </button>
-    )
-  }
-)
-
-export default Button
+  return (
+    <button
+      ref={ref}
+      disabled={isDisabled}
+      aria-disabled={isDisabled}
+      aria-busy={loading}
+      className={[
+        'inline-flex items-center justify-center transition-colors duration-150 outline-none',
+        variantClasses[variant],
+        sizeClasses[size],
+        fullWidth ? 'w-full' : '',
+        className,
+      ]
+        .filter(Boolean)
+        .join(' ')}
+      {...props}
+    >
+      {loading && (
+        <span
+          className="inline-block h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-current border-t-transparent"
+          aria-hidden="true"
+        />
+      )}
+      {children}
+    </button>
+  )
+}

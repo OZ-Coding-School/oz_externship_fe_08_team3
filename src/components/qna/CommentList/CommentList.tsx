@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import { MessageCircle, ArrowDownUp } from 'lucide-react'
 import { UserAvatar } from '@/components/common/UserAvatar'
 import type { AnswerComment } from '@/features/qna/answer-comments'
@@ -18,19 +18,12 @@ export function CommentList({ comments }: CommentListProps) {
   const [sortOrder, setSortOrder] = useState<SortOrder>('latest')
   const [isSortOpen, setIsSortOpen] = useState(false)
 
-  const sorted = useMemo(() => {
-    const copy = [...comments]
-    if (sortOrder === 'latest') {
-      return copy.sort(
-        (a, b) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      )
-    }
-    return copy.sort(
-      (a, b) =>
-        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-    )
-  }, [comments, sortOrder])
+  // React Compiler가 자동 메모이제이션 처리
+  const sorted = [...comments].sort((a, b) =>
+    sortOrder === 'latest'
+      ? new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      : new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+  )
 
   if (comments.length === 0) return null
 

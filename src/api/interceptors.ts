@@ -46,7 +46,7 @@ export function setupInterceptors(instance: AxiosInstance): void {
 
         try {
           const { data } = await axios.post(
-            `${import.meta.env.VITE_API_BASE_URL}/api/v1/accounts/me/refresh`,
+            `${import.meta.env.VITE_API_BASE_URL}/accounts/me/refresh`,
             {},
             { withCredentials: true }
           )

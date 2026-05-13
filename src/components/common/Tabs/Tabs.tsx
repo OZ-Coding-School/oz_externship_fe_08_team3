@@ -1,4 +1,4 @@
-import { createContext, useContext, useId } from 'react'
+import { createContext, useContext, useId, useRef } from 'react'
 
 /* ------------------------------------------------------------------ */
 /* Context                                                              */
@@ -55,10 +55,41 @@ export function TabList({
   className = '',
   'aria-label': ariaLabel,
 }: TabListProps) {
+  const listRef = useRef<HTMLDivElement>(null)
+
+  // WAI-ARIA Tabs Pattern: 화살표 키로 탭 간 이동
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    const tabs = listRef.current?.querySelectorAll<HTMLElement>(
+      '[role="tab"]:not([disabled])'
+    )
+    if (!tabs?.length) return
+
+    const current = document.activeElement as HTMLElement
+    const index = Array.from(tabs).indexOf(current)
+    if (index === -1) return
+
+    const last = tabs.length - 1
+    const move: Record<string, number | undefined> = {
+      ArrowRight: index === last ? 0 : index + 1,
+      ArrowLeft: index === 0 ? last : index - 1,
+      Home: 0,
+      End: last,
+    }
+    const next = move[e.key]
+    if (next !== undefined) {
+      e.preventDefault()
+      tabs[next].focus()
+      tabs[next].click()
+    }
+  }
+
   return (
     <div
+      ref={listRef}
       role="tablist"
+      tabIndex={-1}
       aria-label={ariaLabel}
+      onKeyDown={handleKeyDown}
       className={['border-border-base flex border-b', className]
         .filter(Boolean)
         .join(' ')}
@@ -91,9 +122,6 @@ export function Tab({ value, children, disabled = false }: TabProps) {
       tabIndex={isActive ? 0 : -1}
       disabled={disabled}
       onClick={() => !disabled && onChange(value)}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') onChange(value)
-      }}
       className={[
         'relative shrink-0 px-4 py-3 text-sm font-medium transition-colors duration-150 outline-none',
         'focus-visible:ring-primary focus-visible:ring-2 focus-visible:ring-inset',

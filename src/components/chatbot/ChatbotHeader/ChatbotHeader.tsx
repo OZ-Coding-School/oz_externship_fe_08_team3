@@ -1,3 +1,4 @@
+import { useShallow } from 'zustand/react/shallow'
 import { useChatbotStore } from '@/stores/chatbotStore'
 
 interface ChatbotHeaderProps {
@@ -18,7 +19,9 @@ export function ChatbotHeader({
   onBack,
   onClose,
 }: ChatbotHeaderProps) {
-  const { setView, close } = useChatbotStore()
+  const { setView, close } = useChatbotStore(
+    useShallow((s) => ({ setView: s.setView, close: s.close }))
+  )
 
   const handleBack = onBack ?? (() => setView('hub'))
   const handleClose = onClose ?? (() => close())

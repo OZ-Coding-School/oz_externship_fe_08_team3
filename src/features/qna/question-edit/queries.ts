@@ -19,7 +19,7 @@ const questionDetailQueryOptions = (questionId: number) =>
     queryKey: ['question-detail', questionId],
     queryFn: () =>
       api
-        .get<GetQuestionDetailResponse>(`/qna/questions/${questionId}/`)
+        .get<GetQuestionDetailResponse>(`/qna/questions/${questionId}`)
         .then((res) => res.data),
     staleTime: 60_000,
     retry: 1,
@@ -35,7 +35,7 @@ export function useUpdateQuestion(questionId: number) {
     {
       mutationFn: async (payload) => {
         const { data } = await api.put<QuestionUpdateResponse>(
-          `/qna/questions/${questionId}/`,
+          `/qna/questions/${questionId}`,
           payload
         )
         return data
