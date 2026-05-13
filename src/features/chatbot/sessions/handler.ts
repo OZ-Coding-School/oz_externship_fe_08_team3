@@ -26,7 +26,7 @@ const mockSessions: ChatSessionListResponse = {
 }
 
 export const sessionsHandlers = [
-  http.get('*/chatbot/sessions/', () => {
+  http.get('*/chatbot/sessions', () => {
     return HttpResponse.json(mockSessions)
   }),
 ]

@@ -99,4 +99,4 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 커밋 규칙
 
-- 커밋 전 반드시 `.claude/skills/commit-frontend-check/SKILL.md` 스킬을 따른다.
+<!-- - 커밋 전 반드시 `.claude/skills/commit-frontend-check/SKILL.md` 스킬을 따른다. -->

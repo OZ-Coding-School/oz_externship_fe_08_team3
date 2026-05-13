@@ -1,9 +1,12 @@
+import { useShallow } from 'zustand/react/shallow'
 import { useChatbotStore } from '@/stores/chatbotStore'
 import { useAuthStore } from '@/stores/authStore'
 import chatbotRobot from '@/assets/chatbot-robot.png'
 
 export function ChatbotFab() {
-  const { isOpen, toggle } = useChatbotStore()
+  const { isOpen, toggle } = useChatbotStore(
+    useShallow((s) => ({ isOpen: s.isOpen, toggle: s.toggle }))
+  )
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
 
   if (!isAuthenticated) return null

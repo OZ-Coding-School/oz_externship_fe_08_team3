@@ -32,11 +32,10 @@ export function QnaDetailPage() {
   const { toast, showToast, hideToast } = useToast()
 
   const canAnswer =
-    isAuthenticated &&
-    user?.role != null &&
-    ANSWER_ALLOWED_ROLES.includes(user.role)
+    isAuthenticated && user?.role != null && ANSWER_ALLOWED_ROLES.has(user.role)
 
   const [showForm, setShowForm] = useState(false)
+  const [justPosted, setJustPosted] = useState(false)
   const [confirmAcceptId, setConfirmAcceptId] = useState<number | null>(null)
   const answerFormRef = useRef<AnswerFormHandle>(null)
 
@@ -96,6 +95,7 @@ export function QnaDetailPage() {
   const anyAdopted = answers?.some((a) => a.is_adopted) ?? false
   const isQuestionOwner =
     user?.id != null && questionDetail?.author.id === user.id
+  const canShowAnswerPrompt = !isEdit && !justPosted
 
   const handleCreateSubmit = (content: string, imageUrls: string[]) => {
     postAnswer(
@@ -104,6 +104,7 @@ export function QnaDetailPage() {
         onSuccess: () => {
           showToast('답변이 등록되었습니다.', 'success')
           setShowForm(false)
+          setJustPosted(true)
         },
         onError: (error) => {
           const { message, action } = handleApiError(
@@ -236,6 +237,7 @@ export function QnaDetailPage() {
 
       {/* 답변 유도 카드 / 답변 작성·수정 폼 */}
       {canAnswer &&
+        !isQuestionOwner &&
         !isAnswersLoading &&
         !isAnswersError &&
         (showForm ? (
@@ -269,13 +271,16 @@ export function QnaDetailPage() {
             )}
           </div>
         ) : (
-          <AnswerPromptCard
-            nickname={user?.nickname ?? ''}
-            profileImageUrl={user?.profileImage}
-            isEdit={isEdit}
-            disabled={anyAdopted}
-            onAction={() => setShowForm(true)}
-          />
+          // 답변 미작성 상태이고 방금 제출하지 않은 경우만 AnswerPromptCard 표시
+          canShowAnswerPrompt && (
+            <AnswerPromptCard
+              nickname={user?.nickname ?? ''}
+              profileImageUrl={user?.profileImage}
+              isEdit={false}
+              disabled={anyAdopted}
+              onAction={() => setShowForm(true)}
+            />
+          )
         ))}
 
       {/* 답변 목록 */}
@@ -292,6 +297,8 @@ export function QnaDetailPage() {
         userId={user?.id}
         answers={answers}
         onAccept={setConfirmAcceptId}
+        showForm={showForm}
+        onEditAction={() => setShowForm(true)}
       />
 
       {/* 채택 확인 모달 */}

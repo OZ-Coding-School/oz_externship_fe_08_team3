@@ -16,6 +16,7 @@ dist-ssr
 .env
 .env.local
 .env.*
+!.env.development
 
 # Editor directories and files
 .vscode/*
@@ -39,3 +40,16 @@ superpowers/
 
 # 로컬 테스트 페이지 (커밋 제외)
 src/pages/**/*TestPage.tsx
+
+# Refactor reports (baseline만 커밋)
+reports/*
+!reports/baseline/
+!reports/priority.md
+!reports/complexity.md
+
+# 에이전트 임시 파일
+.agents/
+.claude/worktrees/
+.claude/agent-memory/
+docs/refactor-skills/
+docs/refactor-toolkit/

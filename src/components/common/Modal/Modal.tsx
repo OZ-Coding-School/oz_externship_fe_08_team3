@@ -1,5 +1,4 @@
-import { useEffect, useRef } from 'react'
-import { createPortal } from 'react-dom'
+import { useEffect, useId, useRef } from 'react'
 import { CloseIcon } from './icons'
 
 export interface ModalProps {
@@ -14,6 +13,8 @@ export interface ModalProps {
   hideCloseButton?: boolean
   /** 하단 sticky footer (액션 버튼 영역) */
   footer?: React.ReactNode
+  /** dialog에 적용할 aria-label (title 미사용 시 대체) */
+  'aria-label'?: string
 }
 
 export function Modal({
@@ -25,49 +26,49 @@ export function Modal({
   maxWidth = 'max-w-md',
   hideCloseButton = false,
   footer,
+  'aria-label': ariaLabel,
 }: ModalProps) {
-  const overlayRef = useRef<HTMLDivElement>(null)
-  const previousFocusRef = useRef<HTMLElement | null>(null)
+  const dialogRef = useRef<HTMLDialogElement>(null)
+  const id = useId()
+  const titleId = `${id}-title`
+  const descId = `${id}-desc`
 
-  // Save focus and lock scroll when opening
+  // showModal / close 제어 + backdrop 클릭 닫기
   useEffect(() => {
-    if (isOpen) {
-      previousFocusRef.current = document.activeElement as HTMLElement
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = ''
-      previousFocusRef.current?.focus()
-    }
-    return () => {
-      document.body.style.overflow = ''
+    const d = dialogRef.current
+    if (!d) return
+    if (isOpen && !d.open) {
+      d.showModal()
+    } else if (!isOpen && d.open) {
+      d.close()
     }
   }, [isOpen])
 
-  // Close on Escape
+  // 네이티브 close 이벤트 (ESC 포함) → onClose 콜백
   useEffect(() => {
-    if (!isOpen) return
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
+    const d = dialogRef.current
+    if (!d) return
+    const handleClose = () => onClose()
+    // backdrop 클릭 감지: dialog 자체 영역 클릭 시 닫기
+    const handleClick = (e: MouseEvent) => {
+      if (e.target === d) onClose()
     }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isOpen, onClose])
+    d.addEventListener('close', handleClose)
+    d.addEventListener('click', handleClick)
+    return () => {
+      d.removeEventListener('close', handleClose)
+      d.removeEventListener('click', handleClick)
+    }
+  }, [onClose])
 
-  const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === overlayRef.current) onClose()
-  }
-
-  if (!isOpen) return null
-
-  return createPortal(
-    <div
-      ref={overlayRef}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby={title ? 'modal-title' : undefined}
-      aria-describedby={description ? 'modal-desc' : undefined}
-      onClick={handleOverlayClick}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 p-4 backdrop-blur-sm"
+  return (
+    <dialog
+      ref={dialogRef}
+      aria-labelledby={title ? titleId : undefined}
+      aria-describedby={description ? descId : undefined}
+      aria-label={!title ? ariaLabel : undefined}
+      className="m-auto max-h-[90vh] w-full rounded-2xl bg-transparent p-0 outline-none backdrop:bg-gray-900/60 backdrop:backdrop-blur-sm open:flex open:flex-col"
+      style={{ maxWidth: undefined }}
     >
       <div
         className={[
@@ -81,14 +82,14 @@ export function Modal({
             <div className="flex flex-col gap-1">
               {title && (
                 <h2
-                  id="modal-title"
+                  id={titleId}
                   className="text-text-heading text-xl font-semibold"
                 >
                   {title}
                 </h2>
               )}
               {description && (
-                <p id="modal-desc" className="text-text-muted text-sm">
+                <p id={descId} className="text-text-muted text-sm">
                   {description}
                 </p>
               )}
@@ -124,9 +125,6 @@ export function Modal({
           </div>
         )}
       </div>
-    </div>,
-    document.body
+    </dialog>
   )
 }
-
-export default Modal

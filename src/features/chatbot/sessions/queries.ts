@@ -8,7 +8,7 @@ export const SESSIONS_QUERY_KEY = ['chatbot', 'sessions'] as const
 export const sessionsQueryOptions = queryOptions({
   queryKey: [...SESSIONS_QUERY_KEY],
   queryFn: () =>
-    api.get<ChatSessionListResponse>('/chatbot/sessions/').then((r) => r.data),
+    api.get<ChatSessionListResponse>('/chatbot/sessions').then((r) => r.data),
   staleTime: 0,
 })
 

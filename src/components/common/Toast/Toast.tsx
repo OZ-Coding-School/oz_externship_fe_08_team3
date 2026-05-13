@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { CheckCircleSmallIcon, InfoIcon, WarningIcon, ErrorIcon } from './icons'
 
 export type ToastVariant = 'success' | 'info' | 'warning' | 'error'
@@ -33,14 +33,14 @@ export function Toast({
   const containerRef = useRef<HTMLDivElement>(null)
   const timerRef = useRef<ReturnType<typeof setTimeout>>(null)
 
-  const handleAnimationEnd = useCallback(() => {
+  const handleAnimationEnd = () => {
     const el = containerRef.current
     if (!el) return
     const style = el.style.animation
     if (style.includes('toast-out')) {
       onClose?.()
     }
-  }, [onClose])
+  }
 
   // 자동 닫힘 타이머: visible일 때 duration 후 exit 애니메이션 시작
   useEffect(() => {
@@ -61,8 +61,8 @@ export function Toast({
   return (
     <div
       ref={containerRef}
-      role="alert"
-      aria-live="polite"
+      role={variant === 'error' ? 'alert' : 'status'}
+      aria-live={variant === 'error' ? 'assertive' : 'polite'}
       onAnimationEnd={handleAnimationEnd}
       style={{
         animation: `toast-in ${ANIMATION_DURATION}ms ease-out forwards`,

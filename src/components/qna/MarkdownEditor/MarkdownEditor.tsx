@@ -1,12 +1,12 @@
-import { useCallback, useMemo, useRef, useState, useEffect } from 'react'
+import { useImperativeHandle, useRef, useState, useEffect } from 'react'
 import MDEditor, {
   commands as mdCommands,
   type ICommand,
 } from '@uiw/react-md-editor'
 import { ChevronDown } from 'lucide-react'
-import remarkBreaks from 'remark-breaks'
 import rehypeRaw from 'rehype-raw'
 import rehypeSanitize from 'rehype-sanitize'
+import { rehypeSanitizeStyle } from '@/components/qna/markdownSanitize'
 import './MarkdownEditor.css'
 import {
   editorSanitizeSchema,
@@ -49,6 +49,11 @@ export interface MarkdownEditorProps {
   error?: string
   actions?: React.ReactNode
   wrapperClassName?: string
+  ref?: React.Ref<MarkdownEditorHandle>
+}
+
+export interface MarkdownEditorHandle {
+  focus: () => void
 }
 
 export function MarkdownEditor({
@@ -57,12 +62,23 @@ export function MarkdownEditor({
   error,
   actions,
   wrapperClassName,
+  ref,
 }: MarkdownEditorProps) {
   const [selectedFontLabel, setSelectedFontLabel] = useState('기본서체')
   const [selectedFontSize, setSelectedFontSize] = useState(16)
   const [isDragOver, setIsDragOver] = useState(false)
   const dragCounterRef = useRef(0)
   const editorWrapRef = useRef<HTMLDivElement>(null)
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      focus: () => {
+        editorWrapRef.current?.querySelector('textarea')?.focus()
+      },
+    }),
+    []
+  )
 
   const {
     valueRef,
@@ -163,8 +179,6 @@ export function MarkdownEditor({
       }
 
       // ── Enter: 들여쓰기된 목록 항목 연속 생성 ──
-      // 라이브러리는 indent 있는 항목을 인식 못함 → 여기서 처리
-      // isComposing=true: 한글 IME 조합 중 Enter → 글자 확정만 하고 줄바꿈은 다음 이벤트에서 처리
       if (
         e.key === 'Enter' &&
         !e.shiftKey &&
@@ -194,7 +208,6 @@ export function MarkdownEditor({
           const lineIndex = (text.slice(0, lineStart).match(/\n/g) ?? []).length
           const num = computeNextNumber(lines, lineIndex, newIndent)
           const nextItem = newIndent ? `${newIndent}${num}. ` : `${num}. `
-          // 빈 하위 항목 줄을 상위 항목으로 교체
           const newText =
             text.slice(0, lineStart) + nextItem + text.slice(lineEnd)
           applyText(ta, newText, lineStart + nextItem.length)
@@ -213,17 +226,119 @@ export function MarkdownEditor({
           return
         }
 
-        // 들여쓰기된 글머리 목록 (빈 항목 → 상위 레벨로 복귀)
+        // 들여쓰기된 글머리 목록 (빈 항목)
         const bulletEmptyMatch = line.match(/^( +)([-*]) $/)
         if (bulletEmptyMatch) {
           e.preventDefault()
           e.stopPropagation()
           const [, indent, bullet] = bulletEmptyMatch
-          const newIndent = indent.length >= 2 ? indent.slice(2) : ''
-          const nextItem = newIndent ? `${newIndent}${bullet} ` : `${bullet} `
-          const newText =
-            text.slice(0, lineStart) + nextItem + text.slice(lineEnd)
-          applyText(ta, newText, lineStart + nextItem.length)
+
+          // 이전 줄이 같은 들여쓰기만 있는 줄인지 확인 → 3번째 엔터 감지
+          const prevLineEnd = lineStart - 1
+          const prevLineStart =
+            lineStart > 0 ? text.lastIndexOf('\n', prevLineEnd - 1) + 1 : 0
+          const prevLine =
+            lineStart > 0 ? text.slice(prevLineStart, prevLineEnd) : ''
+
+          if (prevLine === indent) {
+            // 3번째 엔터: 이전 '    ' 줄은 유지, 현재 줄을 부모 레벨 bullet으로 교체
+            const lines = text.split('\n')
+            const lineIndex = (text.slice(0, lineStart).match(/\n/g) ?? [])
+              .length
+            let parentIndent = ''
+            for (let i = lineIndex - 1; i >= 0; i--) {
+              const prevBulletMatch = lines[i].match(/^(\s*)([-*]) /)
+              if (
+                prevBulletMatch &&
+                prevBulletMatch[1].length < indent.length
+              ) {
+                parentIndent = prevBulletMatch[1]
+                break
+              }
+            }
+            const newLine = `${parentIndent}${bullet} `
+            const newText =
+              text.slice(0, lineStart) + newLine + text.slice(lineEnd)
+            applyText(ta, newText, lineStart + newLine.length)
+          } else {
+            // 2번째 엔터: 현재 줄에서 '-' 제거(들여쓰기 유지), 새 하위 bullet 줄 추가
+            const newText =
+              text.slice(0, lineStart) +
+              indent +
+              `\n${indent}${bullet} ` +
+              text.slice(lineEnd)
+            applyText(
+              ta,
+              newText,
+              lineStart + indent.length + 1 + indent.length + bullet.length + 1
+            )
+          }
+          return
+        }
+
+        // 인용문 (빈 항목, '> ' 공백 있음)
+        const blockquoteEmptyWithSpaceMatch = line.match(/^(>+) $/)
+        if (blockquoteEmptyWithSpaceMatch) {
+          e.preventDefault()
+          e.stopPropagation()
+          const [, markers] = blockquoteEmptyWithSpaceMatch
+          // 바로 위 줄이 '>' 구분선이면 → 구분선 + 현재 줄 제거 (인용문 해제)
+          const prevLineEnd = lineStart - 1 // lineStart 앞의 '\n'
+          const prevLineStart = text.lastIndexOf('\n', prevLineEnd - 1) + 1
+          const prevLine = text.slice(prevLineStart, prevLineEnd)
+          if (prevLine === markers) {
+            const textBefore = text.slice(0, prevLineStart)
+            const textAfter = text.slice(lineEnd)
+            // 인용문 뒤에 반드시 빈 줄이 있어야 CommonMark lazy continuation 방지
+            const needsExtraNewline = !textAfter.startsWith('\n')
+            const newText =
+              textBefore + (needsExtraNewline ? '\n' : '') + textAfter
+            const cursorPos = prevLineStart + (needsExtraNewline ? 1 : 0)
+            applyText(ta, newText, cursorPos)
+          } else {
+            // 위 줄이 구분선이 아니면 → '>' + '\n' + '> ' 삽입 (문단 구분)
+            const newText =
+              text.slice(0, lineStart) +
+              markers +
+              '\n' +
+              markers +
+              ' ' +
+              text.slice(lineEnd)
+            applyText(ta, newText, lineStart + markers.length * 2 + 2)
+          }
+          return
+        }
+
+        // 인용문 (빈 항목, '>' 공백 없음 → 인용문 해제)
+        const blockquoteEmptyMatch = line.match(/^(>+)$/)
+        if (blockquoteEmptyMatch) {
+          e.preventDefault()
+          e.stopPropagation()
+          const newText = text.slice(0, lineStart) + text.slice(lineEnd)
+          applyText(ta, newText, lineStart)
+          return
+        }
+
+        // 인용문 (공백 없이 '>' 바로 텍스트 → 라이브러리 자동 계속 방지, 일반 줄바꿈)
+        const blockquoteNoSpaceMatch = line.match(/^>+[^ \n]/)
+        if (blockquoteNoSpaceMatch) {
+          e.preventDefault()
+          e.stopPropagation()
+          const insertion = '\n'
+          const newText = text.slice(0, cursor) + insertion + text.slice(cursor)
+          applyText(ta, newText, cursor + insertion.length)
+          return
+        }
+
+        // 인용문 (내용 있는 항목 → 다음 줄도 인용문 유지, 공백 필수 '> text')
+        const blockquoteMatch = line.match(/^(>+) /)
+        if (blockquoteMatch) {
+          e.preventDefault()
+          e.stopPropagation()
+          const [, markers] = blockquoteMatch
+          const insertion = `\n${markers} `
+          const newText = text.slice(0, cursor) + insertion + text.slice(cursor)
+          applyText(ta, newText, cursor + insertion.length)
           return
         }
       }
@@ -233,161 +348,149 @@ export function MarkdownEditor({
     return () => wrap.removeEventListener('keydown', onKeyDown, true)
   }, [])
 
-  const handleDrop = useCallback(
-    async (e: React.DragEvent<HTMLDivElement>) => {
-      e.preventDefault()
-      dragCounterRef.current = 0
-      setIsDragOver(false)
-      const files = Array.from(e.dataTransfer.files)
-      const imageFiles = files.filter((f) =>
-        ACCEPTED_IMAGE_TYPES.includes(f.type)
-      )
-      if (imageFiles.length === 0) {
-        // 이미지가 아닌 파일 → uploadImageFile 내부의 타입 체크에서 에러 메시지 설정
-        if (files.length > 0) await uploadImageFile(files[0], () => {})
-        return
-      }
-      for (const file of imageFiles) {
-        await uploadImageFile(file, (md) => {
-          const current = valueRef.current
-          const sep = current.length > 0 && !current.endsWith('\n') ? '\n' : ''
-          setUndoStack((prev) => {
-            const next = [...prev, current]
-            return next.length > UNDO_LIMIT ? next.slice(-UNDO_LIMIT) : next
-          })
-          setRedoStack([])
-          onChange(current + sep + md)
+  // React Compiler가 자동 메모이제이션 처리
+  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    dragCounterRef.current = 0
+    setIsDragOver(false)
+    const files = Array.from(e.dataTransfer.files)
+    const imageFiles = files.filter((f) =>
+      ACCEPTED_IMAGE_TYPES.includes(f.type)
+    )
+    if (imageFiles.length === 0) {
+      // 이미지가 아닌 파일 → uploadImageFile 내부의 타입 체크에서 에러 메시지 설정
+      if (files.length > 0) await uploadImageFile(files[0], () => {})
+      return
+    }
+    for (const file of imageFiles) {
+      await uploadImageFile(file, (md) => {
+        const current = valueRef.current
+        const sep = current.length > 0 && !current.endsWith('\n') ? '\n' : ''
+        setUndoStack((prev) => {
+          const next = [...prev, current]
+          return next.length > UNDO_LIMIT ? next.slice(-UNDO_LIMIT) : next
         })
-      }
+        setRedoStack([])
+        onChange(current + sep + md)
+      })
+    }
+  }
+
+  const fontFamilyCommand: ICommand = {
+    name: 'font-family',
+    keyCommand: 'group',
+    groupName: 'font-family',
+    buttonProps: {
+      'aria-label': '글꼴',
+      title: '글꼴',
+      style: PILL,
+      onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) =>
+        e.preventDefault(),
     },
-    [uploadImageFile, onChange, valueRef, setUndoStack, setRedoStack]
-  )
+    icon: (
+      <span className="toolbar-pill-icon">
+        {selectedFontLabel} <ChevronDown size={10} />
+      </span>
+    ),
+    children: ({ close, getState, textApi }) => (
+      <div className="toolbar-popup" onMouseDown={(e) => e.preventDefault()}>
+        {FONT_FAMILIES.map(({ label, value: fontValue }) => (
+          <button
+            key={fontValue}
+            type="button"
+            style={{
+              fontFamily: fontValue === 'inherit' ? undefined : fontValue,
+            }}
+            onClick={() => {
+              applyInlineFromDropdown(getState, textApi, (t) =>
+                wrapWithStyle(t, 'font-family', fontValue)
+              )
+              close()
+              setTimeout(() => setSelectedFontLabel(label), 0)
+            }}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+    ),
+    execute: () => {},
+  }
 
-  const fontFamilyCommand = useMemo<ICommand>(
-    () => ({
-      name: 'font-family',
-      keyCommand: 'group',
-      groupName: 'font-family',
-      buttonProps: {
-        'aria-label': '글꼴',
-        title: '글꼴',
-        style: PILL,
-        onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) =>
-          e.preventDefault(),
-      },
-      icon: (
-        <span className="toolbar-pill-icon">
-          {selectedFontLabel} <ChevronDown size={10} />
-        </span>
-      ),
-      children: ({ close, getState, textApi }) => (
-        <div className="toolbar-popup" onMouseDown={(e) => e.preventDefault()}>
-          {FONT_FAMILIES.map(({ label, value }) => (
-            <button
-              key={value}
-              type="button"
-              style={{ fontFamily: value === 'inherit' ? undefined : value }}
-              onClick={() => {
-                applyInlineFromDropdown(getState, textApi, (t) =>
-                  wrapWithStyle(t, 'font-family', value)
-                )
-                close()
-                setTimeout(() => setSelectedFontLabel(label), 0)
-              }}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      ),
-      execute: () => {},
-    }),
-    [selectedFontLabel]
-  )
+  const fontSizeCommand: ICommand = {
+    name: 'font-size',
+    keyCommand: 'group',
+    groupName: 'font-size',
+    buttonProps: {
+      'aria-label': '글자 크기',
+      title: '글자 크기',
+      style: PILL,
+      onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) =>
+        e.preventDefault(),
+    },
+    icon: (
+      <span className="toolbar-pill-icon">
+        {selectedFontSize} <ChevronDown size={10} />
+      </span>
+    ),
+    children: ({ close, getState, textApi }) => (
+      <div
+        className="toolbar-popup toolbar-popup--font-size"
+        onMouseDown={(e) => e.preventDefault()}
+      >
+        {FONT_SIZES.map((size) => (
+          <button
+            key={size}
+            type="button"
+            onClick={() => {
+              applyInlineFromDropdown(getState, textApi, (t) =>
+                wrapWithStyle(t, 'font-size', `${size}px`)
+              )
+              close()
+              setTimeout(() => setSelectedFontSize(size), 0)
+            }}
+          >
+            {size}
+          </button>
+        ))}
+      </div>
+    ),
+    execute: () => {},
+  }
 
-  const fontSizeCommand = useMemo<ICommand>(
-    () => ({
-      name: 'font-size',
-      keyCommand: 'group',
-      groupName: 'font-size',
-      buttonProps: {
-        'aria-label': '글자 크기',
-        title: '글자 크기',
-        style: PILL,
-        onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) =>
-          e.preventDefault(),
-      },
-      icon: (
-        <span className="toolbar-pill-icon">
-          {selectedFontSize} <ChevronDown size={10} />
-        </span>
-      ),
-      children: ({ close, getState, textApi }) => (
-        <div
-          className="toolbar-popup toolbar-popup--font-size"
-          onMouseDown={(e) => e.preventDefault()}
-        >
-          {FONT_SIZES.map((size) => (
-            <button
-              key={size}
-              type="button"
-              onClick={() => {
-                applyInlineFromDropdown(getState, textApi, (t) =>
-                  wrapWithStyle(t, 'font-size', `${size}px`)
-                )
-                close()
-                setTimeout(() => setSelectedFontSize(size), 0)
-              }}
-            >
-              {size}
-            </button>
-          ))}
-        </div>
-      ),
-      execute: () => {},
-    }),
-    [selectedFontSize]
-  )
+  const editorCommands: ICommand[] = [
+    undoCommand,
+    redoCommand,
+    mdCommands.divider,
+    fontFamilyCommand,
+    fontSizeCommand,
+    mdCommands.divider,
+    boldCommand,
+    italicCommand,
+    underlineCommand,
+    strikethroughCommand,
+    bgColorCommand,
+    textColorCommand,
+    mdCommands.divider,
+    {
+      ...mdCommands.link,
+      buttonProps: { ...mdCommands.link.buttonProps, ...NO_BLUR_PROPS },
+    },
+    imageCommand,
+  ]
 
-  const editorCommands: ICommand[] = useMemo(
-    () => [
-      undoCommand,
-      redoCommand,
-      mdCommands.divider,
-      fontFamilyCommand,
-      fontSizeCommand,
-      mdCommands.divider,
-      boldCommand,
-      italicCommand,
-      underlineCommand,
-      strikethroughCommand,
-      bgColorCommand,
-      textColorCommand,
-      mdCommands.divider,
-      {
-        ...mdCommands.link,
-        buttonProps: { ...mdCommands.link.buttonProps, ...NO_BLUR_PROPS },
-      },
-      imageCommand,
-    ],
-    [imageCommand, undoCommand, redoCommand, fontFamilyCommand, fontSizeCommand]
-  )
-
-  const editorExtraCommands: ICommand[] = useMemo(
-    () => [
-      listDropdownCmd,
-      mdCommands.divider,
-      alignLeftCommand,
-      alignCenterCommand,
-      alignRightCommand,
-      alignJustifyCommand,
-      lineHeightCmd,
-      outdentCmd,
-      indentCmd,
-      clearFormatCmd,
-    ],
-    []
-  )
+  const editorExtraCommands: ICommand[] = [
+    listDropdownCmd,
+    mdCommands.divider,
+    alignLeftCommand,
+    alignCenterCommand,
+    alignRightCommand,
+    alignJustifyCommand,
+    lineHeightCmd,
+    outdentCmd,
+    indentCmd,
+    clearFormatCmd,
+  ]
 
   return (
     <div
@@ -425,11 +528,11 @@ export function MarkdownEditor({
           commands={editorCommands}
           extraCommands={editorExtraCommands}
           previewOptions={{
-            remarkPlugins: [[remarkBreaks]],
             remarkRehypeOptions: { allowDangerousHtml: true },
             rehypePlugins: [
               [rehypeRaw],
               [rehypeSanitize, editorSanitizeSchema],
+              [rehypeSanitizeStyle],
             ],
           }}
         />

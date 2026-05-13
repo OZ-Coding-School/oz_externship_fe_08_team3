@@ -27,7 +27,7 @@ export function AnswerPromptCard({
 }: AnswerPromptCardProps) {
   let buttonLabel: string
   if (showForm) {
-    buttonLabel = isEdit ? '수정하기' : '답변하기'
+    buttonLabel = isEdit ? '저장하기' : '등록하기'
   } else {
     buttonLabel = isEdit ? '답변 수정하기' : '답변하기'
   }

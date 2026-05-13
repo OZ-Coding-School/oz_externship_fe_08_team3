@@ -205,11 +205,10 @@ export function QnaListPage() {
   const [showCategoryModal, setShowCategoryModal] = useState(false)
 
   // 카테고리 필터 상태 (CategoryFilter에서 전달받음)
-  const [filterHandle, setFilterHandle] = useState<{
-    resolvedCategoryId: number | undefined
-    handleReset: () => void
-    canApply: boolean
-  }>({ resolvedCategoryId: undefined, handleReset: () => {}, canApply: false })
+  const [tempCategoryId, setTempCategoryId] = useState<number | undefined>(
+    categoryId
+  )
+  const handleResetFilter = () => setTempCategoryId(undefined)
 
   // URL → inputValue 동기화 (뒤로가기 대응)
   useEffect(() => {
@@ -427,7 +426,7 @@ export function QnaListPage() {
           <div className="flex items-center justify-between">
             <button
               type="button"
-              onClick={() => filterHandle.handleReset()}
+              onClick={() => handleResetFilter()}
               className="flex h-[42px] w-[162px] items-center gap-2 rounded text-xl text-[#4D4D4D] transition-colors hover:bg-gray-100"
             >
               <RotateCw className="h-6 w-6" />
@@ -436,11 +435,11 @@ export function QnaListPage() {
             <button
               type="button"
               onClick={() => {
-                const id = filterHandle.resolvedCategoryId
+                const id = tempCategoryId
                 updateParam('category_id', id != null ? String(id) : null)
                 setShowCategoryModal(false)
               }}
-              disabled={!filterHandle.canApply}
+              disabled={tempCategoryId !== categoryId}
               className="h-[54px] w-[278px] rounded bg-[#6201E0] text-xl font-bold text-white transition-colors hover:bg-[#4E01B3] disabled:bg-[#ECECEC] disabled:text-[#BDBDBD]"
             >
               필터 적용하기
@@ -474,8 +473,8 @@ export function QnaListPage() {
             }
           >
             <CategoryFilter
-              initialCategoryId={categoryId}
-              onHandle={setFilterHandle}
+              selectedId={tempCategoryId}
+              onChange={setTempCategoryId}
             />
           </Suspense>
         </div>

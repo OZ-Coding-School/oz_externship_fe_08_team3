@@ -22,7 +22,7 @@ export function AlertModal({
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} hideCloseButton>
+    <Modal isOpen={isOpen} onClose={onClose} hideCloseButton aria-label="알림">
       <div className="flex flex-col items-end gap-10">
         <div className="w-full py-3">
           <p className="text-base leading-relaxed tracking-tight text-gray-900">

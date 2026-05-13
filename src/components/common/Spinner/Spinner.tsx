@@ -20,7 +20,6 @@ export function Spinner({
   return (
     <span
       role="status"
-      aria-label={label}
       className={['inline-flex items-center justify-center', className]
         .filter(Boolean)
         .join(' ')}
@@ -32,6 +31,8 @@ export function Spinner({
           sizeClasses[size],
         ].join(' ')}
       />
+      {/* 스크린리더 전용 텍스트 */}
+      <span className="sr-only">{label}</span>
     </span>
   )
 }
