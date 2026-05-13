@@ -1,3 +1,14 @@
+// 외부 도메인 URL (헤더 네비게이션용)
+export const EXTERNAL_URLS = {
+  HOME: 'https://my.ozcodingschool.site/',
+  LOGIN: 'https://my.ozcodingschool.site/login',
+  SIGNUP: 'https://my.ozcodingschool.site/signup',
+  MYPAGE: 'https://my.ozcodingschool.site/mypage',
+  COMMUNITY: 'https://community.ozcodingschool.site/community',
+  QNA: 'https://qna.ozcodingschool.site/',
+} as const
+
+// SPA 내부 라우트
 export const ROUTES = {
   HOME: '/',
 
