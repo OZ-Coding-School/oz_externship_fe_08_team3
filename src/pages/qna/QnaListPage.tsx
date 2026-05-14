@@ -113,7 +113,7 @@ function SortPopover({
         ref={triggerRef}
         type="button"
         aria-haspopup="menu"
-        aria-expanded={open}
+        aria-expanded={open ? 'true' : 'false'}
         onClick={() => {
           setOpen((p) => {
             if (!p) {
@@ -123,7 +123,7 @@ function SortPopover({
             return !p
           })
         }}
-        className="flex items-center gap-1 text-base text-[#303030]"
+        className="flex items-center gap-1 text-base text-gray-700"
       >
         {SORT_LABEL[sort]}
         <ArrowUpDown className="h-5 w-5" />
@@ -208,7 +208,11 @@ export function QnaListPage() {
   const [tempCategoryId, setTempCategoryId] = useState<number | undefined>(
     categoryId
   )
-  const handleResetFilter = () => setTempCategoryId(undefined)
+  const [filterResetKey, setFilterResetKey] = useState(0)
+  const handleResetFilter = () => {
+    setTempCategoryId(undefined)
+    setFilterResetKey((k) => k + 1)
+  }
 
   // URL → inputValue 동기화 (뒤로가기 대응)
   useEffect(() => {
@@ -330,7 +334,7 @@ export function QnaListPage() {
         <button
           type="button"
           onClick={() => navigate(ROUTES.QNA.WRITE)}
-          className="flex h-12 items-center gap-2 rounded-[4px] bg-[#6201E0] px-9 text-base font-bold text-white transition-colors hover:bg-[#4E01B3]"
+          className="flex h-12 items-center gap-2 rounded-sm bg-[#6201E0] px-9 text-base font-bold text-white transition-colors hover:bg-[#4E01B3]"
         >
           <Pencil className="h-5 w-5" />
           질문하기
@@ -439,8 +443,7 @@ export function QnaListPage() {
                 updateParam('category_id', id != null ? String(id) : null)
                 setShowCategoryModal(false)
               }}
-              disabled={tempCategoryId !== categoryId}
-              className="h-[54px] w-[278px] rounded bg-[#6201E0] text-xl font-bold text-white transition-colors hover:bg-[#4E01B3] disabled:bg-[#ECECEC] disabled:text-[#BDBDBD]"
+              className="h-[54px] w-[278px] rounded bg-[#6201E0] text-xl font-bold text-white transition-colors hover:bg-[#4E01B3]"
             >
               필터 적용하기
             </button>
@@ -463,7 +466,7 @@ export function QnaListPage() {
         </div>
 
         {/* 본문 */}
-        <div className="-mx-6 min-h-[700px] px-12 pt-[60px] pb-10">
+        <div className="-mx-6 px-12 pt-[60px] pb-10">
           <h3 className="mb-5 text-xl font-bold text-[#4D4D4D]">
             카테고리 선택
           </h3>
@@ -473,6 +476,7 @@ export function QnaListPage() {
             }
           >
             <CategoryFilter
+              key={filterResetKey}
               selectedId={tempCategoryId}
               onChange={setTempCategoryId}
             />
