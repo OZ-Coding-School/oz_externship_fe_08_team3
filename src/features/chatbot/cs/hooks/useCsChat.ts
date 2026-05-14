@@ -34,7 +34,7 @@ export function useCsChat() {
     const baseUrl = import.meta.env.VITE_API_BASE_URL ?? ''
     await sendStreamingMessage({
       text,
-      endpoint: `${baseUrl}/chatbot/completions`,
+      endpoint: `${baseUrl}/qna/chatbot/completions`,
       idPrefix: 'cs',
       isBlocked: isStreaming,
       reset,
