@@ -1,29 +1,32 @@
 import { http, HttpResponse } from 'msw'
 
 export const csChatbotHandlers = [
-  // GET /api/v1/chatbot/completions — 히스토리 조회
-  http.get(`${import.meta.env.VITE_API_BASE_URL}/chatbot/completions`, () => {
-    // 빈 히스토리 테스트 시 아래 주석 해제:
-    // return HttpResponse.json({ results: [] })
+  // GET /api/v1/qna/chatbot/completions — 히스토리 조회
+  http.get(
+    `${import.meta.env.VITE_API_BASE_URL}/qna/chatbot/completions`,
+    () => {
+      // 빈 히스토리 테스트 시 아래 주석 해제:
+      // return HttpResponse.json({ results: [] })
 
-    return HttpResponse.json({
-      results: [
-        {
-          role: 'assistant',
-          message: '안녕하세요! CS 상담 챗봇입니다. 무엇을 도와드릴까요?',
-        },
-        { role: 'user', message: '수강 신청은 어떻게 하나요?' },
-        {
-          role: 'assistant',
-          message: '메인 페이지에서 수강 신청 버튼을 클릭하시면 됩니다.',
-        },
-      ],
-    })
-  }),
+      return HttpResponse.json({
+        results: [
+          {
+            role: 'assistant',
+            message: '안녕하세요! CS 상담 챗봇입니다. 무엇을 도와드릴까요?',
+          },
+          { role: 'user', message: '수강 신청은 어떻게 하나요?' },
+          {
+            role: 'assistant',
+            message: '메인 페이지에서 수강 신청 버튼을 클릭하시면 됩니다.',
+          },
+        ],
+      })
+    }
+  ),
 
-  // POST /api/v1/chatbot/completions — SSE 스트리밍 응답
+  // POST /api/v1/qna/chatbot/completions — SSE 스트리밍 응답
   http.post(
-    `${import.meta.env.VITE_API_BASE_URL}/chatbot/completions`,
+    `${import.meta.env.VITE_API_BASE_URL}/qna/chatbot/completions`,
     ({ request }) => {
       const encoder = new TextEncoder()
 
