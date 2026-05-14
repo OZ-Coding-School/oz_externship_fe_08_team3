@@ -1,8 +1,7 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router'
 import logoImg from '@/assets/logo.png'
 import defaultProfile from '@/assets/default-profile.png'
-import { ROUTES } from '@/constants/routes'
+import { EXTERNAL_URLS } from '@/constants/routes'
 import { ProfileDropdown } from './ProfileDropdown'
 import { useAuthStore } from '@/stores/authStore'
 
@@ -19,11 +18,10 @@ function HeaderBanner({ text }: { text: string }) {
   )
 }
 
-function HeaderLogo({ onClick }: { onClick: () => void }) {
+function HeaderLogo() {
   return (
-    <button
-      type="button"
-      onClick={onClick}
+    <a
+      href={EXTERNAL_URLS.HOME}
       className="flex shrink-0 items-center"
       aria-label="홈으로 이동"
     >
@@ -34,63 +32,47 @@ function HeaderLogo({ onClick }: { onClick: () => void }) {
         height={20}
         className="h-5 w-auto"
       />
-    </button>
+    </a>
   )
 }
 
-function HeaderNav({
-  onCommunity,
-  onQna,
-}: {
-  onCommunity: () => void
-  onQna: () => void
-}) {
+function HeaderNav() {
   return (
     <nav className="hidden items-center gap-8 md:flex lg:gap-15">
-      <button
-        type="button"
-        onClick={onCommunity}
+      <a
+        href={EXTERNAL_URLS.COMMUNITY}
         className="hover:text-primary px-2.5 py-2.5 text-lg tracking-tight text-gray-900 transition-colors duration-150"
       >
         커뮤니티
-      </button>
-      <button
-        type="button"
-        onClick={onQna}
+      </a>
+      <a
+        href={EXTERNAL_URLS.QNA}
         className="hover:text-primary px-2.5 py-2.5 text-lg tracking-tight text-gray-900 transition-colors duration-150"
       >
         질의응답
-      </button>
+      </a>
     </nav>
   )
 }
 
-function AuthLinks({
-  onLogin,
-  onSignup,
-}: {
-  onLogin: () => void
-  onSignup: () => void
-}) {
+function AuthLinks() {
   return (
     <div className="flex items-center gap-3 text-sm tracking-tight text-gray-600 sm:text-base">
-      <button
-        type="button"
-        onClick={onLogin}
+      <a
+        href={EXTERNAL_URLS.LOGIN}
         className="transition-colors duration-150 hover:text-gray-900"
       >
         로그인
-      </button>
+      </a>
       <span className="text-gray-400" aria-hidden="true">
         |
       </span>
-      <button
-        type="button"
-        onClick={onSignup}
+      <a
+        href={EXTERNAL_URLS.SIGNUP}
         className="transition-colors duration-150 hover:text-gray-900"
       >
         회원가입
-      </button>
+      </a>
     </div>
   )
 }
@@ -104,7 +86,6 @@ function ProfileMenu({
   setDropdownOpen: React.Dispatch<React.SetStateAction<boolean>>
   onLogout?: () => void
 }) {
-  const navigate = useNavigate()
   const { user } = useAuthStore()
 
   return (
@@ -132,14 +113,6 @@ function ProfileMenu({
         onClose={() => setDropdownOpen(false)}
         nickname={user?.nickname ?? ''}
         email={user?.email ?? ''}
-        onEnroll={() => {
-          navigate(ROUTES.SIGNUP.SELECT)
-          setDropdownOpen(false)
-        }}
-        onMypage={() => {
-          navigate(ROUTES.MYPAGE.HOME)
-          setDropdownOpen(false)
-        }}
         onLogout={() => {
           onLogout?.()
           setDropdownOpen(false)
@@ -154,7 +127,6 @@ export function Header({
   onLogout,
 }: HeaderProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false)
-  const navigate = useNavigate()
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
 
   return (
@@ -164,11 +136,8 @@ export function Header({
       <div className="border-b border-black/20 bg-white">
         <div className="max-w-container mx-auto flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-8 lg:gap-15">
-            <HeaderLogo onClick={() => navigate(ROUTES.HOME)} />
-            <HeaderNav
-              onCommunity={() => navigate(ROUTES.COMMUNITY.LIST)}
-              onQna={() => navigate(ROUTES.QNA.LIST)}
-            />
+            <HeaderLogo />
+            <HeaderNav />
           </div>
 
           {isAuthenticated ? (
@@ -178,10 +147,7 @@ export function Header({
               onLogout={onLogout}
             />
           ) : (
-            <AuthLinks
-              onLogin={() => navigate(ROUTES.AUTH.LOGIN)}
-              onSignup={() => navigate(ROUTES.SIGNUP.SELECT)}
-            />
+            <AuthLinks />
           )}
         </div>
       </div>

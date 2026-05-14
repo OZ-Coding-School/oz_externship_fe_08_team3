@@ -1,13 +1,12 @@
 import { useEffect, useRef } from 'react'
 import { Button } from '@/components/common/Button'
+import { EXTERNAL_URLS } from '@/constants/routes'
 
 export interface ProfileDropdownProps {
   isOpen: boolean
   onClose: () => void
   nickname: string
   email: string
-  onEnroll?: () => void
-  onMypage?: () => void
   onLogout?: () => void
 }
 
@@ -16,8 +15,6 @@ export function ProfileDropdown({
   onClose,
   nickname,
   email,
-  onEnroll,
-  onMypage,
   onLogout,
 }: ProfileDropdownProps) {
   const ref = useRef<HTMLDivElement>(null)
@@ -108,28 +105,22 @@ export function ProfileDropdown({
 
         {/* 메뉴 항목 */}
         <div className="flex flex-col gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            fullWidth
+          <a
+            href={EXTERNAL_URLS.SIGNUP}
             role="menuitem"
             tabIndex={-1}
-            onClick={onEnroll}
-            className="text-text-heading hover:text-primary h-12 justify-start"
+            className="text-text-heading hover:text-primary flex h-12 items-center px-3 text-sm font-medium"
           >
             수강생 등록
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            fullWidth
+          </a>
+          <a
+            href={EXTERNAL_URLS.MYPAGE}
             role="menuitem"
             tabIndex={-1}
-            onClick={onMypage}
-            className="text-text-heading hover:text-primary h-12 justify-start tracking-tight"
+            className="text-text-heading hover:text-primary flex h-12 items-center px-3 text-sm font-medium tracking-tight"
           >
             마이페이지
-          </Button>
+          </a>
           <Button
             variant="ghost"
             size="sm"

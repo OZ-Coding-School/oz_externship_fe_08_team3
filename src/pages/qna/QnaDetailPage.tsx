@@ -22,6 +22,7 @@ import { useGetQuestionDetail } from '@/features/qna/question-detail'
 import { useToast } from '@/hooks/useToast'
 import { handleApiError } from '@/utils/handleApiError'
 import { ROUTES } from '@/constants/routes'
+import { redirectToLogin } from '@/utils/loginRedirect'
 
 // ── QnaDetailPage ─────────────────────────────────────────────────────────────
 
@@ -117,7 +118,7 @@ export function QnaDetailPage() {
             },
             {
               400: () => answerFormRef.current?.focusEditor(),
-              401: () => navigate(ROUTES.AUTH.LOGIN),
+              401: redirectToLogin,
               404: () => navigate(ROUTES.QNA.LIST),
             }
           )
@@ -149,7 +150,7 @@ export function QnaDetailPage() {
             },
             {
               400: () => answerFormRef.current?.focusEditor(),
-              401: () => navigate(ROUTES.AUTH.LOGIN),
+              401: redirectToLogin,
               403: () => navigate(-1),
               404: () => navigate(ROUTES.QNA.LIST),
             }
@@ -179,7 +180,7 @@ export function QnaDetailPage() {
             409: '이미 채택된 답변이 존재합니다.',
           },
           {
-            401: () => navigate(ROUTES.AUTH.LOGIN),
+            401: redirectToLogin,
             404: () => navigate(ROUTES.QNA.LIST),
           }
         )
