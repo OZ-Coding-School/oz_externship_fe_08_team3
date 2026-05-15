@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import logoImg from '@/assets/logo.png'
-import defaultProfile from '@/assets/default-profile.png'
 import { EXTERNAL_URLS } from '@/constants/routes'
 import { ProfileDropdown } from './ProfileDropdown'
+import { ProfileIcon } from './icons'
 import { useAuthStore } from '@/stores/authStore'
 
 export interface HeaderProps {
@@ -99,16 +99,17 @@ function ProfileMenu({
         aria-expanded={dropdownOpen}
         className="focus-visible:ring-primary overflow-hidden rounded-full outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
       >
-        <img
-          src={user?.profileImage ?? defaultProfile}
-          alt=""
-          width={40}
-          height={40}
-          className="aspect-square h-10 w-10 rounded-full object-cover"
-          onError={(e) => {
-            e.currentTarget.src = defaultProfile
-          }}
-        />
+        {user?.profileImage ? (
+          <img
+            src={user.profileImage}
+            alt=""
+            width={40}
+            height={40}
+            className="aspect-square h-10 w-10 rounded-full object-cover"
+          />
+        ) : (
+          <ProfileIcon />
+        )}
       </button>
 
       <ProfileDropdown
