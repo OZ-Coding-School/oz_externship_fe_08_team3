@@ -137,7 +137,7 @@ function SortPopover({
         <div
           ref={menuRef}
           role="menu"
-          className="absolute top-full right-0 z-50 mt-2 flex w-[138px] flex-col rounded-xl bg-white p-4 shadow-[0_0_16px_rgba(160,160,160,0.25)]"
+          className="absolute top-full right-0 z-50 mt-2 flex w-fit flex-col rounded-xl bg-white p-4"
         >
           {SORT_OPTIONS.map((opt) => (
             <button
@@ -159,7 +159,7 @@ function SortPopover({
                 }
               }}
               className={[
-                'flex h-[42px] items-center justify-center rounded px-5 text-xl font-extrabold transition-colors',
+                'flex h-[42px] items-center justify-center rounded px-5 text-sm font-semibold whitespace-nowrap transition-colors',
                 sort === opt
                   ? 'bg-[#EFE6FC] text-[#6201E0]'
                   : 'text-[#4D4D4D] hover:bg-[#EFE6FC]',
