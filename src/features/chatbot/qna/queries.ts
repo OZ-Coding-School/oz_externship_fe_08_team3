@@ -10,7 +10,7 @@ export const qnaHistoryQueryOptions = (questionId: number) =>
     queryKey: [...QNA_HISTORY_QUERY_KEY(questionId)],
     queryFn: () =>
       api
-        .get<QnaHistoryResponse>(`/qna/questions/${questionId}/ai-answer`)
+        .get<QnaHistoryResponse>(`/qna/questions/${questionId}/chatbot`)
         .then((r) => r.data),
     staleTime: 0,
     enabled: Boolean(questionId),

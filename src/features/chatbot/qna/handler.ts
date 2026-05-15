@@ -1,9 +1,9 @@
 import { http, HttpResponse } from 'msw'
 
 export const qnaChatbotHandlers = [
-  // GET /api/v1/qna/questions/:questionId/ai-answer — 히스토리 조회
+  // GET /api/v1/qna/questions/:questionId/chatbot — 히스토리 조회 및 세션 활성화
   http.get(
-    `${import.meta.env.VITE_API_BASE_URL}/qna/questions/:questionId/ai-answer`,
+    `${import.meta.env.VITE_API_BASE_URL}/qna/questions/:questionId/chatbot`,
     () => {
       // 빈 히스토리 테스트 시 아래 주석 해제:
       // return HttpResponse.json({ results: [] })
