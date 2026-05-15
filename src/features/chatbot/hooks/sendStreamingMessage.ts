@@ -45,7 +45,6 @@ async function requestStream(
     headers: {
       Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
       'Content-Type': 'application/json',
-      Accept: 'text/event-stream',
     },
     body: JSON.stringify({ message }),
     signal,
