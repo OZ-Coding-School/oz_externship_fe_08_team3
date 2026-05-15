@@ -89,7 +89,7 @@ function ProfileMenu({
   const { user } = useAuthStore()
 
   return (
-    <div className="relative">
+    <div className="relative" onMouseLeave={() => setDropdownOpen(false)}>
       <button
         type="button"
         onMouseEnter={() => setDropdownOpen(true)}
