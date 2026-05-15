@@ -2,6 +2,38 @@ import { http, HttpResponse, delay } from 'msw'
 import type { AiFirstAnswerResponse } from './types'
 
 export const aiAnswerHandlers = [
+  // GET: 캐시된 초기응답 조회
+  http.get(
+    `${import.meta.env.VITE_API_BASE_URL}/qna/questions/:questionId/ai-answer`,
+    async ({ params }) => {
+      await delay(300)
+
+      const response: AiFirstAnswerResponse = {
+        question_id: Number(params.questionId),
+        output: [
+          '## AI 답변',
+          '',
+          '리스트는 **수정 가능한(mutable)** 자료구조이며, 튜플은 **수정 불가능한(immutable)** 자료구조입니다.',
+          '',
+          '### 주요 차이점',
+          '',
+          '| 항목 | list | tuple |',
+          '|------|------|-------|',
+          '| 변경 가능 | O | X |',
+          '| 문법 | `[]` | `()` |',
+          '| 속도 | 느림 | 빠름 |',
+          '',
+          '> 성능이 중요한 경우 튜플이 리스트보다 약간 더 빠릅니다.',
+        ].join('\n'),
+        using_model: 'gemini-2.5-pro',
+        created_at: '2025-03-01 14:20:33',
+      }
+
+      return HttpResponse.json(response, { status: 200 })
+    }
+  ),
+
+  // POST: 초기응답 생성
   http.post(
     `${import.meta.env.VITE_API_BASE_URL}/qna/questions/:questionId/ai-answer`,
     async ({ params }) => {
