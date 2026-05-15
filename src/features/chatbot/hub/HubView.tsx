@@ -4,7 +4,7 @@ import { useChatbotStore } from '@/stores/chatbotStore'
 import { useGetSessions } from '@/features/chatbot/sessions'
 import type { ChatSession } from '@/features/chatbot/sessions'
 import { getRelativeTime } from '@/utils/relativeTime'
-import chatbotRobot from '@/assets/chatbot-robot.png'
+import { ChatbotRobotImage } from '@/components/chatbot/ChatbotRobotImage'
 
 export function HubView() {
   const { setView, enterQna, close } = useChatbotStore(
@@ -14,7 +14,8 @@ export function HubView() {
       close: s.close,
     }))
   )
-  const { data, isLoading, isError, refetch } = useGetSessions()
+  const { data, isLoading, isFetching, isError, refetch } = useGetSessions()
+  const isRefreshingSessions = isLoading || isFetching
 
   const handleCsClick = () => {
     setView('cs')
@@ -47,12 +48,7 @@ export function HubView() {
             className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white"
             style={{ boxShadow: '0px 2px 4px rgba(0,0,0,0.15)' }}
           >
-            <img
-              src={chatbotRobot}
-              alt=""
-              className="h-[42px] w-[42px] object-contain"
-              draggable={false}
-            />
+            <ChatbotRobotImage className="h-[42px] w-[42px] object-contain" />
           </div>
           <p className="min-w-0 flex-1 truncate text-[16px] font-medium text-[#121212]">
             AI OZ 시스템 챗봇
@@ -62,7 +58,7 @@ export function HubView() {
         <div className="border-t border-[#E8E8E8]" />
 
         {/* Q&A 세션 목록 */}
-        {isLoading && (
+        {isRefreshingSessions && (
           <div className="flex items-center justify-center py-6">
             <div className="border-primary h-5 w-5 animate-spin rounded-full border-2 border-t-transparent" />
           </div>
@@ -83,7 +79,7 @@ export function HubView() {
           </div>
         )}
 
-        {!isLoading &&
+        {!isRefreshingSessions &&
           !isError &&
           data?.results?.map((session) => (
             <div key={session.question_id}>
@@ -96,12 +92,7 @@ export function HubView() {
                   className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white"
                   style={{ boxShadow: '0px 2px 4px rgba(0,0,0,0.15)' }}
                 >
-                  <img
-                    src={chatbotRobot}
-                    alt=""
-                    className="h-[42px] w-[42px] object-contain"
-                    draggable={false}
-                  />
+                  <ChatbotRobotImage className="h-[42px] w-[42px] object-contain" />
                 </div>
                 <p className="min-w-0 flex-1 truncate text-[16px] font-medium text-[#121212]">
                   질의응답 챗봇
