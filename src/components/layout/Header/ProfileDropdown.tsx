@@ -128,7 +128,7 @@ export function ProfileDropdown({
             role="menuitem"
             tabIndex={-1}
             onClick={onLogout}
-            className="text-text-heading hover:text-primary h-12 justify-start tracking-tight"
+            className="text-text-heading hover:text-primary h-12 justify-start !rounded-md tracking-tight"
           >
             로그아웃
           </Button>
