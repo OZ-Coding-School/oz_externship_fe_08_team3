@@ -160,27 +160,27 @@ export function AiFirstAnswerSection({
               </>
             )}
           </button>
-        </div>
-      </div>
 
-      {/* 펼쳐진 AI 답변 */}
-      {showAnswer && answerData && (
-        <div className="mt-4 rounded-2xl bg-[#F8F8F8] p-7">
-          <div data-color-mode="light" className="prose max-w-none text-sm">
-            <MDEditor.Markdown
-              source={answerData.output}
-              rehypePlugins={[rehypeSanitize]}
-            />
-          </div>
-          {isAuthenticated && (
-            <div className="mt-4 flex justify-end">
-              <Button variant="outline" size="sm" onClick={handleAskMore}>
-                추가 질문하기
-              </Button>
+          {/* 펼쳐진 AI 답변 — 말풍선 카드 내부 */}
+          {showAnswer && answerData && (
+            <div className="mt-4 border-t border-[#E0E0E0] pt-4">
+              <div data-color-mode="light" className="prose max-w-none text-sm">
+                <MDEditor.Markdown
+                  source={answerData.output}
+                  rehypePlugins={[rehypeSanitize]}
+                />
+              </div>
+              {isAuthenticated && (
+                <div className="mt-4 flex justify-end">
+                  <Button variant="outline" size="sm" onClick={handleAskMore}>
+                    추가 질문하기
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </div>
-      )}
+      </div>
 
       {/* GET 조회 실패 시 안내 (네트워크 등) */}
       {isGetError && !answerData && isAuthenticated && (
