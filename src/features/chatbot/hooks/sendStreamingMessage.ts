@@ -6,6 +6,7 @@ import { readSseMessageStream } from './sseStream'
 
 const ERROR_TEXT = '응답을 불러오지 못했습니다. 다시 시도해주세요.'
 const ERROR_BUFFER_TEXT = '응답이 너무 길어 중단되었습니다.'
+const DONE_COOLDOWN_MS = 500
 
 function clearAuthAndRedirectToLogin() {
   useAuthStore.getState().logout()
@@ -89,6 +90,21 @@ function appendErrorMessage(
   ])
 }
 
+function waitForDoneCooldown(signal: AbortSignal) {
+  if (signal.aborted) return Promise.resolve()
+
+  return new Promise<void>((resolve) => {
+    const finish = () => {
+      clearTimeout(timeoutId)
+      signal.removeEventListener('abort', finish)
+      resolve()
+    }
+    const timeoutId = setTimeout(finish, DONE_COOLDOWN_MS)
+
+    signal.addEventListener('abort', finish, { once: true })
+  })
+}
+
 export async function sendStreamingMessage({
   text,
   endpoint,
@@ -128,7 +144,8 @@ export async function sendStreamingMessage({
   let hasReceivedChunk = false
 
   try {
-    const response = await requestStream(endpoint, trimmed, reset())
+    const signal = reset()
+    const response = await requestStream(endpoint, trimmed, signal)
     if (handleHttpStatus({ response, assistantId, onRateLimit })) return
 
     const result = await readSseMessageStream({
@@ -147,6 +164,10 @@ export async function sendStreamingMessage({
     completed = result.completed
     hasReceivedChunk = result.hasReceivedChunk
 
+    if (result.completed) {
+      await waitForDoneCooldown(signal)
+    }
+
     if (result.bufferExceeded) {
       appendErrorMessage(setMessages, idPrefix, ERROR_BUFFER_TEXT)
     }
@@ -163,7 +184,7 @@ export async function sendStreamingMessage({
     )
   } finally {
     setIsStreaming(false)
-    if (completed) {
+    if (completed || hasReceivedChunk) {
       invalidateQueries(queryClient, invalidateQueryKeys)
     }
   }
