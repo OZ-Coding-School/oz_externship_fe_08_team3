@@ -2,9 +2,14 @@ import { useState } from 'react'
 import rehypeSanitize from 'rehype-sanitize'
 import MDEditor from '@uiw/react-md-editor'
 import { ChevronDown, ChevronUp } from 'lucide-react'
+import { useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/components/common/Button'
 import { Spinner } from '@/components/common/Spinner'
-import { useCreateAiFirstAnswer } from '@/features/qna/question-ai-answer'
+import {
+  useGetAiFirstAnswer,
+  useCreateAiFirstAnswer,
+} from '@/features/qna/question-ai-answer'
+import { AI_FIRST_ANSWER_QUERY_KEY } from '@/features/qna/question-ai-answer/queries'
 import { useChatbotStore } from '@/stores/chatbotStore'
 import { handleApiError } from '@/utils/handleApiError'
 import type { ToastVariant } from '@/components'
@@ -25,24 +30,56 @@ const AI_ANSWER_ERROR_MESSAGES: Partial<Record<number, string>> = {
 interface AiFirstAnswerSectionProps {
   questionId: number
   questionTitle: string
+  isAuthenticated: boolean
   showToast: (message: string, variant: ToastVariant) => void
 }
 
 export function AiFirstAnswerSection({
   questionId,
   questionTitle,
+  isAuthenticated,
   showToast,
 }: AiFirstAnswerSectionProps) {
-  const { mutate, data, isPending, status, reset } =
-    useCreateAiFirstAnswer(questionId)
+  const queryClient = useQueryClient()
+
+  // GET: 기존 답변 조회 (로그인 유저만)
+  const {
+    data: existingAnswer,
+    isLoading: isGetLoading,
+    isError: isGetError,
+  } = useGetAiFirstAnswer(questionId, isAuthenticated)
+
+  // POST: 답변 생성
+  const {
+    mutate,
+    data: createdAnswer,
+    isPending: isCreatePending,
+    reset,
+  } = useCreateAiFirstAnswer(questionId)
+
   const enterQna = useChatbotStore((s) => s.enterQna)
+
+  // 기존 답변이 있으면 자동으로 펼침
+  const hasExistingAnswer = !!existingAnswer
   const [isOpen, setIsOpen] = useState(false)
+  const isAutoOpen = hasExistingAnswer
+  const showAnswer = isAutoOpen || isOpen
+
+  const answerData = existingAnswer ?? createdAnswer
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const handleRequest = () => {
+    if (!isAuthenticated) {
+      showToast('로그인이 필요합니다', 'error')
+      return
+    }
     setErrorMessage(null)
     mutate(undefined, {
-      onSuccess: () => setIsOpen(true),
+      onSuccess: (data) => {
+        setIsOpen(true)
+        // GET 캐시도 갱신
+        queryClient.setQueryData(AI_FIRST_ANSWER_QUERY_KEY(questionId), data)
+      },
       onError: (error) => {
         const { message } = handleApiError(error, AI_ANSWER_ERROR_MESSAGES)
         setErrorMessage(message)
@@ -53,23 +90,26 @@ export function AiFirstAnswerSection({
   }
 
   const handleAskMore = () => {
-    if (!data) return
+    if (!answerData) return
     enterQna({
       questionId,
       questionTitle,
-      firstAnswer: data.output,
+      firstAnswer: answerData.output,
     })
   }
 
   const toggleOpen = () => {
-    if (status !== 'success') {
-      handleRequest()
-    } else {
+    // 이미 답변 데이터가 있으면 토글만
+    if (answerData) {
       setIsOpen((v) => !v)
+      return
     }
+    // 없으면 생성 요청
+    handleRequest()
   }
 
-  const ChevronIcon = isOpen ? ChevronUp : ChevronDown
+  const isPending = isCreatePending || isGetLoading
+  const ChevronIcon = showAnswer ? ChevronUp : ChevronDown
 
   return (
     <div className="mt-16">
@@ -104,8 +144,11 @@ export function AiFirstAnswerSection({
           >
             {isPending ? (
               <span className="inline-flex items-center gap-2">
-                <Spinner size="sm" label="AI 답변 생성 중" />
-                <span>AI가 답변을 생성하고 있습니다...</span>
+                <Spinner size="sm" label="AI 답변 로딩 중" />
+                <span>
+                  AI가 답변을 {isGetLoading ? '불러오고' : '생성하고'}{' '}
+                  있습니다...
+                </span>
               </span>
             ) : (
               <>
@@ -121,20 +164,29 @@ export function AiFirstAnswerSection({
       </div>
 
       {/* 펼쳐진 AI 답변 */}
-      {isOpen && status === 'success' && data && (
+      {showAnswer && answerData && (
         <div className="mt-4 rounded-2xl bg-[#F8F8F8] p-7">
           <div data-color-mode="light" className="prose max-w-none text-sm">
             <MDEditor.Markdown
-              source={data.output}
+              source={answerData.output}
               rehypePlugins={[rehypeSanitize]}
             />
           </div>
-          <div className="mt-4 flex justify-end">
-            <Button variant="outline" size="sm" onClick={handleAskMore}>
-              추가 질문하기
-            </Button>
-          </div>
+          {isAuthenticated && (
+            <div className="mt-4 flex justify-end">
+              <Button variant="outline" size="sm" onClick={handleAskMore}>
+                추가 질문하기
+              </Button>
+            </div>
+          )}
         </div>
+      )}
+
+      {/* GET 조회 실패 시 안내 (네트워크 등) */}
+      {isGetError && !answerData && isAuthenticated && (
+        <p className="text-error mt-2 text-xs">
+          AI 답변을 불러오지 못했습니다. 다시 시도해주세요.
+        </p>
       )}
 
       {errorMessage && (
