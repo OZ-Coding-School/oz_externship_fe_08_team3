@@ -7,8 +7,6 @@ import userAvatarImg from '@/assets/user-avatar.png'
 
 interface MessageListProps {
   messages: ChatMessage[]
-  showGreeting?: boolean
-  onAskMore?: () => void
 }
 
 function renderAssistantContent(message: ChatMessage) {
@@ -60,39 +58,7 @@ function UserAvatar() {
   )
 }
 
-/** 인사말 카드 — QnaChatView 최상단에 표시 */
-function GreetingCard({ onAskMore }: { onAskMore?: () => void }) {
-  return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-start gap-2">
-        <BotAvatar />
-        <div
-          className="max-w-[75%] rounded-xl px-3.5 py-2.5 text-[14px] leading-[19.6px] tracking-[-0.57px] text-[#707070]"
-          style={{ backgroundColor: '#F5F5F5' }}
-        >
-          <p>안녕하세요, 도로시입니다.</p>
-        </div>
-      </div>
-      {onAskMore && (
-        <div className="ml-11">
-          <button
-            type="button"
-            onClick={onAskMore}
-            className="rounded-full border border-[#6201E0] px-4 py-1.5 text-[13px] leading-[18px] font-medium tracking-[-0.3px] text-[#6201E0] transition-colors hover:bg-[#6201E0]/5 active:bg-[#6201E0]/10"
-          >
-            추가 질문하기
-          </button>
-        </div>
-      )}
-    </div>
-  )
-}
-
-export function MessageList({
-  messages,
-  showGreeting,
-  onAskMore,
-}: MessageListProps) {
+export function MessageList({ messages }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -108,7 +74,6 @@ export function MessageList({
       aria-atomic={false}
       className="flex flex-1 flex-col gap-4 overflow-y-auto bg-white p-4"
     >
-      {showGreeting && <GreetingCard onAskMore={onAskMore} />}
       {messages.map((msg, idx) => {
         const isUser = msg.role === 'user'
         return (
