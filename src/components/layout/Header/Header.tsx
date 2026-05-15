@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import logoImg from '@/assets/logo.png'
 import { EXTERNAL_URLS } from '@/constants/routes'
 import { ProfileDropdown } from './ProfileDropdown'
@@ -87,12 +87,30 @@ function ProfileMenu({
   onLogout?: () => void
 }) {
   const { user } = useAuthStore()
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const handleMouseEnter = () => {
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current)
+      closeTimerRef.current = null
+    }
+    setDropdownOpen(true)
+  }
+
+  const handleMouseLeave = () => {
+    closeTimerRef.current = setTimeout(() => {
+      setDropdownOpen(false)
+    }, 100)
+  }
 
   return (
-    <div className="relative" onMouseLeave={() => setDropdownOpen(false)}>
+    <div
+      className="relative"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
       <button
         type="button"
-        onMouseEnter={() => setDropdownOpen(true)}
         onClick={() => setDropdownOpen((v) => !v)}
         aria-label="프로필 메뉴"
         aria-haspopup="menu"
