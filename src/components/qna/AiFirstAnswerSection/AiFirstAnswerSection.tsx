@@ -139,7 +139,10 @@ export function AiFirstAnswerSection({
                 className="prose mt-3 max-w-none text-sm [&_.wmde-markdown]:!bg-transparent [&_.wmde-markdown_*]:!bg-transparent"
               >
                 <MDEditor.Markdown
-                  source={answerData.output}
+                  source={answerData.output
+                    .replace(/^#*\s*AI\s*답변\s*\n[-=]+\s*\n?/i, '')
+                    .replace(/^#*\s*AI\s*답변\s*\n?/i, '')
+                    .trimStart()}
                   rehypePlugins={[rehypeSanitize]}
                 />
               </div>
