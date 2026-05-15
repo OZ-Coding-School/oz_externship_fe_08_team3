@@ -1,8 +1,8 @@
-import { useEffect, useRef } from 'react'
+import { useLayoutEffect, useRef } from 'react'
 import rehypeSanitize from 'rehype-sanitize'
 import MDEditor from '@uiw/react-md-editor'
 import type { ChatMessage } from '@/features/chatbot/widgetTypes'
-import chatbotRobot from '@/assets/chatbot-robot.png'
+import { ChatbotRobotImage } from '@/components/chatbot/ChatbotRobotImage'
 import userAvatarImg from '@/assets/user-avatar.png'
 
 interface MessageListProps {
@@ -31,12 +31,7 @@ function BotAvatar() {
       style={{ boxShadow: '0px 4px 4px 0px rgba(0,0,0,0.25)' }}
       aria-hidden="true"
     >
-      <img
-        src={chatbotRobot}
-        alt=""
-        className="h-[33px] w-[33px] object-contain"
-        draggable={false}
-      />
+      <ChatbotRobotImage className="h-[33px] w-[33px] object-contain" />
     </div>
   )
 }
@@ -61,8 +56,8 @@ function UserAvatar() {
 export function MessageList({ messages }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  useLayoutEffect(() => {
+    bottomRef.current?.scrollIntoView({ block: 'end' })
   }, [messages])
 
   return (
