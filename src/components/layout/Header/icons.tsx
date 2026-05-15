@@ -7,9 +7,9 @@ export function ProfileIcon() {
       fill="none"
       aria-hidden="true"
     >
-      <circle cx="20" cy="20" r="20" fill="#E5E7EB" />
-      <circle cx="20" cy="16" r="6" fill="#9CA3AF" />
-      <path d="M8 34c0-6.627 5.373-12 12-12s12 5.373 12 12" fill="#9CA3AF" />
+      <circle cx="20" cy="20" r="20" fill="#dddddd" />
+      <circle cx="20" cy="16" r="6" fill="#a6a6a6" />
+      <path d="M8 34c0-6.627 5.373-12 12-12s12 5.373 12 12" fill="#a6a6a6" />
     </svg>
   )
 }

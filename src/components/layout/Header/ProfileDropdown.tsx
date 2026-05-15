@@ -46,14 +46,6 @@ export function ProfileDropdown({
     return () => document.removeEventListener('keydown', handler)
   }, [isOpen, onClose])
 
-  // 열릴 때 첫 메뉴 항목으로 포커스 이동
-  useEffect(() => {
-    if (!isOpen) return
-    const firstItem =
-      ref.current?.querySelector<HTMLElement>('[role="menuitem"]')
-    firstItem?.focus()
-  }, [isOpen])
-
   // 메뉴 내 키보드 네비게이션
   const handleKeyDown = (e: React.KeyboardEvent) => {
     const items =
@@ -121,7 +113,7 @@ export function ProfileDropdown({
             href={EXTERNAL_URLS.MYPAGE}
             role="menuitem"
             tabIndex={-1}
-            className="text-text-heading hover:text-primary hover:bg-bg-accent flex h-12 items-center rounded-md px-3 text-sm font-medium tracking-tight transition-colors"
+            className="text-text-heading hover:text-primary hover:bg-bg-accent flex h-12 items-center rounded-md px-3 text-sm font-medium tracking-tight transition-colors outline-none focus-visible:outline-none"
           >
             마이페이지
           </a>
