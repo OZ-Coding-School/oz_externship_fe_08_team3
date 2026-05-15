@@ -1,7 +1,7 @@
 import { useShallow } from 'zustand/react/shallow'
 import { useChatbotStore } from '@/stores/chatbotStore'
 import { useAuthStore } from '@/stores/authStore'
-import chatbotRobot from '@/assets/chatbot-robot.png'
+import { ChatbotRobotImage } from './ChatbotRobotImage'
 
 export function ChatbotFab() {
   const { isOpen, toggle } = useChatbotStore(
@@ -48,13 +48,7 @@ export function ChatbotFab() {
           />
         </svg>
       ) : (
-        <img
-          src={chatbotRobot}
-          alt=""
-          aria-hidden="true"
-          className="h-[52px] w-[49px] object-contain"
-          draggable={false}
-        />
+        <ChatbotRobotImage className="h-[52px] w-[49px] object-contain" />
       )}
     </button>
   )

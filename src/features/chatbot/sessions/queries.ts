@@ -11,6 +11,8 @@ export const sessionsQueryOptions = queryOptions({
       .get<ChatSessionListResponse>('/qna/ai-answer/sessions')
       .then((r) => r.data),
   staleTime: 0,
+  refetchOnMount: 'always',
+  refetchOnWindowFocus: true,
 })
 
 export function useGetSessions() {

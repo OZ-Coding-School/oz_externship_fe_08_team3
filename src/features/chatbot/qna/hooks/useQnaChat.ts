@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useSSEAbort } from '@/features/chatbot/hooks/useSSEAbort'
-import { mapHistoryToMessages } from '@/features/chatbot/hooks/sseStream'
+import { mapHistoryToMessages } from '@/features/chatbot/utils/mapHistory'
 import { sendStreamingMessage } from '@/features/chatbot/hooks/sendStreamingMessage'
 import { useGetQnaHistory, QNA_HISTORY_QUERY_KEY } from '../queries'
 import { SESSIONS_QUERY_KEY } from '@/features/chatbot/sessions/queries'
