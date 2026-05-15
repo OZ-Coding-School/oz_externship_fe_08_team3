@@ -107,9 +107,15 @@ export interface TabProps {
   value: string
   children: React.ReactNode
   disabled?: boolean
+  className?: string
 }
 
-export function Tab({ value, children, disabled = false }: TabProps) {
+export function Tab({
+  value,
+  children,
+  disabled = false,
+  className = '',
+}: TabProps) {
   const { activeTab, onChange, baseId } = useTabsContext()
   const isActive = activeTab === value
 
@@ -124,6 +130,7 @@ export function Tab({ value, children, disabled = false }: TabProps) {
       onClick={() => !disabled && onChange(value)}
       className={[
         'relative shrink-0 px-4 py-3 text-sm font-medium transition-colors duration-150 outline-none',
+        className,
         'focus-visible:ring-primary focus-visible:ring-2 focus-visible:ring-inset',
         isActive
           ? 'text-primary after:bg-primary after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:rounded-t-full'
