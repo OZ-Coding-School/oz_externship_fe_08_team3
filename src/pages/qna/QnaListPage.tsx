@@ -25,6 +25,8 @@ import {
 import { useQnaQuestions } from '@/features/qna/questions'
 import type { QuestionsListParams } from '@/features/qna/questions'
 import { ROUTES } from '@/constants/routes'
+import { useAuthStore } from '@/stores/authStore'
+import { redirectToLogin } from '@/utils/loginRedirect'
 
 type AnswerStatus = 'all' | 'answered' | 'unanswered'
 type SortOption = NonNullable<QuestionsListParams['sort']>
@@ -175,6 +177,7 @@ function SortPopover({
 export function QnaListPage() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
 
   const rawAnswerStatus = searchParams.get('answer_status') ?? 'all'
   const answerStatus: AnswerStatus = (
@@ -333,7 +336,9 @@ export function QnaListPage() {
 
         <button
           type="button"
-          onClick={() => navigate(ROUTES.QNA.WRITE)}
+          onClick={() =>
+            isAuthenticated ? navigate(ROUTES.QNA.WRITE) : redirectToLogin()
+          }
           className="flex h-12 items-center gap-2 rounded-sm bg-[#6201E0] px-9 text-base font-bold text-white transition-colors hover:bg-[#4E01B3]"
         >
           <Pencil className="h-5 w-5" />
