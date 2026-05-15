@@ -60,10 +60,8 @@ export function AiFirstAnswerSection({
   const enterQna = useChatbotStore((s) => s.enterQna)
 
   // 기존 답변이 있으면 자동으로 펼침
-  const hasExistingAnswer = !!existingAnswer
   const [isOpen, setIsOpen] = useState(false)
-  const isAutoOpen = hasExistingAnswer
-  const showAnswer = isAutoOpen || isOpen
+  const showAnswer = isOpen
 
   const answerData = existingAnswer ?? createdAnswer
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
