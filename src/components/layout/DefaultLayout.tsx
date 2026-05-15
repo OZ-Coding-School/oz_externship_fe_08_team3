@@ -142,9 +142,16 @@ function DevAuthPanel() {
 }
 
 export function DefaultLayout() {
+  const { logout } = useAuthStore()
+
+  const handleLogout = () => {
+    logout()
+    localStorage.removeItem('accessToken')
+  }
+
   return (
     <div className="flex min-h-screen flex-col">
-      <Header />
+      <Header onLogout={handleLogout} />
       <main className="flex-1">
         <Outlet />
       </main>
