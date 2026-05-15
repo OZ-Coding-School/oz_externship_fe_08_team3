@@ -164,7 +164,10 @@ export function AiFirstAnswerSection({
           {/* 펼쳐진 AI 답변 — 말풍선 카드 내부 */}
           {showAnswer && answerData && (
             <div className="mt-4 border-t border-[#E0E0E0] pt-4">
-              <div data-color-mode="light" className="prose max-w-none text-sm">
+              <div
+                data-color-mode="light"
+                className="prose max-w-none text-sm [&_.wmde-markdown]:!bg-transparent [&_.wmde-markdown_*]:!bg-transparent"
+              >
                 <MDEditor.Markdown
                   source={answerData.output}
                   rehypePlugins={[rehypeSanitize]}
