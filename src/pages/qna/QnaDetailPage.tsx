@@ -12,11 +12,7 @@ import { AnswerSection } from '@/components/qna/AnswerSection'
 import { AnswerPromptCard } from '@/components/qna/AnswerPromptCard'
 import { useAuthStore } from '@/stores/authStore'
 import { ANSWER_ALLOWED_ROLES } from '@/constants/roles'
-import {
-  usePostAnswer,
-  useGetAnswers,
-  usePutAnswer,
-} from '@/features/qna/answers'
+import { usePostAnswer, usePutAnswer } from '@/features/qna/answers'
 import { useAcceptAnswer } from '@/features/qna/answer-accept'
 import { useGetQuestionDetail } from '@/features/qna/question-detail'
 import { useToast } from '@/hooks/useToast'
@@ -48,11 +44,9 @@ export function QnaDetailPage() {
     isError: isQuestionError,
   } = useGetQuestionDetail(numericQuestionId)
 
-  const {
-    data: answers,
-    isLoading: isAnswersLoading,
-    isError: isAnswersError,
-  } = useGetAnswers(numericQuestionId)
+  const answers = questionDetail?.answers
+  const isAnswersLoading = isQuestionLoading
+  const isAnswersError = isQuestionError
 
   const { mutate: postAnswer, isPending: isPostPending } =
     usePostAnswer(numericQuestionId)
