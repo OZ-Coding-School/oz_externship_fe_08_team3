@@ -106,10 +106,10 @@ export function ProfileDropdown({
         {/* 메뉴 항목 */}
         <div className="flex flex-col gap-1">
           <a
-            href={EXTERNAL_URLS.SIGNUP}
+            href={EXTERNAL_URLS.ENROLL}
             role="menuitem"
             tabIndex={-1}
-            className="text-text-heading hover:text-primary hover:bg-bg-accent flex h-12 items-center rounded-md px-3 text-sm font-medium transition-colors outline-none"
+            className="text-text-heading hover:text-primary hover:bg-bg-accent flex h-12 items-center rounded-md px-3 text-sm font-medium transition-colors outline-none focus-visible:outline-none"
           >
             수강생 등록
           </a>

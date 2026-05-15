@@ -346,7 +346,10 @@ export function QnaListPage() {
               return
             }
             if (user?.role !== 'STUDENT') {
-              showToast('수강생만 질문하기가 가능합니다.', 'info')
+              showToast(
+                '수강생 전용 기능입니다. 먼저 수강 신청을 완료해 주세요.',
+                'info'
+              )
               return
             }
             navigate(ROUTES.QNA.WRITE)
