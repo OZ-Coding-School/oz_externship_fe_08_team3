@@ -86,7 +86,7 @@ export function HubView() {
               <button
                 type="button"
                 onClick={() => handleSessionClick(session)}
-                className="flex w-full items-center gap-4 px-4 py-[18px] text-left transition-colors hover:bg-gray-50"
+                className="flex w-full items-start gap-4 px-4 py-[18px] text-left transition-colors hover:bg-gray-50"
               >
                 <div
                   className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white"
@@ -94,9 +94,16 @@ export function HubView() {
                 >
                   <ChatbotRobotImage className="h-[42px] w-[42px] object-contain" />
                 </div>
-                <p className="min-w-0 flex-1 truncate text-[16px] font-medium text-[#121212]">
-                  질의응답 챗봇
-                </p>
+                <div className="flex min-w-0 flex-1 flex-col gap-1">
+                  <p className="truncate text-[16px] font-medium text-[#121212]">
+                    질의응답 챗봇
+                  </p>
+                  {session.last_message && (
+                    <p className="truncate text-[13px] text-[#707070]">
+                      {session.last_message}
+                    </p>
+                  )}
+                </div>
                 <span className="shrink-0 text-[13px] text-[#9D9D9D]">
                   {getRelativeTime(session.created_at)}
                 </span>
