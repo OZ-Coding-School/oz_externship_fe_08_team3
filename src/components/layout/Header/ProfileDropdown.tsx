@@ -109,7 +109,7 @@ export function ProfileDropdown({
             href={EXTERNAL_URLS.SIGNUP}
             role="menuitem"
             tabIndex={-1}
-            className="text-text-heading hover:text-primary hover:bg-bg-accent flex h-12 items-center rounded-md px-3 text-sm font-medium transition-colors"
+            className="text-text-heading hover:text-primary hover:bg-bg-accent flex h-12 items-center rounded-md px-3 text-sm font-medium transition-colors outline-none"
           >
             수강생 등록
           </a>

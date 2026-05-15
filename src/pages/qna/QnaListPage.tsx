@@ -21,12 +21,14 @@ import {
   Pagination,
   QuestionCard,
   CategoryFilter,
+  Toast,
 } from '@/components'
 import { useQnaQuestions } from '@/features/qna/questions'
 import type { QuestionsListParams } from '@/features/qna/questions'
 import { ROUTES } from '@/constants/routes'
 import { useAuthStore } from '@/stores/authStore'
 import { redirectToLogin } from '@/utils/loginRedirect'
+import { useToast } from '@/hooks/useToast'
 
 type AnswerStatus = 'all' | 'answered' | 'unanswered'
 type SortOption = NonNullable<QuestionsListParams['sort']>
@@ -178,6 +180,8 @@ export function QnaListPage() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+  const user = useAuthStore((s) => s.user)
+  const { toast, showToast, hideToast } = useToast()
 
   const rawAnswerStatus = searchParams.get('answer_status') ?? 'all'
   const answerStatus: AnswerStatus = (
@@ -336,9 +340,17 @@ export function QnaListPage() {
 
         <button
           type="button"
-          onClick={() =>
-            isAuthenticated ? navigate(ROUTES.QNA.WRITE) : redirectToLogin()
-          }
+          onClick={() => {
+            if (!isAuthenticated) {
+              redirectToLogin()
+              return
+            }
+            if (user?.role !== 'STUDENT') {
+              showToast('수강생만 질문하기가 가능합니다.', 'info')
+              return
+            }
+            navigate(ROUTES.QNA.WRITE)
+          }}
           className="flex h-12 items-center gap-2 rounded-sm bg-[#6201E0] px-9 text-base font-bold text-white transition-colors hover:bg-[#4E01B3]"
         >
           <Pencil className="h-5 w-5" />
@@ -488,6 +500,14 @@ export function QnaListPage() {
           </Suspense>
         </div>
       </Modal>
+
+      {toast.visible && (
+        <Toast
+          message={toast.message}
+          variant={toast.variant}
+          onClose={hideToast}
+        />
+      )}
     </div>
   )
 }
