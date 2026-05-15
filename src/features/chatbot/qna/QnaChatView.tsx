@@ -81,7 +81,13 @@ export function QnaChatView({ questionId }: QnaChatViewProps) {
             </button>
           </div>
         ) : (
-          <MessageList messages={messages} />
+          <MessageList
+            messages={messages}
+            showGreeting
+            onAskMore={() =>
+              document.getElementById('chatbot-message-input')?.focus()
+            }
+          />
         )}
       </div>
 
