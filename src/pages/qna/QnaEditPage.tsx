@@ -3,7 +3,7 @@
  */
 import { Suspense } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router'
-import { QuestionForm, Toast } from '@/components'
+import { QuestionForm, AlertModal } from '@/components'
 import { useQnaCategories } from '@/features/qna/categories'
 import {
   useSuspenseGetQuestionDetail,
@@ -11,7 +11,7 @@ import {
 } from '@/features/qna/question-edit'
 import type { GetQuestionDetailResponse } from '@/features/qna/question-detail'
 import { useAuthStore } from '@/stores/authStore'
-import { useToast } from '@/hooks/useToast'
+import { useState } from 'react'
 import { ROUTES } from '@/constants/routes'
 import { extractImageUrls } from '@/utils/extractImageUrls'
 
@@ -23,7 +23,7 @@ interface QnaEditFormInnerProps {
 function QnaEditFormInner({ questionId, question }: QnaEditFormInnerProps) {
   const navigate = useNavigate()
   const { mutate: updateQuestion, isPending } = useUpdateQuestion(questionId)
-  const { toast, showToast, hideToast } = useToast()
+  const [alertMessage, setAlertMessage] = useState('')
 
   const handleSubmit = (data: {
     categoryId: number
@@ -42,7 +42,7 @@ function QnaEditFormInner({ questionId, question }: QnaEditFormInnerProps) {
           navigate(ROUTES.QNA.DETAIL.replace(':questionId', String(questionId)))
         },
         onError: () => {
-          showToast('질문 수정에 실패했습니다. 다시 시도해 주세요.', 'error')
+          setAlertMessage('질문 수정에 실패했습니다. 다시 시도해 주세요.')
         },
       }
     )
@@ -63,13 +63,11 @@ function QnaEditFormInner({ questionId, question }: QnaEditFormInnerProps) {
           navigate(ROUTES.QNA.DETAIL.replace(':questionId', String(questionId)))
         }
       />
-      {toast.visible && (
-        <Toast
-          message={toast.message}
-          variant={toast.variant}
-          onClose={hideToast}
-        />
-      )}
+      <AlertModal
+        isOpen={alertMessage !== ''}
+        onClose={() => setAlertMessage('')}
+        message={alertMessage}
+      />
     </>
   )
 }

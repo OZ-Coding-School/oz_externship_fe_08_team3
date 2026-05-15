@@ -2,8 +2,7 @@ import { useEffect, useState } from 'react'
 import { Button } from '@/components/common/Button'
 import { MarkdownEditor } from '@/components/qna/MarkdownEditor'
 import { Dropdown } from '@/components/common/Dropdown'
-import { Toast } from '@/components/common/Toast'
-import { useToast } from '@/hooks/useToast'
+import { AlertModal } from '@/components/common/Modal'
 import { useCategorySelector } from '@/hooks/useCategorySelector'
 
 const MIN_CONTENT_LENGTH = 5
@@ -50,9 +49,10 @@ export function QuestionForm({
     resolvedCategoryId,
   } = useCategorySelector(initialValues?.categoryId)
 
-  const { toast, showToast, hideToast } = useToast()
   const [title, setTitle] = useState(initialValues?.title ?? '')
   const [content, setContent] = useState(initialValues?.content ?? '')
+  const [alertMessage, setAlertMessage] = useState('')
+  const [isAlertOpen, setIsAlertOpen] = useState(false)
 
   const isDirty = title.trim().length > 0 || content.length > 0
 
@@ -77,19 +77,23 @@ export function QuestionForm({
     const isContentInvalid = content.trim().length < MIN_CONTENT_LENGTH
 
     if (isCategoryMissing) {
-      showToast('카테고리를 선택해 주세요.', 'warning')
+      setAlertMessage('카테고리를 선택해 주세요.')
+      setIsAlertOpen(true)
       return
     }
     if (!title.trim()) {
-      showToast('제목을 입력해 주세요.', 'warning')
+      setAlertMessage('제목을 입력해 주세요.')
+      setIsAlertOpen(true)
       return
     }
     if (isTitleInvalid) {
-      showToast(`제목을 ${MIN_TITLE_LENGTH}자 이상 입력해 주세요.`, 'warning')
+      setAlertMessage(`제목을 ${MIN_TITLE_LENGTH}자 이상 입력해 주세요.`)
+      setIsAlertOpen(true)
       return
     }
     if (isContentInvalid) {
-      showToast(`내용을 ${MIN_CONTENT_LENGTH}자 이상 입력해 주세요.`, 'warning')
+      setAlertMessage(`내용을 ${MIN_CONTENT_LENGTH}자 이상 입력해 주세요.`)
+      setIsAlertOpen(true)
       return
     }
 
@@ -169,13 +173,11 @@ export function QuestionForm({
         </div>
       </form>
 
-      {toast.visible && (
-        <Toast
-          message={toast.message}
-          variant={toast.variant}
-          onClose={hideToast}
-        />
-      )}
+      <AlertModal
+        isOpen={isAlertOpen}
+        onClose={() => setIsAlertOpen(false)}
+        message={alertMessage}
+      />
     </>
   )
 }
