@@ -84,7 +84,10 @@ export const useChatbotStore = create<ChatbotState>()(
         ),
 
       markQnaLimitExceeded: (questionId) => {
-        const next = new Set(get().qnaLimitExceededIds)
+        const current = get().qnaLimitExceededIds
+        // 이미 포함되어 있으면 새 Set을 만들지 않음 (무한 리렌더 방지)
+        if (current.has(questionId)) return
+        const next = new Set(current)
         next.add(questionId)
         set(
           { qnaLimitExceededIds: next },
@@ -94,7 +97,10 @@ export const useChatbotStore = create<ChatbotState>()(
       },
 
       clearQnaLimitExceeded: (questionId) => {
-        const next = new Set(get().qnaLimitExceededIds)
+        const current = get().qnaLimitExceededIds
+        // 포함되어 있지 않으면 새 Set을 만들지 않음 (무한 리렌더 방지)
+        if (!current.has(questionId)) return
+        const next = new Set(current)
         next.delete(questionId)
         set(
           { qnaLimitExceededIds: next },
