@@ -60,10 +60,8 @@ export function AiFirstAnswerSection({
   const enterQna = useChatbotStore((s) => s.enterQna)
 
   // 기존 답변이 있으면 자동으로 펼침
-  const hasExistingAnswer = !!existingAnswer
   const [isOpen, setIsOpen] = useState(false)
-  const isAutoOpen = hasExistingAnswer
-  const showAnswer = isAutoOpen || isOpen
+  const showAnswer = isOpen
 
   const answerData = existingAnswer ?? createdAnswer
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -130,57 +128,70 @@ export function AiFirstAnswerSection({
             className="absolute top-4 -left-[12px] border-y-[6px] border-r-[12px] border-y-transparent border-r-[#F8F8F8]"
           />
 
-          {/* 질문 미리보기 텍스트 */}
-          <p className="truncate text-base leading-normal tracking-[-0.03em] text-[#707070]">
-            {questionTitle}
-          </p>
-
-          {/* 답변 보기 CTA */}
-          <button
-            type="button"
-            onClick={toggleOpen}
-            disabled={isPending}
-            className="mt-2 inline-flex flex-wrap items-center gap-1 text-lg leading-normal font-bold tracking-[-0.03em] text-[#4D4D4D] disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {isPending ? (
-              <span className="inline-flex items-center gap-2">
-                <Spinner size="sm" label="AI 답변 로딩 중" />
-                <span>
-                  AI가 답변을 {isGetLoading ? '불러오고' : '생성하고'}{' '}
-                  있습니다...
-                </span>
-              </span>
-            ) : (
-              <>
-                <span>질문에 대한</span>
-                <img src={aiBotImg} alt="" className="mx-0.5 inline h-9 w-9" />
-                <strong className="text-black">AI 질의응답 챗봇</strong>
-                <span>답변 보기</span>
-                <ChevronIcon className="ml-1 h-4 w-4 shrink-0 text-[#4D4D4D]" />
-              </>
-            )}
-          </button>
-        </div>
-      </div>
-
-      {/* 펼쳐진 AI 답변 */}
-      {showAnswer && answerData && (
-        <div className="mt-4 rounded-2xl bg-[#F8F8F8] p-7">
-          <div data-color-mode="light" className="prose max-w-none text-sm">
-            <MDEditor.Markdown
-              source={answerData.output}
-              rehypePlugins={[rehypeSanitize]}
-            />
-          </div>
-          {isAuthenticated && (
-            <div className="mt-4 flex justify-end">
-              <Button variant="outline" size="sm" onClick={handleAskMore}>
-                추가 질문하기
-              </Button>
+          {showAnswer && answerData ? (
+            /* 펼쳐진 상태 (이미지 3) — 답변 표시, 버튼 없음 */
+            <div className="animate-fade-in">
+              <p className="text-lg leading-normal font-bold tracking-[-0.03em] text-[#121212]">
+                AI 질의응답 챗봇 답변
+              </p>
+              <div
+                data-color-mode="light"
+                className="prose mt-3 max-w-none text-sm [&_.wmde-markdown]:!bg-transparent [&_.wmde-markdown_*]:!bg-transparent"
+              >
+                <MDEditor.Markdown
+                  source={answerData.output
+                    .replace(/^#*\s*AI\s*답변\s*\n[-=]+\s*\n?/i, '')
+                    .replace(/^#*\s*AI\s*답변\s*\n?/i, '')
+                    .trimStart()}
+                  rehypePlugins={[rehypeSanitize]}
+                />
+              </div>
+              {isAuthenticated && (
+                <div className="mt-4 flex justify-end">
+                  <Button variant="outline" size="sm" onClick={handleAskMore}>
+                    추가 질문하기
+                  </Button>
+                </div>
+              )}
             </div>
+          ) : (
+            /* 접힌 상태 (이미지 2) — 질문 제목 + 답변 보기 버튼 */
+            <>
+              <p className="truncate text-base leading-normal tracking-[-0.03em] text-[#707070]">
+                {questionTitle}
+              </p>
+              <button
+                type="button"
+                onClick={toggleOpen}
+                disabled={isPending}
+                className="mt-2 inline-flex flex-wrap items-center gap-1 text-lg leading-normal font-bold tracking-[-0.03em] text-[#4D4D4D] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isPending ? (
+                  <span className="inline-flex items-center gap-2">
+                    <Spinner size="sm" label="AI 답변 로딩 중" />
+                    <span>
+                      AI가 답변을 {isGetLoading ? '불러오고' : '생성하고'}{' '}
+                      있습니다...
+                    </span>
+                  </span>
+                ) : (
+                  <>
+                    <span>질문에 대한</span>
+                    <img
+                      src={aiBotImg}
+                      alt=""
+                      className="mx-0.5 inline h-9 w-9"
+                    />
+                    <strong className="text-black">AI 질의응답 챗봇</strong>
+                    <span>답변 보기</span>
+                    <ChevronIcon className="ml-1 h-4 w-4 shrink-0 text-[#4D4D4D]" />
+                  </>
+                )}
+              </button>
+            </>
           )}
         </div>
-      )}
+      </div>
 
       {/* GET 조회 실패 시 안내 (네트워크 등) */}
       {isGetError && !answerData && isAuthenticated && (
