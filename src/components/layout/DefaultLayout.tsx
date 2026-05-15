@@ -6,6 +6,7 @@ import { ChatbotFab, ChatbotWidget } from '@/components/chatbot'
 import { ChatbotPageContextSync } from '@/features/chatbot/ChatbotPageContextSync'
 import { useAuthStore } from '@/stores/authStore'
 import type { UserRole } from '@/stores/authStore'
+import api from '@/api/instance'
 
 // DEV 전용 권한별 로그인 패널 — 운영 빌드에서는 렌더링 안 됨
 interface RoleOption {
@@ -144,7 +145,12 @@ function DevAuthPanel() {
 export function DefaultLayout() {
   const { logout } = useAuthStore()
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await api.post('/accounts/logout')
+    } catch {
+      // 서버 로그아웃 실패해도 클라이언트는 로그아웃 처리
+    }
     logout()
     localStorage.removeItem('accessToken')
   }
