@@ -343,7 +343,7 @@ export function QnaListPage() {
 
       {/* 탭 + 정렬/필터를 한 줄에 배치 */}
       <Tabs value={answerStatus} onChange={handleTabChange}>
-        <div className="flex items-end justify-between border-b border-[#CECECE] pb-2">
+        <div className="flex items-end justify-between border-b border-[#CECECE]">
           <TabList aria-label="답변 상태 필터" className="flex gap-10 border-0">
             <Tab value="all">전체보기</Tab>
             <Tab value="answered">답변완료</Tab>
