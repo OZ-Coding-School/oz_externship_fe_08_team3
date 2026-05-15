@@ -102,7 +102,7 @@ export function QuestionDetail({
             <div className="flex shrink-0 items-center gap-3">
               <UserAvatar
                 size="lg"
-                profileImageUrl={questionDetail.author.profile_image_url}
+                profileImageUrl={questionDetail.author.profile_img_url}
                 nickname={questionDetail.author.nickname}
               />
               <span className="text-base leading-normal font-bold tracking-[-0.03em] text-[#4D4D4D]">

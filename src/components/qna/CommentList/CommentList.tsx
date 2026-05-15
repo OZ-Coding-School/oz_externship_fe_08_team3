@@ -84,7 +84,7 @@ export function CommentList({ comments }: CommentListProps) {
           <li key={comment.id} className="group flex gap-[17px]">
             <UserAvatar
               size="lg"
-              profileImageUrl={comment.author.profile_image_url}
+              profileImageUrl={comment.author.profile_img_url}
               nickname={comment.author.nickname}
             />
             <div className="flex flex-1 flex-col gap-3 border-b border-[#CECECE] pb-5 group-last:border-b-0">

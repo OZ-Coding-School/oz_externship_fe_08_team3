@@ -35,7 +35,7 @@ export const answersHandlers = [
           author: {
             id: MOCK_AUTHOR_ID,
             nickname: '테스트유저',
-            profile_image_url: null,
+            profile_img_url: null,
             course_name: 'OZ 코딩스쿨',
             cohort_name: '8기',
           },
@@ -45,7 +45,7 @@ export const answersHandlers = [
           comments: [
             {
               id: 1001,
-              author: { id: 301, nickname: '댓글러', profile_image_url: null },
+              author: { id: 301, nickname: '댓글러', profile_img_url: null },
               content: '도움이 많이 되었습니다. 감사해요!',
               created_at: new Date(Date.now() - 3600000).toISOString(),
               updated_at: new Date(Date.now() - 3600000).toISOString(),
@@ -55,7 +55,7 @@ export const answersHandlers = [
               author: {
                 id: 302,
                 nickname: '개발공부중',
-                profile_image_url: null,
+                profile_img_url: null,
               },
               content: '저도 같은 문제로 고민했는데 덕분에 해결했어요.',
               created_at: new Date(Date.now() - 1800000).toISOString(),
