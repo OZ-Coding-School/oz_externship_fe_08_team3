@@ -14,17 +14,24 @@ interface RoleOption {
   label: string
   color: string
   nickname?: string
+  profileImage?: string
 }
 
 const ROLE_OPTIONS: RoleOption[] = [
   { role: 'USER', label: '일반회원', color: 'bg-gray-500' },
-  { role: 'STUDENT', label: '수강생', color: 'bg-blue-400' },
+  {
+    role: 'STUDENT',
+    label: '수강생 (이미지 있음)',
+    color: 'bg-blue-400',
+    profileImage: 'https://i.pravatar.cc/80?u=student',
+  },
   {
     role: 'STUDENT',
     id: 100,
     label: '질문 작성자',
     color: 'bg-blue-600',
     nickname: '질문자',
+    profileImage: 'https://i.pravatar.cc/80?u=100',
   },
   {
     role: 'STUDENT',
@@ -52,13 +59,20 @@ function DevAuthPanel() {
 
   if (!import.meta.env.DEV) return null
 
-  const handleLogin = ({ id, role, label, nickname }: RoleOption) => {
+  const handleLogin = ({
+    id,
+    role,
+    label,
+    nickname,
+    profileImage,
+  }: RoleOption) => {
     localStorage.setItem('accessToken', 'dev-mock-token')
     login({
       id,
       nickname: nickname ?? `Dev ${label}`,
       email: `${role.toLowerCase()}@test.com`,
       role,
+      profileImage,
     })
   }
 
