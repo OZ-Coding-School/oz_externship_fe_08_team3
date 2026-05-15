@@ -6,7 +6,7 @@ const MAX_COMMENT_LENGTH = 500
 const MOCK_AUTHOR: AnswerComment['author'] = {
   id: 211,
   nickname: '테스트유저',
-  profile_image_url: null,
+  profile_img_url: null,
 }
 
 // answerId → 댓글 목록 (MSW 인메모리 상태)

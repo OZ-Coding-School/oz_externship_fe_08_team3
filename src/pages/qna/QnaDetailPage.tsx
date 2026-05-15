@@ -254,7 +254,9 @@ export function QnaDetailPage() {
                 isLoading={isPutPending}
                 mode="edit"
                 initialContent={myAnswer.content}
-                initialImgUrls={myAnswer.images.map((img) => img.img_url)}
+                initialImgUrls={
+                  myAnswer.images?.map((img) => img.img_url) ?? []
+                }
                 answerId={myAnswer.id}
               />
             ) : (
