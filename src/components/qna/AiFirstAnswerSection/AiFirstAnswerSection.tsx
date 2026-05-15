@@ -130,15 +130,44 @@ export function AiFirstAnswerSection({
             className="absolute top-4 -left-[12px] border-y-[6px] border-r-[12px] border-y-transparent border-r-[#F8F8F8]"
           />
 
-          {showAnswer && answerData ? (
-            /* 펼쳐진 상태 — 버튼 없이 답변만 표시 */
-            <>
-              <p className="text-lg leading-normal font-bold tracking-[-0.03em] text-[#121212]">
+          {/* 항상 표시: 질문 제목 + 답변 보기 토글 버튼 */}
+          <p className="truncate text-base leading-normal tracking-[-0.03em] text-[#707070]">
+            {questionTitle}
+          </p>
+          <button
+            type="button"
+            onClick={toggleOpen}
+            disabled={isPending}
+            className="mt-2 inline-flex flex-wrap items-center gap-1 text-lg leading-normal font-bold tracking-[-0.03em] text-[#4D4D4D] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {isPending ? (
+              <span className="inline-flex items-center gap-2">
+                <Spinner size="sm" label="AI 답변 로딩 중" />
+                <span>
+                  AI가 답변을 {isGetLoading ? '불러오고' : '생성하고'}{' '}
+                  있습니다...
+                </span>
+              </span>
+            ) : (
+              <>
+                <span>질문에 대한</span>
+                <img src={aiBotImg} alt="" className="mx-0.5 inline h-9 w-9" />
+                <strong className="text-black">AI 질의응답 챗봇</strong>
+                <span>답변 보기</span>
+                <ChevronIcon className="ml-1 h-4 w-4 shrink-0 text-[#4D4D4D]" />
+              </>
+            )}
+          </button>
+
+          {/* 카드 확장 영역 — 클릭 시 아래로 펼쳐짐 */}
+          {showAnswer && answerData && (
+            <div className="mt-4 border-t border-[#E0E0E0] pt-4">
+              <p className="mb-3 text-lg leading-normal font-bold tracking-[-0.03em] text-[#121212]">
                 AI 질의응답 챗봇 답변
               </p>
               <div
                 data-color-mode="light"
-                className="prose mt-3 max-w-none text-sm [&_.wmde-markdown]:!bg-transparent [&_.wmde-markdown_*]:!bg-transparent"
+                className="prose max-w-none text-sm [&_.wmde-markdown]:!bg-transparent [&_.wmde-markdown_*]:!bg-transparent"
               >
                 <MDEditor.Markdown
                   source={answerData.output}
@@ -152,42 +181,7 @@ export function AiFirstAnswerSection({
                   </Button>
                 </div>
               )}
-            </>
-          ) : (
-            /* 접힌 상태 — 질문 제목 + 답변 보기 토글 버튼 */
-            <>
-              <p className="truncate text-base leading-normal tracking-[-0.03em] text-[#707070]">
-                {questionTitle}
-              </p>
-              <button
-                type="button"
-                onClick={toggleOpen}
-                disabled={isPending}
-                className="mt-2 inline-flex flex-wrap items-center gap-1 text-lg leading-normal font-bold tracking-[-0.03em] text-[#4D4D4D] disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {isPending ? (
-                  <span className="inline-flex items-center gap-2">
-                    <Spinner size="sm" label="AI 답변 로딩 중" />
-                    <span>
-                      AI가 답변을 {isGetLoading ? '불러오고' : '생성하고'}{' '}
-                      있습니다...
-                    </span>
-                  </span>
-                ) : (
-                  <>
-                    <span>질문에 대한</span>
-                    <img
-                      src={aiBotImg}
-                      alt=""
-                      className="mx-0.5 inline h-9 w-9"
-                    />
-                    <strong className="text-black">AI 질의응답 챗봇</strong>
-                    <span>답변 보기</span>
-                    <ChevronIcon className="ml-1 h-4 w-4 shrink-0 text-[#4D4D4D]" />
-                  </>
-                )}
-              </button>
-            </>
+            </div>
           )}
         </div>
       </div>
