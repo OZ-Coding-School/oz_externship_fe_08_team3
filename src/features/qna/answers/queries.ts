@@ -18,7 +18,9 @@ export function usePostAnswer(questionId: number) {
         .post<PostAnswerResponse>(`/qna/questions/${questionId}/answers`, data)
         .then((res) => res.data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['answers', questionId] })
+      queryClient.invalidateQueries({
+        queryKey: ['question-detail', questionId],
+      })
     },
   })
 }
@@ -49,7 +51,9 @@ export function usePutAnswer(answerId: number | undefined, questionId: number) {
       return res.data
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['answers', questionId] })
+      queryClient.invalidateQueries({
+        queryKey: ['question-detail', questionId],
+      })
     },
   })
 }

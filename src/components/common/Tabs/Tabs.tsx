@@ -90,7 +90,7 @@ export function TabList({
       tabIndex={-1}
       aria-label={ariaLabel}
       onKeyDown={handleKeyDown}
-      className={['border-border-base flex border-b', className]
+      className={['border-border-base flex', className]
         .filter(Boolean)
         .join(' ')}
     >
@@ -126,7 +126,7 @@ export function Tab({ value, children, disabled = false }: TabProps) {
         'relative shrink-0 px-4 py-3 text-sm font-medium transition-colors duration-150 outline-none',
         'focus-visible:ring-primary focus-visible:ring-2 focus-visible:ring-inset',
         isActive
-          ? 'text-primary after:bg-primary after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:rounded-t-full'
+          ? 'text-primary after:bg-primary after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:rounded-t-full'
           : 'text-text-muted hover:text-text-body',
         disabled ? 'cursor-not-allowed opacity-40' : 'cursor-pointer',
       ]
