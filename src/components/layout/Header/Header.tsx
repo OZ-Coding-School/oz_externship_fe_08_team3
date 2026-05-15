@@ -38,7 +38,7 @@ function HeaderLogo() {
 
 function HeaderNav() {
   return (
-    <nav className="hidden items-center gap-8 md:flex lg:gap-15">
+    <nav className="flex items-center gap-15">
       <a
         href={EXTERNAL_URLS.COMMUNITY}
         className="hover:text-primary px-2.5 py-2.5 text-lg tracking-tight text-gray-900 transition-colors duration-150"
@@ -105,6 +105,9 @@ function ProfileMenu({
           width={40}
           height={40}
           className="aspect-square h-10 w-10 rounded-full object-cover"
+          onError={(e) => {
+            e.currentTarget.src = defaultProfile
+          }}
         />
       </button>
 
@@ -135,7 +138,7 @@ export function Header({
 
       <div className="border-b border-black/20 bg-white">
         <div className="max-w-container mx-auto flex h-16 items-center justify-between px-4">
-          <div className="flex items-center gap-8 lg:gap-15">
+          <div className="flex items-center gap-15">
             <HeaderLogo />
             <HeaderNav />
           </div>
