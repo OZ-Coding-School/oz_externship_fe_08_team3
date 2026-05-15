@@ -21,10 +21,9 @@ export function HubView() {
   }
 
   const handleSessionClick = (session: ChatSession) => {
+    // sessions 응답에는 questionTitle/firstAnswer가 없음 — 진입 후 history fallback이 처리
     enterQna({
       questionId: session.question_id,
-      questionTitle: session.question_title,
-      firstAnswer: session.first_answer,
     })
   }
 
@@ -87,7 +86,7 @@ export function HubView() {
         {!isLoading &&
           !isError &&
           data?.results?.map((session) => (
-            <div key={session.session_id}>
+            <div key={session.question_id}>
               <button
                 type="button"
                 onClick={() => handleSessionClick(session)}
@@ -108,7 +107,7 @@ export function HubView() {
                   질의응답 챗봇
                 </p>
                 <span className="shrink-0 text-[13px] text-[#9D9D9D]">
-                  {getRelativeTime(session.updated_at)}
+                  {getRelativeTime(session.created_at)}
                 </span>
               </button>
               <div className="border-t border-[#E8E8E8]" />

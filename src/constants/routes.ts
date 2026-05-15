@@ -3,6 +3,7 @@ export const EXTERNAL_URLS = {
   HOME: 'https://my.ozcodingschool.site/',
   LOGIN: 'https://my.ozcodingschool.site/login',
   SIGNUP: 'https://my.ozcodingschool.site/signup',
+  ENROLL: 'http://my.ozcodingschool.site/enroll',
   MYPAGE: 'https://my.ozcodingschool.site/mypage',
   COMMUNITY: 'https://community.ozcodingschool.site/community',
   QNA: 'https://qna.ozcodingschool.site/',
