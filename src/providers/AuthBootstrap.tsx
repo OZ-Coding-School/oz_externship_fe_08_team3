@@ -20,7 +20,7 @@ function toLoginPayload(user: Awaited<ReturnType<typeof fetchMe>>) {
     id: user.id,
     nickname: user.nickname,
     email: user.email,
-    profileImage: user.profile_image,
+    profileImage: user.profile_img_url,
     role: user.role,
   }
 }

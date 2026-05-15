@@ -60,7 +60,7 @@ export function AnswerCard({
           <div className="flex items-center gap-5">
             <UserAvatar
               size="lg"
-              profileImageUrl={answer.author.profile_image_url}
+              profileImageUrl={answer.author.profile_img_url}
               nickname={answer.author.nickname}
             />
             <div>
@@ -109,10 +109,10 @@ export function AnswerCard({
         {/* 하단: 시간 + 디바이더 */}
         <div className="flex justify-end border-b border-[#CECECE] pt-8 pb-5">
           <time
-            dateTime={answer.updated_at}
+            dateTime={answer.updated_at ?? answer.created_at}
             className="text-base leading-normal tracking-[-0.03em] text-[#9D9D9D]"
           >
-            {getRelativeTime(answer.updated_at)}
+            {getRelativeTime(answer.updated_at ?? answer.created_at)}
           </time>
         </div>
 

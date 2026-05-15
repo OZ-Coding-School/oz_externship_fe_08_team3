@@ -13,7 +13,7 @@ export const meHandlers = [
       id: 1,
       nickname: 'dev',
       email: 'dev@test.com',
-      profile_image: null,
+      profile_image_url: null,
       role: 'STUDENT',
     })
   }),

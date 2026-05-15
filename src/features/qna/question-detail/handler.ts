@@ -26,7 +26,7 @@ export const questionDetailHandler = [
         author: {
           id: 100,
           nickname: '질문자',
-          profile_image_url: null,
+          profile_img_url: null,
           course_name: 'OZ 코딩스쿨',
           cohort_name: '8기',
         },
@@ -36,7 +36,7 @@ export const questionDetailHandler = [
             author: {
               id: MOCK_AUTHOR_ID,
               nickname: '테스트유저',
-              profile_image_url: null,
+              profile_img_url: null,
               course_name: 'OZ 코딩스쿨',
               cohort_name: '8기',
             },
@@ -49,7 +49,7 @@ export const questionDetailHandler = [
                 author: {
                   id: 301,
                   nickname: '댓글러',
-                  profile_image_url: null,
+                  profile_img_url: null,
                 },
                 content: '도움이 많이 되었습니다. 감사해요!',
                 created_at: new Date(Date.now() - 3600000).toISOString(),

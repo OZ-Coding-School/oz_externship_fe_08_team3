@@ -15,7 +15,7 @@ export interface PostAnswerResponse {
 export interface AnswerAuthor {
   id: number
   nickname: string
-  profile_image_url: string | null
+  profile_img_url: string | null
   course_name: string
   cohort_name: string
 }
@@ -30,10 +30,10 @@ export interface GetAnswerItem {
   author: AnswerAuthor
   content: string
   is_adopted: boolean
-  images: AnswerImage[]
+  images?: AnswerImage[]
   comments: AnswerComment[]
   created_at: string
-  updated_at: string
+  updated_at?: string
 }
 
 export type GetAnswersResponse = GetAnswerItem[]
