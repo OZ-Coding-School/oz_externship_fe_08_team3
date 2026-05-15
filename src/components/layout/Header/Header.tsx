@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import logoImg from '@/assets/logo.png'
-import defaultProfile from '@/assets/default-profile.png'
 import { EXTERNAL_URLS } from '@/constants/routes'
 import { ProfileDropdown } from './ProfileDropdown'
+import { ProfileIcon } from './icons'
 import { useAuthStore } from '@/stores/authStore'
 
 export interface HeaderProps {
@@ -87,28 +87,47 @@ function ProfileMenu({
   onLogout?: () => void
 }) {
   const { user } = useAuthStore()
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const handleMouseEnter = () => {
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current)
+      closeTimerRef.current = null
+    }
+    setDropdownOpen(true)
+  }
+
+  const handleMouseLeave = () => {
+    closeTimerRef.current = setTimeout(() => {
+      setDropdownOpen(false)
+    }, 100)
+  }
 
   return (
-    <div className="relative" onMouseLeave={() => setDropdownOpen(false)}>
+    <div
+      className="relative"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
       <button
         type="button"
-        onMouseEnter={() => setDropdownOpen(true)}
         onClick={() => setDropdownOpen((v) => !v)}
         aria-label="프로필 메뉴"
         aria-haspopup="menu"
         aria-expanded={dropdownOpen}
         className="focus-visible:ring-primary overflow-hidden rounded-full outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
       >
-        <img
-          src={user?.profileImage ?? defaultProfile}
-          alt=""
-          width={40}
-          height={40}
-          className="aspect-square h-10 w-10 rounded-full object-cover"
-          onError={(e) => {
-            e.currentTarget.src = defaultProfile
-          }}
-        />
+        {user?.profileImage ? (
+          <img
+            src={user.profileImage}
+            alt=""
+            width={40}
+            height={40}
+            className="aspect-square h-10 w-10 rounded-full object-cover"
+          />
+        ) : (
+          <ProfileIcon />
+        )}
       </button>
 
       <ProfileDropdown
