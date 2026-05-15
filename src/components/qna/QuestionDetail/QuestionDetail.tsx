@@ -111,13 +111,20 @@ export function QuestionDetail({
             </div>
           </div>
 
-          {/* 메타 정보: 조회수 | 시간 */}
-          <div className="mt-5 flex items-center gap-[19px] text-base leading-normal tracking-[-0.03em] text-[#9D9D9D]">
-            <span>조회수 {questionDetail.view_count.toLocaleString()}</span>
-            <span className="text-[#CECECE]">·</span>
-            <time dateTime={questionDetail.created_at}>
-              {getRelativeTime(questionDetail.created_at)}
-            </time>
+          {/* 메타 정보: 조회수 | 시간 | 수정 버튼(작성자) */}
+          <div className="mt-5 flex items-center justify-between">
+            <div className="flex items-center gap-[19px] text-base leading-normal tracking-[-0.03em] text-[#9D9D9D]">
+              <span>조회수 {questionDetail.view_count.toLocaleString()}</span>
+              <span className="text-[#CECECE]">·</span>
+              <time dateTime={questionDetail.created_at}>
+                {getRelativeTime(questionDetail.created_at)}
+              </time>
+            </div>
+            {isQuestionOwner && (
+              <Button variant="ghost" size="sm" onClick={onEdit}>
+                수정
+              </Button>
+            )}
           </div>
 
           {/* 디바이더 */}
@@ -150,7 +157,7 @@ export function QuestionDetail({
             showToast={showToast}
           />
 
-          {/* 공유하기 pill 버튼 + 수정 버튼 */}
+          {/* 공유하기 pill 버튼 */}
           <div className="mt-6 flex items-center justify-end gap-2">
             <button
               type="button"
@@ -160,11 +167,6 @@ export function QuestionDetail({
               <LinkIcon />
               공유하기
             </button>
-            {isQuestionOwner && (
-              <Button variant="ghost" size="sm" onClick={onEdit}>
-                수정
-              </Button>
-            )}
           </div>
 
           {/* 하단 디바이더 */}
