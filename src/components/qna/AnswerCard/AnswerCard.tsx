@@ -4,6 +4,8 @@ import { UserAvatar } from '@/components/common/UserAvatar'
 import { CommentForm } from '@/components/qna/CommentForm'
 import { CommentList } from '@/components/qna/CommentList'
 import { getRelativeTime } from '@/utils/relativeTime'
+import { useAuthStore } from '@/stores/authStore'
+import { ANSWER_ALLOWED_ROLES } from '@/constants/roles'
 
 interface AnswerCardProps {
   answer: GetAnswerItem
@@ -32,6 +34,10 @@ export function AnswerCard({
   showForm,
   onEditAction,
 }: AnswerCardProps) {
+  const userRole = useAuthStore((s) => s.user?.role)
+  const canComment =
+    isAuthenticated && userRole != null && ANSWER_ALLOWED_ROLES.has(userRole)
+
   const canShowAcceptButton =
     isQuestionOwner && !anyAdopted && answer.author.id !== userId
 
@@ -117,7 +123,7 @@ export function AnswerCard({
         </div>
 
         {/* 댓글 입력 (먼저) → 댓글 목록 (나중) — Figma 순서 */}
-        {isAuthenticated && (
+        {canComment && (
           <CommentForm answerId={answer.id} questionId={numericQuestionId} />
         )}
 
