@@ -159,7 +159,7 @@ function SortPopover({
                 }
               }}
               className={[
-                'flex h-[42px] items-center justify-center rounded px-5 text-base font-bold transition-colors',
+                'flex h-[42px] items-center justify-center rounded px-5 text-xl font-extrabold transition-colors',
                 sort === opt
                   ? 'bg-[#EFE6FC] text-[#6201E0]'
                   : 'text-[#4D4D4D] hover:bg-[#EFE6FC]',
@@ -324,12 +324,12 @@ export function QnaListPage() {
   return (
     <div className="mx-auto w-full max-w-[944px] overflow-hidden px-4 pt-[52px] pb-20">
       {/* 페이지 타이틀 */}
-      <h1 className="mb-8 text-[32px] leading-[1.4] font-bold tracking-[-0.03em] text-[#121212]">
+      <h1 className="mb-2 text-[32px] leading-[1.4] font-bold tracking-[-0.03em] text-[#121212]">
         질의응답
       </h1>
 
       {/* 검색바 + 질문하기 버튼 */}
-      <div className="mb-[52px] flex items-center justify-between">
+      <div className="mb-3 flex items-center justify-between">
         <SearchInput
           value={inputValue}
           onValueChange={setInputValue}
@@ -354,7 +354,7 @@ export function QnaListPage() {
             }
             navigate(ROUTES.QNA.WRITE)
           }}
-          className="flex h-12 items-center gap-2 rounded-sm bg-[#6201E0] px-9 text-base font-bold text-white transition-colors hover:bg-[#4E01B3]"
+          className="flex h-12 items-center gap-2 rounded-sm bg-[#6201E0] px-9 text-xl font-extrabold text-white transition-colors hover:bg-[#4E01B3]"
         >
           <Pencil className="h-5 w-5" />
           질문하기
@@ -364,14 +364,20 @@ export function QnaListPage() {
       {/* 탭 + 정렬/필터를 한 줄에 배치 */}
       <Tabs value={answerStatus} onChange={handleTabChange}>
         <div className="flex items-end justify-between border-b border-[#CECECE]">
-          <TabList aria-label="답변 상태 필터" className="flex gap-10 border-0">
-            <Tab value="all">전체보기</Tab>
-            <Tab value="answered">답변완료</Tab>
-            <Tab value="unanswered">답변 대기중</Tab>
+          <TabList aria-label="답변 상태 필터" className="flex gap-6 border-0">
+            <Tab value="all" className="text-xl font-extrabold">
+              전체보기
+            </Tab>
+            <Tab value="answered" className="text-xl font-extrabold">
+              답변완료
+            </Tab>
+            <Tab value="unanswered" className="text-xl font-extrabold">
+              답변 대기중
+            </Tab>
           </TabList>
 
           {/* 정렬 popover + 필터 */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 pb-3">
             <SortPopover
               sort={sort}
               onSelect={(opt) => updateParam('sort', opt)}
@@ -463,7 +469,7 @@ export function QnaListPage() {
                 updateParam('category_id', id != null ? String(id) : null)
                 setShowCategoryModal(false)
               }}
-              className="h-[54px] w-[278px] rounded bg-[#6201E0] text-xl font-bold text-white transition-colors hover:bg-[#4E01B3]"
+              className="h-[54px] w-[278px] rounded bg-[#6201E0] text-xl font-extrabold text-white transition-colors hover:bg-[#4E01B3]"
             >
               필터 적용하기
             </button>
@@ -487,7 +493,7 @@ export function QnaListPage() {
 
         {/* 본문 */}
         <div className="-mx-6 px-12 pt-[60px] pb-10">
-          <h3 className="mb-5 text-xl font-bold text-[#4D4D4D]">
+          <h3 className="mb-5 text-xl font-extrabold text-[#4D4D4D]">
             카테고리 선택
           </h3>
           <Suspense
