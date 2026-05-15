@@ -142,14 +142,13 @@ export function QuestionDetail({
             </div>
           )}
 
-          {/* AI 1차 답변 */}
-          {isAuthenticated && (
-            <AiFirstAnswerSection
-              questionId={questionDetail.id}
-              questionTitle={questionDetail.title}
-              showToast={showToast}
-            />
-          )}
+          {/* AI 1차 답변 — 모든 유저에게 표시 */}
+          <AiFirstAnswerSection
+            questionId={questionDetail.id}
+            questionTitle={questionDetail.title}
+            isAuthenticated={isAuthenticated}
+            showToast={showToast}
+          />
 
           {/* 공유하기 pill 버튼 + 수정 버튼 */}
           <div className="mt-6 flex items-center justify-end gap-2">
