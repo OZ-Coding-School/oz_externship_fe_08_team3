@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { Button } from '@/components/common/Button'
 import { EXTERNAL_URLS } from '@/constants/routes'
+import { useAuthStore } from '@/stores/authStore'
 
 export interface ProfileDropdownProps {
   isOpen: boolean
@@ -18,6 +19,7 @@ export function ProfileDropdown({
   onLogout,
 }: ProfileDropdownProps) {
   const ref = useRef<HTMLDivElement>(null)
+  const role = useAuthStore((state) => state.user?.role)
 
   // 외부 클릭 닫기
   useEffect(() => {
@@ -105,14 +107,16 @@ export function ProfileDropdown({
 
         {/* 메뉴 항목 */}
         <div className="flex flex-col gap-1">
-          <a
-            href={EXTERNAL_URLS.ENROLL}
-            role="menuitem"
-            tabIndex={-1}
-            className="text-text-heading hover:text-primary hover:bg-bg-accent flex h-12 items-center rounded-md px-3 text-sm font-medium transition-colors outline-none focus-visible:outline-none"
-          >
-            수강생 등록
-          </a>
+          {role === 'USER' && (
+            <a
+              href={EXTERNAL_URLS.ENROLL}
+              role="menuitem"
+              tabIndex={-1}
+              className="text-text-heading hover:text-primary hover:bg-bg-accent flex h-12 items-center rounded-md px-3 text-sm font-medium transition-colors outline-none focus-visible:outline-none"
+            >
+              수강생 등록
+            </a>
+          )}
           <a
             href={EXTERNAL_URLS.MYPAGE}
             role="menuitem"
