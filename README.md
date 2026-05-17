@@ -54,6 +54,16 @@ AI 챗봇의 도움을 받아 빠르게 답을 찾을 수 있도록 설계된 **
 
 ---
 
+## 🏗 System Architecture
+
+<p align="center">
+  <img src="./docs/images/FE3TeamFLow.png" alt="FE3팀 시스템 아키텍처 / 데이터 플로우" width="900" />
+</p>
+
+> FE3팀이 담당한 클라이언트(React) ↔ API 서버 ↔ AI 챗봇 SSE 스트림까지의 전체 데이터 흐름.
+
+---
+
 ## 🛠 사용 스택
 
 ### Frontend Core
@@ -82,14 +92,6 @@ AI 챗봇의 도움을 받아 빠르게 답을 찾을 수 있도록 설계된 **
 ![GitHub](https://img.shields.io/badge/GitHub-181717?logo=github&logoColor=white)
 ![Discord](https://img.shields.io/badge/Discord-5865F2?logo=discord&logoColor=white)
 ![Figma](https://img.shields.io/badge/Figma-F24E1E?logo=figma&logoColor=white)
-
----
-
-## 🏗 System Architecture
-
-<!-- 아키텍처 이미지가 들어갈 자리입니다. 추후 이미지 첨부 예정. -->
-
-> _시스템 아키텍처 다이어그램은 추후 추가 예정입니다._
 
 ---
 
