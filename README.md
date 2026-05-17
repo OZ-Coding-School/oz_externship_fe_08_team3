@@ -57,7 +57,7 @@ AI 챗봇의 도움을 받아 빠르게 답을 찾을 수 있도록 설계된 **
 ## 🏗 System Architecture
 
 <p align="center">
-  <img src="./docs/images/FE3TeamFLow.png" alt="FE3팀 시스템 아키텍처 / 데이터 플로우" width="900" />
+  <img src="./docs/images/renewfe3teamflow.png" alt="FE3팀 시스템 아키텍처 / 데이터 플로우" width="900" />
 </p>
 
 > FE3팀이 담당한 클라이언트(React) ↔ API 서버 ↔ AI 챗봇 SSE 스트림까지의 전체 데이터 흐름.
